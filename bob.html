@@ -172,8 +172,8 @@
         <button class="btn btn-secondary" id="addPrependRegexToggle">+</button>
         <input class="default-pattern-step" placeholder="Base pattern (e.g. [A-Z])" value="[A-Z]{1,4}"
           style="flex: 1;" />
-        <button class="btn btn-secondary wrapper-toggle" data-wrapper="word-boundary" data-active="false">\b</button>
         <button class="btn btn-secondary" id="addRegexToggle">+</button>
+        <button class="btn btn-secondary wrapper-toggle" data-wrapper="word-boundary" data-active="false">\b</button>
         <button class="btn btn-secondary wrapper-toggle" data-wrapper="end-anchor" data-active="false">$</button>
       </div>
 
@@ -198,6 +198,13 @@
 
     <div style="margin-top: 0.5rem;">
       <strong>Constructed Pattern:</strong> <code id="constructedPattern">[A-Z]{1,4}</code>
+    </div>
+    <div style="margin-top: 0.5rem;">
+      <strong>Pattern Hierarchy:</strong>
+      <pre id="patternHierarchy" class="code" style="max-height:100px; overflow:auto; font-size: 0.875rem;"></pre>
+    </div>
+    <div style="margin-top: 0.5rem;">
+      <strong>Reconstructed Pattern:</strong> <code id="reconstructedPattern" class="code"></code>
     </div>
     <p class="small">This pattern will be applied to any text that doesn't match other rules. Build your pattern
       progressively by adding wrappers to each step.</p>
@@ -598,11 +605,175 @@
       patternInput.value = currentPattern;
     }
 
+    function buildPatternHierarchy() {
+      const pattern = buildDefaultPattern();
+      const defaultLabel = document.getElementById('defaultLabel').value;
+      const defaultColor = document.getElementById('defaultColor').value;
+
+      const hierarchy = {
+        pattern: pattern,
+        label: defaultLabel,
+        color: defaultColor,
+        structure: {
+          startAnchor: false,
+          startWordBoundary: false,
+          customPrependToggles: [],
+          basePattern: '',
+          customAppendToggles: [],
+          endWordBoundary: false,
+          endAnchor: false
+        }
+      };
+
+      // Get the base pattern from the input field (without custom toggles)
+      const patternInput = document.querySelector('#defaultPatternContainer .default-pattern-step');
+      let basePattern = patternInput.value;
+
+      // Remove any custom toggles from the base pattern for analysis
+      const activeToggles = document.querySelectorAll('.regex-toggle[data-active="true"]');
+      activeToggles.forEach(toggle => {
+        const regex = toggle.dataset.regex;
+        const isPrepend = toggle.dataset.prepend === 'true';
+
+        if (isPrepend) {
+          // Remove prepend toggles from the beginning (after any anchors/word boundaries)
+          if (basePattern.startsWith('^\\b') && basePattern.substring(3).startsWith(regex)) {
+            // Start anchor + word boundary + regex
+            basePattern = `^\\b${basePattern.substring(3 + regex.length)}`;
+          } else if (basePattern.startsWith('^') && basePattern.substring(1).startsWith(regex)) {
+            // Start anchor + regex
+            basePattern = `^${basePattern.substring(1 + regex.length)}`;
+          } else if (basePattern.startsWith('\\b') && basePattern.substring(2).startsWith(regex)) {
+            // Word boundary + regex
+            basePattern = `\\b${basePattern.substring(2 + regex.length)}`;
+          } else if (basePattern.startsWith(regex)) {
+            // Just regex at start
+            basePattern = basePattern.substring(regex.length);
+          }
+        } else {
+          // Remove append toggles from the end (before any anchors/word boundaries)
+          if (basePattern.endsWith('\\b$') && basePattern.substring(0, basePattern.length - 3).endsWith(regex)) {
+            // Regex + word boundary + end anchor
+            basePattern = `${basePattern.substring(0, basePattern.length - 3 - regex.length)}\\b$`;
+          } else if (basePattern.endsWith('$') && basePattern.substring(0, basePattern.length - 1).endsWith(regex)) {
+            // Regex + end anchor
+            basePattern = `${basePattern.substring(0, basePattern.length - 1 - regex.length)}$`;
+          } else if (basePattern.endsWith('\\b') && basePattern.substring(0, basePattern.length - 2).endsWith(regex)) {
+            // Regex + word boundary
+            basePattern = `${basePattern.substring(0, basePattern.length - 2 - regex.length)}\\b`;
+          } else if (basePattern.endsWith(regex)) {
+            // Just regex at end
+            basePattern = basePattern.substring(0, basePattern.length - regex.length);
+          }
+        }
+      });
+
+      // Analyze the base pattern structure
+      let remainingPattern = basePattern;
+
+      // Check for start anchor
+      if (remainingPattern.startsWith('^')) {
+        hierarchy.structure.startAnchor = true;
+        remainingPattern = remainingPattern.substring(1);
+      }
+
+      // Check for start word boundary
+      if (remainingPattern.startsWith('\\b')) {
+        hierarchy.structure.startWordBoundary = true;
+        remainingPattern = remainingPattern.substring(2);
+      }
+
+      // Check for end anchor
+      if (remainingPattern.endsWith('$')) {
+        hierarchy.structure.endAnchor = true;
+        remainingPattern = remainingPattern.substring(0, remainingPattern.length - 1);
+      }
+
+      // Check for end word boundary
+      if (remainingPattern.endsWith('\\b')) {
+        hierarchy.structure.endWordBoundary = true;
+        remainingPattern = remainingPattern.substring(0, remainingPattern.length - 2);
+      }
+
+      // The remaining pattern is the true base pattern
+      hierarchy.structure.basePattern = remainingPattern;
+
+      // Add custom toggles to the hierarchy
+      activeToggles.forEach(toggle => {
+        const toggleInfo = {
+          label: toggle.dataset.label,
+          regex: toggle.dataset.regex,
+          position: toggle.dataset.prepend === 'true' ? 'prepend' : 'append'
+        };
+
+        if (toggleInfo.position === 'prepend') {
+          hierarchy.structure.customPrependToggles.push(toggleInfo);
+        } else {
+          hierarchy.structure.customAppendToggles.push(toggleInfo);
+        }
+      });
+
+      return hierarchy;
+    }
+
+    function reconstructPatternFromHierarchy(hierarchy) {
+      let reconstructedPattern = '';
+
+      // Add start anchor if present
+      if (hierarchy.structure.startAnchor) {
+        reconstructedPattern += '^';
+      }
+
+      // Add start word boundary if present
+      if (hierarchy.structure.startWordBoundary) {
+        reconstructedPattern += '\\b';
+      }
+
+      // Add custom prepend toggles
+      hierarchy.structure.customPrependToggles.forEach(toggle => {
+        reconstructedPattern += toggle.regex;
+      });
+
+      // Add base pattern
+      reconstructedPattern += hierarchy.structure.basePattern;
+
+      // Add custom append toggles
+      hierarchy.structure.customAppendToggles.forEach(toggle => {
+        reconstructedPattern += toggle.regex;
+      });
+
+      // Add end word boundary if present
+      if (hierarchy.structure.endWordBoundary) {
+        reconstructedPattern += '\\b';
+      }
+
+      // Add end anchor if present
+      if (hierarchy.structure.endAnchor) {
+        reconstructedPattern += '$';
+      }
+
+      return reconstructedPattern;
+    }
+
     function updateConstructedPatternDisplay() {
       const pattern = buildDefaultPattern();
       const display = document.getElementById('constructedPattern');
       if (display) {
         display.textContent = pattern || '(empty)';
+      }
+
+      // Update pattern hierarchy display
+      const hierarchy = buildPatternHierarchy();
+      const hierarchyDisplay = document.getElementById('patternHierarchy');
+      if (hierarchyDisplay) {
+        hierarchyDisplay.textContent = JSON.stringify(hierarchy, null, 2);
+      }
+
+      // Update reconstructed pattern display
+      const reconstructedPattern = reconstructPatternFromHierarchy(hierarchy);
+      const reconstructedDisplay = document.getElementById('reconstructedPattern');
+      if (reconstructedDisplay) {
+        reconstructedDisplay.textContent = reconstructedPattern || '(empty)';
       }
     }
 
