@@ -181,11 +181,74 @@
       margin-left: 0.25rem;
     }
 
-    .toggle-regex-tooltip {
-      font-family: monospace;
+    .list-container {
+      border: 1px solid #dee2e6;
+      border-radius: 6px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      background: #f8f9fa;
+    }
+
+    .list-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid #dee2e6;
+    }
+
+    .list-title {
+      font-weight: 600;
+      font-size: 1.1rem;
+      margin: 0;
+    }
+
+    .list-type {
       font-size: 0.75rem;
-      color: #666;
-      margin-left: 0.5rem;
+      color: #6c757d;
+      background: #e9ecef;
+      padding: 0.25rem 0.5rem;
+      border-radius: 3px;
+    }
+
+    .list-content {
+      margin-top: 0.5rem;
+    }
+
+    .key-value-row {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 0.25rem;
+      align-items: center;
+    }
+
+    .key-value-row input {
+      flex: 1;
+      min-width: 100px;
+    }
+
+    .array-row {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 0.25rem;
+      align-items: center;
+    }
+
+    .array-row input {
+      flex: 1;
+      min-width: 100px;
+    }
+
+    .list-actions {
+      display: flex;
+      gap: 0.25rem;
+      margin-top: 0.5rem;
+    }
+
+    .btn-xs {
+      padding: 0.125rem 0.25rem;
+      font-size: 0.75rem;
     }
   </style>
 </head>
@@ -218,7 +281,9 @@
         <input id="defaultColor" type="text" placeholder="color (e.g. #ff0000)" value="magenta" style="width: 120px;" />
         <button class="btn btn-secondary wrapper-toggle" data-wrapper="start-anchor" data-active="false">^</button>
         <button class="btn btn-secondary" id="addPrependRegexToggle">+</button>
+        <div id="prependTogglesContainer" style="display: flex; gap: 0.25rem; align-items: center;"></div>
         <input id="basePatternInput" placeholder="Base pattern (e.g. [A-Z])" value="[A-Z]{1,4}" style="flex: 1;" />
+        <div id="appendTogglesContainer" style="display: flex; gap: 0.25rem; align-items: center;"></div>
         <button class="btn btn-secondary" id="addRegexToggle">+</button>
         <button class="btn btn-secondary wrapper-toggle" data-wrapper="word-boundary" data-active="false">\b</button>
         <button class="btn btn-secondary wrapper-toggle" data-wrapper="end-anchor" data-active="false">$</button>
@@ -253,10 +318,6 @@
     <div style="margin-top: 0.5rem;">
       <strong>Reconstructed Pattern:</strong> <code id="reconstructedPattern" class="code"></code>
     </div>
-    <div style="margin-top: 0.5rem;">
-      <strong>Custom Toggles:</strong>
-      <div id="customTogglesContainer"></div>
-    </div>
     <p class="small">This pattern will be applied to any text that doesn't match other rules. Build your pattern
       progressively by adding wrappers to each step.</p>
   </section>
@@ -264,9 +325,8 @@
   <section>
     <h2>3. Dictionary / Rules</h2>
     <div>
-      <button class="btn" id="loadSample">Load Sample Dictionary</button>
-      <button class="btn btn-secondary" id="importJSON">Import JSON</button>
-      <button class="btn btn-secondary" id="exportJSON">Export Current Dictionary</button>
+      <button class="btn btn-secondary" id="loadBobJson">Load from Storage</button>
+      <button class="btn btn-secondary" id="saveBobJson">Export to File</button>
     </div>
     <div style="margin-top:0.5rem;">
       <div id="rulesContainer"></div>
@@ -309,7 +369,18 @@
   </section>
 
   <section>
-    <h2>6. Dictionary JSON</h2>
+    <h2>6. Lists & Arrays Manager</h2>
+    <div style="margin-bottom:0.5rem;">
+      <button class="btn" id="addKeyValueList">+ Add Key-Value List</button>
+      <button class="btn btn-secondary" id="addArray">+ Add Array</button>
+    </div>
+    <div id="listsContainer"></div>
+    <p class="small">Manage lists of key:value pairs and arrays that sync with bob.json. Use these for storing
+      configuration data, mappings, or any structured data.</p>
+  </section>
+
+  <section>
+    <h2>7. Dictionary JSON</h2>
     <pre id="rawJson" class="code" style="max-height:200px; overflow:auto;"></pre>
   </section>
 
@@ -345,6 +416,181 @@
       }
     };
 
+    // Function to load pattern hierarchy from localStorage or bob.json
+    async function loadPatternHierarchy() {
+      // First try to load from localStorage
+      const localStorageData = localStorage.getItem('bobPatternHierarchy');
+      if (localStorageData) {
+        try {
+          const data = JSON.parse(localStorageData);
+
+          // Load default pattern
+          if (data.defaultPattern) {
+            defaultPattern = data.defaultPattern;
+          }
+
+          // Load dictionary
+          if (data.dictionary) {
+            dictionary = data.dictionary;
+          }
+
+          // Load lists and arrays data
+          if (data.listsData) {
+            listsData = data.listsData;
+          }
+
+          // Update UI
+          updatePatternUI();
+          refreshRuleUI();
+          refreshListsUI();
+          applyRules();
+
+          console.log('Pattern hierarchy loaded from localStorage');
+          return;
+        } catch (error) {
+          console.error('Error parsing localStorage data:', error);
+        }
+      }
+
+      // Fallback to loading from bob.json file
+      try {
+        const response = await fetch('bob.json');
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+
+        // Load default pattern
+        if (data.defaultPattern) {
+          defaultPattern = data.defaultPattern;
+        }
+
+        // Load dictionary
+        if (data.dictionary) {
+          dictionary = data.dictionary;
+        }
+
+        // Load lists and arrays data
+        if (data.listsData) {
+          listsData = data.listsData;
+        }
+
+        // Update UI
+        updatePatternUI();
+        refreshRuleUI();
+        refreshListsUI();
+        applyRules();
+
+        console.log('Pattern hierarchy loaded from bob.json');
+      } catch (error) {
+        console.error('Error loading bob.json:', error);
+        // If neither localStorage nor file exists, start with empty data
+        console.log('No existing data found, starting with empty configuration');
+      }
+    }
+
+    // Function to save pattern hierarchy to localStorage (silent)
+    function savePatternHierarchy() {
+      try {
+        const data = {
+          defaultPattern: defaultPattern,
+          dictionary: dictionary,
+          listsData: listsData
+        };
+
+        // Save to localStorage for immediate syncing
+        localStorage.setItem('bobPatternHierarchy', JSON.stringify(data));
+        console.log('Pattern hierarchy saved to localStorage');
+      } catch (error) {
+        console.error('Error saving to localStorage:', error);
+      }
+    }
+
+    // Function to export pattern hierarchy to file (with user interaction)
+    async function exportPatternHierarchy() {
+      try {
+        const data = {
+          defaultPattern: defaultPattern,
+          dictionary: dictionary,
+          listsData: listsData
+        };
+
+        // Try to use File System Access API for silent saving
+        if ('showSaveFilePicker' in window) {
+          try {
+            const handle = await window.showSaveFilePicker({
+              suggestedName: 'bob.json',
+              types: [{
+                description: 'JSON files',
+                accept: { 'application/json': ['.json'] }
+              }]
+            });
+            const writable = await handle.createWritable();
+            await writable.write(JSON.stringify(data, null, 2));
+            await writable.close();
+            console.log('Pattern hierarchy exported to bob.json via File System Access API');
+            return;
+          } catch (e) {
+            console.log('File System Access API failed, falling back to download');
+          }
+        }
+
+        // Fallback to download method
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'bob.json';
+        a.click();
+
+        console.log('Pattern hierarchy exported to bob.json via download');
+      } catch (error) {
+        console.error('Error exporting bob.json:', error);
+      }
+    }
+
+    // Function to auto-save pattern hierarchy
+    function autoSavePatternHierarchy() {
+      // Debounce the save operation
+      clearTimeout(window.autoSaveTimeout);
+      window.autoSaveTimeout = setTimeout(() => {
+        savePatternHierarchy();
+        // Show a brief visual indicator
+        showSaveIndicator();
+      }, 1000); // Save after 1 second of inactivity
+    }
+
+    // Function to show save indicator
+    function showSaveIndicator() {
+      // Create or update save indicator
+      let indicator = document.getElementById('saveIndicator');
+      if (!indicator) {
+        indicator = document.createElement('div');
+        indicator.id = 'saveIndicator';
+        indicator.style.cssText = `
+          position: fixed;
+          top: 20px;
+          right: 20px;
+          background: #28a745;
+          color: white;
+          padding: 8px 12px;
+          border-radius: 4px;
+          font-size: 12px;
+          z-index: 1000;
+          opacity: 0;
+          transition: opacity 0.3s ease;
+        `;
+        document.body.appendChild(indicator);
+      }
+
+      indicator.textContent = '✓ Saved';
+      indicator.style.opacity = '1';
+
+      // Hide after 2 seconds
+      setTimeout(() => {
+        indicator.style.opacity = '0';
+      }, 2000);
+    }
+
     function refreshRuleUI() {
       const container = document.getElementById('rulesContainer');
       container.innerHTML = '';
@@ -360,12 +606,14 @@
           dictionary.rules.splice(idx, 1);
           refreshRuleUI();
           applyRules();
+          autoSavePatternHierarchy();
         });
         // live change
         ['match', 'color', 'label'].forEach(k => {
           row.querySelector('.' + k).addEventListener('input', () => {
             dictionary.rules[idx][k] = row.querySelector('.' + k).value;
             updateRawJson();
+            autoSavePatternHierarchy();
           });
         });
         container.appendChild(node);
@@ -630,38 +878,24 @@
     }
 
     function updateCustomTogglesDisplay() {
-      const container = document.getElementById('customTogglesContainer');
-      if (!container) return;
-
-      container.innerHTML = '';
-
-      // Render prepend toggles
-      if (defaultPattern.structure.customPrependToggles.length > 0) {
-        const prependSection = document.createElement('div');
-        prependSection.innerHTML = '<strong>Prepend Toggles:</strong>';
-        container.appendChild(prependSection);
-
+      // Update prepend toggles
+      const prependContainer = document.getElementById('prependTogglesContainer');
+      if (prependContainer) {
+        prependContainer.innerHTML = '';
         defaultPattern.structure.customPrependToggles.forEach(toggle => {
           const toggleElement = createToggleElement(toggle, true);
-          container.appendChild(toggleElement);
+          prependContainer.appendChild(toggleElement);
         });
       }
 
-      // Render append toggles
-      if (defaultPattern.structure.customAppendToggles.length > 0) {
-        const appendSection = document.createElement('div');
-        appendSection.innerHTML = '<strong>Append Toggles:</strong>';
-        container.appendChild(appendSection);
-
+      // Update append toggles
+      const appendContainer = document.getElementById('appendTogglesContainer');
+      if (appendContainer) {
+        appendContainer.innerHTML = '';
         defaultPattern.structure.customAppendToggles.forEach(toggle => {
           const toggleElement = createToggleElement(toggle, false);
-          container.appendChild(toggleElement);
+          appendContainer.appendChild(toggleElement);
         });
-      }
-
-      if (defaultPattern.structure.customPrependToggles.length === 0 &&
-        defaultPattern.structure.customAppendToggles.length === 0) {
-        container.innerHTML = '<em>No custom toggles added yet.</em>';
       }
     }
 
@@ -669,22 +903,11 @@
       const container = document.createElement('div');
       container.className = 'custom-toggle-container';
 
-      // Main toggle button (label + regex tooltip)
+      // Main toggle button (label only)
       const toggleButton = document.createElement('button');
       toggleButton.className = `toggle-button ${toggle.active ? 'active' : 'inactive'}`;
       toggleButton.title = `Regex: ${toggle.regex}`;
-
-      // Label text
-      const labelText = document.createElement('span');
-      labelText.textContent = toggle.label;
-
-      // Regex tooltip
-      const regexTooltip = document.createElement('span');
-      regexTooltip.className = 'toggle-regex-tooltip';
-      regexTooltip.textContent = `(${toggle.regex})`;
-
-      toggleButton.appendChild(labelText);
-      toggleButton.appendChild(regexTooltip);
+      toggleButton.textContent = toggle.label;
 
       // Toggle functionality
       toggleButton.addEventListener('click', () => {
@@ -714,12 +937,14 @@
         defaultPattern.structure.endAnchor = addAnchor;
       }
       updatePatternUI();
+      autoSavePatternHierarchy();
     }
 
     function updatePatternWithWordBoundaries(addBoundaries) {
       defaultPattern.structure.startWordBoundary = addBoundaries;
       defaultPattern.structure.endWordBoundary = addBoundaries;
       updatePatternUI();
+      autoSavePatternHierarchy();
     }
 
     function updatePatternWithRegexToggle(regex, isPrepend, addRegex, label = 'Custom Toggle') {
@@ -746,6 +971,7 @@
         }
       }
       updatePatternUI();
+      autoSavePatternHierarchy();
     }
 
     function toggleCustomToggle(toggleId, isPrepend) {
@@ -755,6 +981,7 @@
         toggle.active = !toggle.active;
         updatePatternUI();
         applyRules();
+        autoSavePatternHierarchy();
       }
     }
 
@@ -766,6 +993,7 @@
       }
       updatePatternUI();
       applyRules();
+      autoSavePatternHierarchy();
     }
 
     function buildPatternHierarchy() {
@@ -950,6 +1178,7 @@
         defaultPattern.structure.basePattern = input.value;
         updatePatternUI();
         applyRules();
+        autoSavePatternHierarchy();
       });
 
       wrapperBtns.forEach(btn => {
@@ -1018,6 +1247,7 @@
       hideInlineRegexForm();
 
       applyRules();
+      autoSavePatternHierarchy();
     }
 
     function setupAddRegexToggleListener() {
@@ -1069,19 +1299,6 @@
       }
     }
 
-    function loadSampleDictionary() {
-      dictionary = {
-        rules: [
-          { match: "\\ba[a-zA-Z0-9]+(?:['’-][a-zA-Z0-9]+)*\\b", color: "red", label: "A" },
-          { match: "\\bs[a-zA-Z0-9]+(?:['’-][a-zA-Z0-9]+)*\\b", color: "blue", label: "S" },
-          { match: "\\bm[a-zA-Z0-9]+(?:['’-][a-zA-Z0-9]+)*\\b", color: "green", label: "M" },
-          { match: "\\bg[a-zA-Z0-9]+(?:['’-][a-zA-Z0-9]+)*\\b", color: "orange", label: "G" },
-        ]
-      };
-      refreshRuleUI();
-      applyRules();
-    }
-
     document.getElementById('applyBtn').addEventListener('click', () => applyRules());
     document.getElementById('clearBtn').addEventListener('click', () => {
       document.getElementById('sourceText').value = '';
@@ -1090,31 +1307,17 @@
     document.getElementById('addRule').addEventListener('click', () => {
       dictionary.rules.push({ match: "", color: "", label: "", mode: "word" });
       refreshRuleUI();
+      autoSavePatternHierarchy();
     });
     document.getElementById('downloadMd').addEventListener('click', downloadMarkdown);
     document.getElementById('downloadPdf').addEventListener('click', downloadPDF);
     document.getElementById('copyHtml').addEventListener('click', copyStyledHTML);
     document.getElementById('copyPlain').addEventListener('click', copyPlainText);
-    document.getElementById('loadSample').addEventListener('click', loadSampleDictionary);
-    document.getElementById('importJSON').addEventListener('click', async () => {
-      try {
-        const [fileHandle] = await window.showOpenFilePicker({ types: [{ description: 'JSON', accept: { 'application/json': ['.json'] } }], multiple: false });
-        const file = await fileHandle.getFile();
-        const text = await file.text();
-        dictionary = JSON.parse(text);
-        refreshRuleUI();
-        applyRules();
-      } catch (e) {
-        console.warn('import cancelled or failed', e);
-      }
-    });
-    document.getElementById('exportJSON').addEventListener('click', () => {
-      const blob = new Blob([JSON.stringify(dictionary, null, 2)], { type: 'application/json' });
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = 'dictionary.json';
-      a.click();
-    });
+
+
+    // Add event listeners for bob.json operations
+    document.getElementById('loadBobJson').addEventListener('click', loadPatternHierarchy);
+    document.getElementById('saveBobJson').addEventListener('click', exportPatternHierarchy);
 
     // Default pattern event listeners
     document.getElementById('defaultPatternEnabled').addEventListener('change', applyRules);
@@ -1122,11 +1325,13 @@
       defaultPattern.color = document.getElementById('defaultColor').value;
       updatePatternUI();
       applyRules();
+      autoSavePatternHierarchy();
     });
     document.getElementById('defaultLabel').addEventListener('input', () => {
       defaultPattern.label = document.getElementById('defaultLabel').value;
       updatePatternUI();
       applyRules();
+      autoSavePatternHierarchy();
     });
 
     // Setup add regex toggle listener
@@ -1145,8 +1350,231 @@
     // Initialize pattern UI
     updatePatternUI();
 
-    // initial
-    loadSampleDictionary();
+    // Load pattern hierarchy from bob.json on page load
+    loadPatternHierarchy();
+
+    // Lists and Arrays Management
+    let listsData = {
+      keyValueLists: [],
+      arrays: []
+    };
+
+    function refreshListsUI() {
+      const container = document.getElementById('listsContainer');
+      container.innerHTML = '';
+
+      // Render key-value lists
+      listsData.keyValueLists.forEach((list, listIndex) => {
+        const listElement = createKeyValueListElement(list, listIndex);
+        container.appendChild(listElement);
+      });
+
+      // Render arrays
+      listsData.arrays.forEach((array, arrayIndex) => {
+        const arrayElement = createArrayElement(array, arrayIndex);
+        container.appendChild(arrayElement);
+      });
+    }
+
+    function createKeyValueListElement(list, listIndex) {
+      const container = document.createElement('div');
+      container.className = 'list-container';
+      container.dataset.listIndex = listIndex;
+      container.dataset.type = 'keyValue';
+
+      const header = document.createElement('div');
+      header.className = 'list-header';
+
+      const title = document.createElement('h3');
+      title.className = 'list-title';
+      title.contentEditable = true;
+      title.textContent = list.name || 'Key-Value List';
+      title.addEventListener('blur', () => {
+        list.name = title.textContent;
+        autoSavePatternHierarchy();
+      });
+
+      const typeBadge = document.createElement('span');
+      typeBadge.className = 'list-type';
+      typeBadge.textContent = 'Key-Value';
+
+      const deleteBtn = document.createElement('button');
+      deleteBtn.className = 'btn btn-danger btn-xs';
+      deleteBtn.textContent = 'Delete';
+      deleteBtn.addEventListener('click', () => {
+        listsData.keyValueLists.splice(listIndex, 1);
+        refreshListsUI();
+        autoSavePatternHierarchy();
+      });
+
+      header.appendChild(title);
+      header.appendChild(typeBadge);
+      header.appendChild(deleteBtn);
+
+      const content = document.createElement('div');
+      content.className = 'list-content';
+
+      // Render key-value pairs
+      list.items.forEach((item, itemIndex) => {
+        const row = document.createElement('div');
+        row.className = 'key-value-row';
+
+        const keyInput = document.createElement('input');
+        keyInput.placeholder = 'Key';
+        keyInput.value = item.key || '';
+        keyInput.addEventListener('input', () => {
+          item.key = keyInput.value;
+          autoSavePatternHierarchy();
+        });
+
+        const valueInput = document.createElement('input');
+        valueInput.placeholder = 'Value';
+        valueInput.value = item.value || '';
+        valueInput.addEventListener('input', () => {
+          item.value = valueInput.value;
+          autoSavePatternHierarchy();
+        });
+
+        const removeBtn = document.createElement('button');
+        removeBtn.className = 'btn btn-danger btn-xs';
+        removeBtn.textContent = '✕';
+        removeBtn.addEventListener('click', () => {
+          list.items.splice(itemIndex, 1);
+          refreshListsUI();
+          autoSavePatternHierarchy();
+        });
+
+        row.appendChild(keyInput);
+        row.appendChild(valueInput);
+        row.appendChild(removeBtn);
+        content.appendChild(row);
+      });
+
+      const actions = document.createElement('div');
+      actions.className = 'list-actions';
+
+      const addItemBtn = document.createElement('button');
+      addItemBtn.className = 'btn btn-secondary btn-xs';
+      addItemBtn.textContent = '+ Add Item';
+      addItemBtn.addEventListener('click', () => {
+        list.items.push({ key: '', value: '' });
+        refreshListsUI();
+        autoSavePatternHierarchy();
+      });
+
+      actions.appendChild(addItemBtn);
+      content.appendChild(actions);
+
+      container.appendChild(header);
+      container.appendChild(content);
+
+      return container;
+    }
+
+    function createArrayElement(array, arrayIndex) {
+      const container = document.createElement('div');
+      container.className = 'list-container';
+      container.dataset.arrayIndex = arrayIndex;
+      container.dataset.type = 'array';
+
+      const header = document.createElement('div');
+      header.className = 'list-header';
+
+      const title = document.createElement('h3');
+      title.className = 'list-title';
+      title.contentEditable = true;
+      title.textContent = array.name || 'Array';
+      title.addEventListener('blur', () => {
+        array.name = title.textContent;
+        autoSavePatternHierarchy();
+      });
+
+      const typeBadge = document.createElement('span');
+      typeBadge.className = 'list-type';
+      typeBadge.textContent = 'Array';
+
+      const deleteBtn = document.createElement('button');
+      deleteBtn.className = 'btn btn-danger btn-xs';
+      deleteBtn.textContent = 'Delete';
+      deleteBtn.addEventListener('click', () => {
+        listsData.arrays.splice(arrayIndex, 1);
+        refreshListsUI();
+        autoSavePatternHierarchy();
+      });
+
+      header.appendChild(title);
+      header.appendChild(typeBadge);
+      header.appendChild(deleteBtn);
+
+      const content = document.createElement('div');
+      content.className = 'list-content';
+
+      // Render array items
+      array.items.forEach((item, itemIndex) => {
+        const row = document.createElement('div');
+        row.className = 'array-row';
+
+        const valueInput = document.createElement('input');
+        valueInput.placeholder = 'Value';
+        valueInput.value = item || '';
+        valueInput.addEventListener('input', () => {
+          array.items[itemIndex] = valueInput.value;
+          autoSavePatternHierarchy();
+        });
+
+        const removeBtn = document.createElement('button');
+        removeBtn.className = 'btn btn-danger btn-xs';
+        removeBtn.textContent = '✕';
+        removeBtn.addEventListener('click', () => {
+          array.items.splice(itemIndex, 1);
+          refreshListsUI();
+          autoSavePatternHierarchy();
+        });
+
+        row.appendChild(valueInput);
+        row.appendChild(removeBtn);
+        content.appendChild(row);
+      });
+
+      const actions = document.createElement('div');
+      actions.className = 'list-actions';
+
+      const addItemBtn = document.createElement('button');
+      addItemBtn.className = 'btn btn-secondary btn-xs';
+      addItemBtn.textContent = '+ Add Item';
+      addItemBtn.addEventListener('click', () => {
+        array.items.push('');
+        refreshListsUI();
+        autoSavePatternHierarchy();
+      });
+
+      actions.appendChild(addItemBtn);
+      content.appendChild(actions);
+
+      container.appendChild(header);
+      container.appendChild(content);
+
+      return container;
+    }
+
+    // Event listeners for lists and arrays
+    document.getElementById('addKeyValueList').addEventListener('click', () => {
+      listsData.keyValueLists.push({
+        name: 'New Key-Value List',
+        items: [{ key: '', value: '' }]
+      });
+      refreshListsUI();
+      autoSavePatternHierarchy();
+    });
+
+    document.getElementById('addArray').addEventListener('click', () => {
+      listsData.arrays.push({
+        name: 'New Array',
+        items: ['']
+      });
+      refreshListsUI();
+      autoSavePatternHierarchy();
+    });
   </script>
 </body>
 

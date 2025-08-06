@@ -1,0 +1,40 @@
+{
+  "defaultPattern": {
+    "label": "Default",
+    "color": "blue",
+    "structure": {
+      "startAnchor": true,
+      "startWordBoundary": true,
+      "customPrependToggles": [],
+      "basePattern": "what up",
+      "customAppendToggles": [],
+      "endWordBoundary": true,
+      "endAnchor": true
+    }
+  },
+  "dictionary": {
+    "rules": []
+  },
+  "listsData": {
+    "keyValueLists": [
+      {
+        "name": "New Key-Value List",
+        "items": [
+          {
+            "key": "foo",
+            "value": "bar"
+          }
+        ]
+      }
+    ],
+    "arrays": [
+      {
+        "name": "New Array",
+        "items": [
+          "sdf",
+          "sdf"
+        ]
+      }
+    ]
+  }
+}
