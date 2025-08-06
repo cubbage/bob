@@ -139,6 +139,54 @@
     .btn-danger {
       background: #dc3545;
     }
+
+    .custom-toggle-container {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      margin: 0.25rem 0;
+    }
+
+    .toggle-button {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.5rem 0.75rem;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.875rem;
+      transition: background-color 0.2s;
+    }
+
+    .toggle-button.active {
+      background: #28a745;
+      color: white;
+    }
+
+    .toggle-button.inactive {
+      background: #555;
+      color: white;
+    }
+
+    .toggle-delete {
+      padding: 0.25rem 0.5rem;
+      font-size: 0.75rem;
+      background: #dc3545;
+      color: white;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+      margin-left: 0.25rem;
+    }
+
+    .toggle-regex-tooltip {
+      font-family: monospace;
+      font-size: 0.75rem;
+      color: #666;
+      margin-left: 0.5rem;
+    }
   </style>
 </head>
 
@@ -170,8 +218,7 @@
         <input id="defaultColor" type="text" placeholder="color (e.g. #ff0000)" value="magenta" style="width: 120px;" />
         <button class="btn btn-secondary wrapper-toggle" data-wrapper="start-anchor" data-active="false">^</button>
         <button class="btn btn-secondary" id="addPrependRegexToggle">+</button>
-        <input class="default-pattern-step" placeholder="Base pattern (e.g. [A-Z])" value="[A-Z]{1,4}"
-          style="flex: 1;" />
+        <input id="basePatternInput" placeholder="Base pattern (e.g. [A-Z])" value="[A-Z]{1,4}" style="flex: 1;" />
         <button class="btn btn-secondary" id="addRegexToggle">+</button>
         <button class="btn btn-secondary wrapper-toggle" data-wrapper="word-boundary" data-active="false">\b</button>
         <button class="btn btn-secondary wrapper-toggle" data-wrapper="end-anchor" data-active="false">$</button>
@@ -205,6 +252,10 @@
     </div>
     <div style="margin-top: 0.5rem;">
       <strong>Reconstructed Pattern:</strong> <code id="reconstructedPattern" class="code"></code>
+    </div>
+    <div style="margin-top: 0.5rem;">
+      <strong>Custom Toggles:</strong>
+      <div id="customTogglesContainer"></div>
     </div>
     <p class="small">This pattern will be applied to any text that doesn't match other rules. Build your pattern
       progressively by adding wrappers to each step.</p>
@@ -279,6 +330,21 @@
     // minimal dictionary structure
     let dictionary = { rules: [] };
 
+    // Default pattern JSON structure
+    let defaultPattern = {
+      label: "Default",
+      color: "magenta",
+      structure: {
+        startAnchor: false,
+        startWordBoundary: false,
+        customPrependToggles: [],
+        basePattern: "[A-Z]{1,4}",
+        customAppendToggles: [],
+        endWordBoundary: false,
+        endAnchor: false
+      }
+    };
+
     function refreshRuleUI() {
       const container = document.getElementById('rulesContainer');
       container.innerHTML = '';
@@ -320,9 +386,9 @@
 
       // Get default pattern settings
       const defaultEnabled = document.getElementById('defaultPatternEnabled').checked;
-      const defaultPattern = buildDefaultPattern();
-      const defaultColor = document.getElementById('defaultColor').value;
-      const defaultLabel = document.getElementById('defaultLabel').value;
+      const defaultPattern = buildPatternFromJSON();
+      const defaultColor = defaultPattern.color;
+      const defaultLabel = defaultPattern.label;
 
       words.forEach(token => {
         let cleaned = token;
@@ -471,138 +537,235 @@
       applyRules();
     }
 
-    function buildDefaultPattern() {
-      const steps = document.querySelectorAll('#defaultPatternContainer .rule-row');
+    function buildPatternFromJSON() {
       let pattern = '';
 
-      steps.forEach(step => {
-        const input = step.querySelector('.default-pattern-step');
-        if (input && input.value.trim()) {
-          pattern += input.value.trim();
+      // Add start anchor if present
+      if (defaultPattern.structure.startAnchor) {
+        pattern += '^';
+      }
+
+      // Add start word boundary if present
+      if (defaultPattern.structure.startWordBoundary) {
+        pattern += '\\b';
+      }
+
+      // Add custom prepend toggles
+      defaultPattern.structure.customPrependToggles.forEach(toggle => {
+        if (toggle.active) {
+          pattern += toggle.regex;
         }
       });
+
+      // Add base pattern
+      pattern += defaultPattern.structure.basePattern;
+
+      // Add custom append toggles
+      defaultPattern.structure.customAppendToggles.forEach(toggle => {
+        if (toggle.active) {
+          pattern += toggle.regex;
+        }
+      });
+
+      // Add end word boundary if present
+      if (defaultPattern.structure.endWordBoundary) {
+        pattern += '\\b';
+      }
+
+      // Add end anchor if present
+      if (defaultPattern.structure.endAnchor) {
+        pattern += '$';
+      }
 
       return pattern;
     }
 
-    function updatePatternWithAnchors(anchorType, addAnchor) {
-      const patternInput = document.querySelector('#defaultPatternContainer .default-pattern-step');
-      let currentPattern = patternInput.value;
+    function updatePatternUI() {
+      // Update input fields
+      document.getElementById('defaultLabel').value = defaultPattern.label;
+      document.getElementById('defaultColor').value = defaultPattern.color;
+      document.getElementById('basePatternInput').value = defaultPattern.structure.basePattern;
 
-      if (anchorType === 'start') {
-        if (addAnchor) {
-          // Add start anchor if not already present
-          if (!currentPattern.startsWith('^')) {
-            currentPattern = `^${currentPattern}`;
-          }
-        } else {
-          // Remove start anchor if present
-          currentPattern = currentPattern.replace(/^\^/, '');
-        }
-      } else if (anchorType === 'end') {
-        if (addAnchor) {
-          // Add end anchor if not already present
-          if (!currentPattern.endsWith('$')) {
-            currentPattern = `${currentPattern}$`;
-          }
-        } else {
-          // Remove end anchor if present
-          currentPattern = currentPattern.replace(/\$$/, '');
-        }
+      // Update wrapper button states
+      const startAnchorBtn = document.querySelector('[data-wrapper="start-anchor"]');
+      const wordBoundaryBtn = document.querySelector('[data-wrapper="word-boundary"]');
+      const endAnchorBtn = document.querySelector('[data-wrapper="end-anchor"]');
+
+      if (startAnchorBtn) {
+        startAnchorBtn.dataset.active = defaultPattern.structure.startAnchor;
+        startAnchorBtn.style.background = defaultPattern.structure.startAnchor ? '#28a745' : '#555';
       }
 
-      patternInput.value = currentPattern;
+      if (wordBoundaryBtn) {
+        wordBoundaryBtn.dataset.active = defaultPattern.structure.endWordBoundary;
+        wordBoundaryBtn.style.background = defaultPattern.structure.endWordBoundary ? '#28a745' : '#555';
+      }
+
+      if (endAnchorBtn) {
+        endAnchorBtn.dataset.active = defaultPattern.structure.endAnchor;
+        endAnchorBtn.style.background = defaultPattern.structure.endAnchor ? '#28a745' : '#555';
+      }
+
+      // Update constructed pattern display
+      const pattern = buildPatternFromJSON();
+      const display = document.getElementById('constructedPattern');
+      if (display) {
+        display.textContent = pattern || '(empty)';
+      }
+
+      // Update pattern hierarchy display
+      const hierarchyDisplay = document.getElementById('patternHierarchy');
+      if (hierarchyDisplay) {
+        hierarchyDisplay.textContent = JSON.stringify(defaultPattern, null, 2);
+      }
+
+      // Update reconstructed pattern display
+      const reconstructedDisplay = document.getElementById('reconstructedPattern');
+      if (reconstructedDisplay) {
+        reconstructedDisplay.textContent = pattern || '(empty)';
+      }
+
+      // Update custom toggles display
+      updateCustomTogglesDisplay();
+    }
+
+    function updateCustomTogglesDisplay() {
+      const container = document.getElementById('customTogglesContainer');
+      if (!container) return;
+
+      container.innerHTML = '';
+
+      // Render prepend toggles
+      if (defaultPattern.structure.customPrependToggles.length > 0) {
+        const prependSection = document.createElement('div');
+        prependSection.innerHTML = '<strong>Prepend Toggles:</strong>';
+        container.appendChild(prependSection);
+
+        defaultPattern.structure.customPrependToggles.forEach(toggle => {
+          const toggleElement = createToggleElement(toggle, true);
+          container.appendChild(toggleElement);
+        });
+      }
+
+      // Render append toggles
+      if (defaultPattern.structure.customAppendToggles.length > 0) {
+        const appendSection = document.createElement('div');
+        appendSection.innerHTML = '<strong>Append Toggles:</strong>';
+        container.appendChild(appendSection);
+
+        defaultPattern.structure.customAppendToggles.forEach(toggle => {
+          const toggleElement = createToggleElement(toggle, false);
+          container.appendChild(toggleElement);
+        });
+      }
+
+      if (defaultPattern.structure.customPrependToggles.length === 0 &&
+        defaultPattern.structure.customAppendToggles.length === 0) {
+        container.innerHTML = '<em>No custom toggles added yet.</em>';
+      }
+    }
+
+    function createToggleElement(toggle, isPrepend) {
+      const container = document.createElement('div');
+      container.className = 'custom-toggle-container';
+
+      // Main toggle button (label + regex tooltip)
+      const toggleButton = document.createElement('button');
+      toggleButton.className = `toggle-button ${toggle.active ? 'active' : 'inactive'}`;
+      toggleButton.title = `Regex: ${toggle.regex}`;
+
+      // Label text
+      const labelText = document.createElement('span');
+      labelText.textContent = toggle.label;
+
+      // Regex tooltip
+      const regexTooltip = document.createElement('span');
+      regexTooltip.className = 'toggle-regex-tooltip';
+      regexTooltip.textContent = `(${toggle.regex})`;
+
+      toggleButton.appendChild(labelText);
+      toggleButton.appendChild(regexTooltip);
+
+      // Toggle functionality
+      toggleButton.addEventListener('click', () => {
+        toggleCustomToggle(toggle.id, isPrepend);
+      });
+
+      // Delete button
+      const deleteBtn = document.createElement('button');
+      deleteBtn.className = 'toggle-delete';
+      deleteBtn.textContent = '✕';
+      deleteBtn.title = 'Delete toggle';
+      deleteBtn.addEventListener('click', (e) => {
+        e.stopPropagation(); // Prevent triggering the toggle button
+        deleteCustomToggle(toggle.id, isPrepend);
+      });
+
+      container.appendChild(toggleButton);
+      container.appendChild(deleteBtn);
+
+      return container;
+    }
+
+    function updatePatternWithAnchors(anchorType, addAnchor) {
+      if (anchorType === 'start') {
+        defaultPattern.structure.startAnchor = addAnchor;
+      } else if (anchorType === 'end') {
+        defaultPattern.structure.endAnchor = addAnchor;
+      }
+      updatePatternUI();
     }
 
     function updatePatternWithWordBoundaries(addBoundaries) {
-      const patternInput = document.querySelector('#defaultPatternContainer .default-pattern-step');
-      let currentPattern = patternInput.value;
-
-      if (addBoundaries) {
-        // Add word boundaries just inside any existing anchors
-        if (currentPattern.startsWith('^')) {
-          // If there's a start anchor, add \b after it
-          if (!currentPattern.startsWith('^\\b')) {
-            currentPattern = `^\\b${currentPattern.substring(1)}`;
-          }
-        } else {
-          // No start anchor, add \b at the beginning
-          if (!currentPattern.startsWith('\\b')) {
-            currentPattern = `\\b${currentPattern}`;
-          }
-        }
-
-        if (currentPattern.endsWith('$')) {
-          // If there's an end anchor, add \b before it
-          if (!currentPattern.endsWith('\\b$')) {
-            currentPattern = `${currentPattern.substring(0, currentPattern.length - 1)}\\b$`;
-          }
-        } else {
-          // No end anchor, add \b at the end
-          if (!currentPattern.endsWith('\\b')) {
-            currentPattern = `${currentPattern}\\b`;
-          }
-        }
-      } else {
-        // Remove word boundaries while preserving anchors
-        if (currentPattern.startsWith('^\\b')) {
-          currentPattern = `^${currentPattern.substring(3)}`;
-        } else if (currentPattern.startsWith('\\b')) {
-          currentPattern = currentPattern.substring(2);
-        }
-
-        if (currentPattern.endsWith('\\b$')) {
-          currentPattern = `${currentPattern.substring(0, currentPattern.length - 3)}$`;
-        } else if (currentPattern.endsWith('\\b')) {
-          currentPattern = currentPattern.substring(0, currentPattern.length - 2);
-        }
-      }
-
-      patternInput.value = currentPattern;
+      defaultPattern.structure.startWordBoundary = addBoundaries;
+      defaultPattern.structure.endWordBoundary = addBoundaries;
+      updatePatternUI();
     }
 
-    function updatePatternWithRegexToggle(regex, isPrepend, addRegex) {
-      const patternInput = document.querySelector('#defaultPatternContainer .default-pattern-step');
-      let currentPattern = patternInput.value;
-
+    function updatePatternWithRegexToggle(regex, isPrepend, addRegex, label = 'Custom Toggle') {
       if (addRegex) {
+        const toggleInfo = {
+          id: Date.now().toString(),
+          label: label,
+          regex: regex,
+          position: isPrepend ? 'prepend' : 'append',
+          active: true
+        };
+
         if (isPrepend) {
-          // Add regex at the very beginning, respecting anchors and word boundaries
-          if (currentPattern.startsWith('^\\b')) {
-            // Start anchor + word boundary: insert after both
-            currentPattern = `^\\b${regex}${currentPattern.substring(3)}`;
-          } else if (currentPattern.startsWith('^')) {
-            // Start anchor only: insert after anchor
-            currentPattern = `^${regex}${currentPattern.substring(1)}`;
-          } else if (currentPattern.startsWith('\\b')) {
-            // Word boundary only: insert after word boundary
-            currentPattern = `\\b${regex}${currentPattern.substring(2)}`;
-          } else {
-            // No anchors or boundaries: insert at beginning
-            currentPattern = regex + currentPattern;
-          }
+          defaultPattern.structure.customPrependToggles.push(toggleInfo);
         } else {
-          // Add regex at the very end, respecting anchors and word boundaries
-          if (currentPattern.endsWith('\\b$')) {
-            // Word boundary + end anchor: insert before both
-            currentPattern = `${currentPattern.substring(0, currentPattern.length - 3)}${regex}\\b$`;
-          } else if (currentPattern.endsWith('$')) {
-            // End anchor only: insert before anchor
-            currentPattern = `${currentPattern.substring(0, currentPattern.length - 1)}${regex}$`;
-          } else if (currentPattern.endsWith('\\b')) {
-            // Word boundary only: insert before word boundary
-            currentPattern = `${currentPattern.substring(0, currentPattern.length - 2)}${regex}\\b`;
-          } else {
-            // No anchors or boundaries: insert at end
-            currentPattern += regex;
-          }
+          defaultPattern.structure.customAppendToggles.push(toggleInfo);
         }
       } else {
-        // Remove the regex from wherever it appears
-        currentPattern = currentPattern.replace(new RegExp(regex.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), '');
+        // Remove the regex from the appropriate array
+        if (isPrepend) {
+          defaultPattern.structure.customPrependToggles = defaultPattern.structure.customPrependToggles.filter(t => t.regex !== regex);
+        } else {
+          defaultPattern.structure.customAppendToggles = defaultPattern.structure.customAppendToggles.filter(t => t.regex !== regex);
+        }
       }
+      updatePatternUI();
+    }
 
-      patternInput.value = currentPattern;
+    function toggleCustomToggle(toggleId, isPrepend) {
+      const toggles = isPrepend ? defaultPattern.structure.customPrependToggles : defaultPattern.structure.customAppendToggles;
+      const toggle = toggles.find(t => t.id === toggleId);
+      if (toggle) {
+        toggle.active = !toggle.active;
+        updatePatternUI();
+        applyRules();
+      }
+    }
+
+    function deleteCustomToggle(toggleId, isPrepend) {
+      if (isPrepend) {
+        defaultPattern.structure.customPrependToggles = defaultPattern.structure.customPrependToggles.filter(t => t.id !== toggleId);
+      } else {
+        defaultPattern.structure.customAppendToggles = defaultPattern.structure.customAppendToggles.filter(t => t.id !== toggleId);
+      }
+      updatePatternUI();
+      applyRules();
     }
 
     function buildPatternHierarchy() {
@@ -780,12 +943,13 @@
 
 
     function setupStepEventListeners(stepElement) {
-      const input = stepElement.querySelector('.default-pattern-step');
+      const input = stepElement.querySelector('#basePatternInput');
       const wrapperBtns = stepElement.querySelectorAll('.wrapper-toggle');
 
       input.addEventListener('input', () => {
+        defaultPattern.structure.basePattern = input.value;
+        updatePatternUI();
         applyRules();
-        updateConstructedPatternDisplay();
       });
 
       wrapperBtns.forEach(btn => {
@@ -796,26 +960,15 @@
           switch (wrapper) {
             case 'word-boundary':
               updatePatternWithWordBoundaries(!isActive);
-              btn.dataset.active = !isActive;
-              btn.style.background = !isActive ? '#28a745' : '#555';
-              applyRules();
-              updateConstructedPatternDisplay();
               break;
             case 'start-anchor':
               updatePatternWithAnchors('start', !isActive);
-              btn.dataset.active = !isActive;
-              btn.style.background = !isActive ? '#28a745' : '#555';
-              applyRules();
-              updateConstructedPatternDisplay();
               break;
             case 'end-anchor':
               updatePatternWithAnchors('end', !isActive);
-              btn.dataset.active = !isActive;
-              btn.style.background = !isActive ? '#28a745' : '#555';
-              applyRules();
-              updateConstructedPatternDisplay();
               break;
           }
+          applyRules();
         });
       });
     }
@@ -858,50 +1011,13 @@
         return;
       }
 
-      const container = document.getElementById('defaultPatternContainer');
-      const newToggleId = 'regex-toggle-' + Date.now();
-
-      // Create new toggle button
-      const toggleButton = document.createElement('button');
-      toggleButton.className = 'btn btn-secondary regex-toggle';
-      toggleButton.dataset.regex = regexValue;
-      toggleButton.dataset.label = label;
-      toggleButton.dataset.active = 'false';
-      toggleButton.dataset.prepend = prependMode;
-      toggleButton.id = newToggleId;
-      toggleButton.textContent = label;
-      toggleButton.style.marginLeft = '0.5rem';
-
-      // Add click event listener
-      toggleButton.addEventListener('click', () => {
-        const isActive = toggleButton.dataset.active === 'true';
-        const regex = toggleButton.dataset.regex;
-        const isPrepend = toggleButton.dataset.prepend === 'true';
-
-        updatePatternWithRegexToggle(regex, isPrepend, !isActive);
-
-        toggleButton.dataset.active = !isActive;
-        toggleButton.style.background = !isActive ? '#28a745' : '#555';
-        applyRules();
-        updateConstructedPatternDisplay();
-      });
-
-      // Insert the toggle button in the correct position
-      if (prependMode) {
-        // For prepend toggles, insert right after the addPrependRegexToggle button
-        const prependButton = container.querySelector('#addPrependRegexToggle');
-        prependButton.parentNode.insertBefore(toggleButton, prependButton.nextSibling);
-      } else {
-        // For append toggles, insert before the addRegexToggle button
-        const addButton = container.querySelector('#addRegexToggle');
-        addButton.parentNode.insertBefore(toggleButton, addButton);
-      }
+      // Add to JSON structure with the user-provided label
+      updatePatternWithRegexToggle(regexValue, prependMode, true, label);
 
       // Hide the form
       hideInlineRegexForm();
 
       applyRules();
-      updateConstructedPatternDisplay();
     }
 
     function setupAddRegexToggleListener() {
@@ -1002,8 +1118,16 @@
 
     // Default pattern event listeners
     document.getElementById('defaultPatternEnabled').addEventListener('change', applyRules);
-    document.getElementById('defaultColor').addEventListener('input', applyRules);
-    document.getElementById('defaultLabel').addEventListener('input', applyRules);
+    document.getElementById('defaultColor').addEventListener('input', () => {
+      defaultPattern.color = document.getElementById('defaultColor').value;
+      updatePatternUI();
+      applyRules();
+    });
+    document.getElementById('defaultLabel').addEventListener('input', () => {
+      defaultPattern.label = document.getElementById('defaultLabel').value;
+      updatePatternUI();
+      applyRules();
+    });
 
     // Setup add regex toggle listener
     setupAddRegexToggleListener();
@@ -1018,8 +1142,8 @@
     // Initialize first step event listeners
     setupStepEventListeners(document.querySelector('#defaultPatternContainer .rule-row'));
 
-    // Initialize constructed pattern display
-    updateConstructedPatternDisplay();
+    // Initialize pattern UI
+    updatePatternUI();
 
     // initial
     loadSampleDictionary();
