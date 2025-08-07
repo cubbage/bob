@@ -9,16 +9,16 @@ Pink,#C251A7,,color,,pink,color,true
 Purple,#814DA4,,color,,purple,color,true
 Red,#D01C26,,color,,red,color,true
 Yellow,#EBD33F,,color,,yellow,color,true
-🩶Azure Colorality,#377EDE,,color,,🩶azure,colorality,true
-🩶Brown Colorality,#4D302A,,color,,🩶brown,colorality,true
-🩶Green Colorality,#63953C,,color,,🩶green,colorality,true
-🩶Mulberry Colorality,#39052F,,color,,🩶mulberry,colorality,true
-🩶Orange Colorality,#E58238,,color,,🩶orange,colorality,true
-🩶Purple Colorality,#68527B,,color,,🩶purple,colorality,true
-🩶Red Colorality,#BA342A,,color,,🩶red,colorality,true
-🩶Royal Blue Colorality,#141C48,,color,,🩶blue,colorality,true
-🩶Teal Colorality,#5CC9DC,,color,,🩶teal,colorality,true
-🩶Yellow Colorality,#FCF18C,,color,,🩶yellow,colorality,true
+Azure Colorality,#377EDE,,color,,azure,colorality,true
+Brown Colorality,#4D302A,,color,,brown,colorality,true
+Green Colorality,#63953C,,color,,green,colorality,true
+Mulberry Colorality,#39052F,,color,,mulberry,colorality,true
+Orange Colorality,#E58238,,color,,orange,colorality,true
+Purple Colorality,#68527B,,color,,purple,colorality,true
+Red Colorality,#BA342A,,color,,red,colorality,true
+Royal Blue Colorality,#141C48,,color,,blue,colorality,true
+Teal Colorality,#5CC9DC,,color,,teal,colorality,true
+Yellow Colorality,#FCF18C,,color,,yellow,colorality,true
 Friday,#5DB0D9,,color,,friday,day of the week,true
 Monday,#F4A157,,color,,monday,day of the week,true
 Saturday,#E5E9EC,,color,,saturday,day of the week,true
@@ -85,14 +85,14 @@ W,#36210B,,color,,w,letter,true
 X,#474746,,color,,x,letter,true
 Y,#9316A8,,color,,y,letter,true
 Z,#0A2F05,,color,,z,letter,true
-👤Ada,#BD010E,,color,,👤ada,person,true
-👤Bruno,#EF6533,#FFCC00,background,background,👤bruno,person,true
-👤Gabriel,#2F201A,#291139,background,background,👤gabriel,person,true
-👤Kris Fog,#5B8D40,,color,,👤kris fog,person,true
-👤Marta,#6F3984,,color,,👤marta,person,true
-👤Mat,#0129AD,,color,,👤mat,person,true
-👤Mom,#FF3649,,color,,👤mom,person,true
-👤Sophie,,,,,👤Sophie,person,true
+Ada,#BD010E,,color,,ada,person,true
+Bruno,#EF6533,#FFCC00,background,background,bruno,person,true
+Gabriel,#2F201A,#291139,background,background,gabriel,person,true
+Kris Fog,#5B8D40,,color,,kris fog,person,true
+Marta,#6F3984,,color,,marta,person,true
+Mat,#0129AD,,color,,mat,person,true
+Mom,#FF3649,,color,,mom,person,true
+Sophie,,,,,Sophie,person,true
 Behavioral Science,#8A5F9F,,color,,behavioral science,school subject,true
 Biology,#769940,,color,,biology,school subject,true
 Chemistry,#6D9A49,,color,,chemistry,school subject,true
