@@ -178,6 +178,11 @@
       font-size: 0.875rem;
     }
 
+    .btn-xs {
+      padding: 0.125rem 0.25rem;
+      font-size: 0.75rem;
+    }
+
     .btn-success {
       background: #28a745;
     }
@@ -532,6 +537,10 @@
 
       <div class="section-header">
         <h3>Export</h3>
+        <p class="small">💡 <strong>URL Sharing:</strong> Use the "Copy Shareable URL" button to create a link that
+          automatically loads your text when opened. You can also manually add parameters like
+          <code>?text=your_text_here&export=markdown</code> to the URL. Available export options: markdown, pdf, html,
+          plain. Use <code>?clear=true</code> to clear the textarea.</p>
       </div>
       <div class="flex">
         <div>
@@ -550,6 +559,12 @@
           <div style="margin-bottom:4px;">Clipboard:</div>
           <button class="btn" id="copyHtml">Copy Styled HTML</button>
           <button class="btn" id="copyPlain">Copy Plain Text</button>
+          <button class="btn btn-secondary" id="copyShareableUrl">Copy Shareable URL</button>
+        </div>
+        <div>
+          <div style="margin-bottom:4px;">Quick Export URLs:</div>
+          <button class="btn btn-secondary btn-small" id="copyMarkdownUrl">Markdown URL</button>
+          <button class="btn btn-secondary btn-small" id="copyPdfUrl">PDF URL</button>
         </div>
       </div>
     </div>
@@ -827,6 +842,175 @@
           button.classList.add('active');
           document.getElementById(targetTab).classList.add('active');
         });
+      });
+    }
+
+    // URL Parameter Handling
+    function handleURLParameters() {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const incomingText = params.get("text");
+        const autoParse = params.get("parse") === "true";
+        const autoExport = params.get("export");
+        const clearText = params.get("clear") === "true";
+
+        if (incomingText) {
+          // Decode the incoming text
+          const decodedText = decodeURIComponent(incomingText);
+          console.log("Received text from URL parameter:", decodedText);
+
+          // Set the text in the source textarea
+          const sourceTextArea = document.getElementById('sourceText');
+          if (sourceTextArea) {
+            sourceTextArea.value = decodedText;
+
+            // Apply rules to show the preview
+            if (typeof applyRules === 'function') {
+              applyRules();
+            }
+
+            // Switch to the input-preview tab
+            const inputPreviewTab = document.querySelector('[data-tab="input-preview"]');
+            if (inputPreviewTab) {
+              // Remove active class from all buttons and contents
+              document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+              document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+              // Add active class to input-preview tab
+              inputPreviewTab.classList.add('active');
+              document.getElementById('input-preview').classList.add('active');
+            }
+
+            // Handle auto-export if specified
+            if (autoExport && typeof applyRules === 'function') {
+              // Wait a bit for the preview to update, then export
+              setTimeout(() => {
+                switch (autoExport.toLowerCase()) {
+                  case 'markdown':
+                    downloadMarkdown();
+                    break;
+                  case 'pdf':
+                    downloadPDF();
+                    break;
+                  case 'html':
+                    copyStyledHTML();
+                    break;
+                  case 'plain':
+                    copyPlainText();
+                    break;
+                }
+              }, 1000);
+            }
+
+            // Show a brief notification
+            showURLParameterNotification(decodedText);
+          } else {
+            console.error('Source textarea not found');
+          }
+        }
+
+        // Handle clear parameter
+        if (clearText) {
+          const sourceTextArea = document.getElementById('sourceText');
+          if (sourceTextArea) {
+            sourceTextArea.value = '';
+            if (typeof applyRules === 'function') {
+              applyRules();
+            }
+            showURLParameterNotification('Text cleared');
+          }
+        }
+      } catch (error) {
+        console.error('Error handling URL parameters:', error);
+      }
+    }
+
+    function showURLParameterNotification(text) {
+      // Create notification element
+      const notification = document.createElement('div');
+      notification.id = 'urlParameterNotification';
+      notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #28a745;
+        color: white;
+        padding: 12px 20px;
+        border-radius: 6px;
+        font-size: 14px;
+        z-index: 1001;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        max-width: 80%;
+        word-wrap: break-word;
+      `;
+
+      // Truncate text if too long
+      const displayText = text.length > 100 ? text.substring(0, 100) + '...' : text;
+      notification.textContent = `Loaded text from URL: "${displayText}"`;
+
+      document.body.appendChild(notification);
+
+      // Remove notification after 3 seconds
+      setTimeout(() => {
+        if (notification.parentNode) {
+          notification.parentNode.removeChild(notification);
+        }
+      }, 3000);
+    }
+
+    function generateShareableURL(text, exportType = null) {
+      if (!text || text.trim() === '') {
+        return window.location.href.split('?')[0]; // Return base URL without parameters
+      }
+
+      const encodedText = encodeURIComponent(text);
+      const baseURL = window.location.href.split('?')[0];
+      let url = `${baseURL}?text=${encodedText}`;
+
+      if (exportType && ['markdown', 'pdf', 'html', 'plain'].includes(exportType.toLowerCase())) {
+        url += `&export=${exportType.toLowerCase()}`;
+      }
+
+      return url;
+    }
+
+    function copyShareableURL() {
+      const text = document.getElementById('sourceText').value || '';
+      const shareableURL = generateShareableURL(text);
+
+      if (!text || text.trim() === '') {
+        alert('Please enter some text first before copying a shareable URL.');
+        return;
+      }
+
+      navigator.clipboard.writeText(shareableURL).then(() => {
+        // Show success notification
+        const notification = document.createElement('div');
+        notification.style.cssText = `
+          position: fixed;
+          top: 20px;
+          left: 50%;
+          transform: translateX(-50%);
+          background: #007aff;
+          color: white;
+          padding: 12px 20px;
+          border-radius: 6px;
+          font-size: 14px;
+          z-index: 1001;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        `;
+        notification.textContent = 'Shareable URL copied to clipboard!';
+        document.body.appendChild(notification);
+
+        setTimeout(() => {
+          if (notification.parentNode) {
+            notification.parentNode.removeChild(notification);
+          }
+        }, 3000);
+      }).catch(err => {
+        console.error('Failed to copy URL:', err);
+        alert('Failed to copy URL to clipboard');
       });
     }
 
@@ -2783,6 +2967,9 @@
       // Initialize tabs
       initTabs();
 
+      // Handle URL parameters
+      handleURLParameters();
+
       // Basic event listeners
       document.getElementById('clearBtn').addEventListener('click', () => {
         document.getElementById('sourceText').value = '';
@@ -2963,6 +3150,71 @@
       document.getElementById('downloadPdf').addEventListener('click', downloadPDF);
       document.getElementById('copyHtml').addEventListener('click', copyStyledHTML);
       document.getElementById('copyPlain').addEventListener('click', copyPlainText);
+      document.getElementById('copyShareableUrl').addEventListener('click', copyShareableURL);
+      document.getElementById('copyMarkdownUrl').addEventListener('click', () => {
+        const text = document.getElementById('sourceText').value || '';
+        if (!text || text.trim() === '') {
+          alert('Please enter some text first before copying a shareable URL.');
+          return;
+        }
+        const shareableURL = generateShareableURL(text, 'markdown');
+        navigator.clipboard.writeText(shareableURL).then(() => {
+          const notification = document.createElement('div');
+          notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #007aff;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 6px;
+            font-size: 14px;
+            z-index: 1001;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+          `;
+          notification.textContent = 'Markdown export URL copied to clipboard!';
+          document.body.appendChild(notification);
+
+          setTimeout(() => {
+            if (notification.parentNode) {
+              notification.parentNode.removeChild(notification);
+            }
+          }, 3000);
+        });
+      });
+      document.getElementById('copyPdfUrl').addEventListener('click', () => {
+        const text = document.getElementById('sourceText').value || '';
+        if (!text || text.trim() === '') {
+          alert('Please enter some text first before copying a shareable URL.');
+          return;
+        }
+        const shareableURL = generateShareableURL(text, 'pdf');
+        navigator.clipboard.writeText(shareableURL).then(() => {
+          const notification = document.createElement('div');
+          notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #007aff;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 6px;
+            font-size: 14px;
+            z-index: 1001;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+          `;
+          notification.textContent = 'PDF export URL copied to clipboard!';
+          document.body.appendChild(notification);
+
+          setTimeout(() => {
+            if (notification.parentNode) {
+              notification.parentNode.removeChild(notification);
+            }
+          }, 3000);
+        });
+      });
 
       // bob.json operations
       document.getElementById('loadBobJson').addEventListener('click', loadPatternHierarchy);
