@@ -3224,7 +3224,12 @@
 
       // Preview buttons event listeners
       document.getElementById('loadSampleMd').addEventListener('click', loadSampleMd);
-      document.getElementById('convertBob').addEventListener('click', convertBobToMarkdown);
+      document.getElementById('convertBob').addEventListener('click', () => {
+        convertBobToMarkdown().catch(error => {
+          console.error('Error converting Bob:', error);
+          alert('Error converting Bob. Check console for details.');
+        });
+      });
 
       // Debug toggle functionality
       document.getElementById('debugToggle').addEventListener('click', () => {
@@ -3383,8 +3388,25 @@ b,#684ccd,,color,,^b,letter,true`;
       }
     }
 
-    function convertBobToMarkdown() {
-      let markdown = '# Bob\n\n';
+    async function convertBobToMarkdown() {
+      let markdown = '';
+
+      // Generate dynamic bob.md content with current date/time
+      const now = new Date();
+      const dateOptions = {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      };
+      const timeOptions = {
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+      };
+
+      const currentDate = now.toLocaleDateString('en-US', dateOptions);
+      const currentTime = now.toLocaleTimeString('en-US', timeOptions);
 
       // Get category emojis from listsData
       const categoryEmojis = {};
@@ -3397,39 +3419,125 @@ b,#684ccd,,color,,^b,letter,true`;
         }
       }
 
-      // Group objects by their group
-      const groupedObjects = {};
-      objectsData.objects.forEach(obj => {
-        if (!groupedObjects[obj.group]) {
-          groupedObjects[obj.group] = [];
+      // Get group enabled status from dictionary.rules
+      const groupEnabledStatus = {};
+      dictionary.rules.forEach(rule => {
+        if (rule.label) {
+          groupEnabledStatus[rule.label] = rule.enabled !== false; // Default to true if not specified
         }
-        groupedObjects[obj.group].push(obj);
       });
 
-      // Sort groups alphabetically
-      const sortedGroups = Object.keys(groupedObjects).sort();
+      // Group objects by their group and separate enabled/disabled
+      const enabledGroups = {};
+      const disabledGroups = {};
 
-      // Generate markdown for each group
-      sortedGroups.forEach(groupName => {
-        const emoji = categoryEmojis[groupName] || '❓';
-        markdown += `## ${emoji} ${groupName}\n\n`;
+      objectsData.objects.forEach(obj => {
+        const groupName = obj.group;
+        const groupIsEnabled = groupEnabledStatus[groupName] !== false; // Default to true if not specified
+        const objectIsEnabled = obj.enabled !== false; // Default to true if not specified
+        const isEnabled = groupIsEnabled && objectIsEnabled; // Both group and object must be enabled
 
-        // Sort objects within the group by label
-        const sortedObjects = groupedObjects[groupName].sort((a, b) => {
-          const labelA = (a.label || '').toLowerCase();
-          const labelB = (b.label || '').toLowerCase();
-          return labelA.localeCompare(labelB);
-        });
-
-        // Add objects to the group
-        sortedObjects.forEach(obj => {
-          const label = obj.label || obj.match;
-          const matchString = obj.match;
-          markdown += `- ${label} | ${matchString}\n`;
-        });
-
-        markdown += '\n';
+        if (isEnabled) {
+          if (!enabledGroups[groupName]) {
+            enabledGroups[groupName] = [];
+          }
+          enabledGroups[groupName].push(obj);
+        } else {
+          if (!disabledGroups[groupName]) {
+            disabledGroups[groupName] = [];
+          }
+          disabledGroups[groupName].push(obj);
+        }
       });
+
+      // Get enabled groups for the summary (only groups that have enabled objects)
+      const enabledGroupNames = Object.keys(enabledGroups).filter(groupName => enabledGroups[groupName].length > 0);
+      const groupList = enabledGroupNames.sort().join(', ');
+
+      const bobContent = `Today is ${currentDate} at ${currentTime}. Recognizable objects are ${groupList}.`;
+      markdown += bobContent + '\n\n';
+
+      // Sort groups by priority order (as they appear in dictionary.rules)
+      const priorityOrder = dictionary.rules.map(rule => rule.label).filter(label => label);
+
+      const sortedEnabledGroups = priorityOrder.filter(groupName =>
+        enabledGroups[groupName] && enabledGroups[groupName].length > 0 && groupEnabledStatus[groupName] !== false
+      );
+      const sortedDisabledGroups = priorityOrder.filter(groupName =>
+        (disabledGroups[groupName] && disabledGroups[groupName].length > 0) || groupEnabledStatus[groupName] === false
+      );
+
+      // Generate markdown for enabled groups first
+      if (sortedEnabledGroups.length > 0) {
+        markdown += '# Enabled Groups\n\n';
+
+        sortedEnabledGroups.forEach(groupName => {
+          const emoji = categoryEmojis[groupName] || '❓';
+          markdown += `## ${emoji} ${groupName}\n\n`;
+
+          // Sort objects within the group by label
+          const sortedObjects = enabledGroups[groupName].sort((a, b) => {
+            const labelA = (a.label || '').toLowerCase();
+            const labelB = (b.label || '').toLowerCase();
+            return labelA.localeCompare(labelB);
+          });
+
+          // Add objects to the group
+          sortedObjects.forEach(obj => {
+            const label = obj.label || obj.match;
+            const matchString = obj.match;
+            markdown += `- ${label} | ${matchString}\n`;
+          });
+
+          markdown += '\n';
+        });
+      }
+
+      // Generate markdown for disabled groups
+      if (sortedDisabledGroups.length > 0) {
+        markdown += '# Disabled Groups\n\n';
+
+        sortedDisabledGroups.forEach(groupName => {
+          const emoji = categoryEmojis[groupName] || '❓';
+          markdown += `## ${emoji} ${groupName}\n\n`;
+
+          // Get all objects for this group (both enabled and disabled objects from disabled groups)
+          let allGroupObjects = [];
+          if (enabledGroups[groupName]) {
+            allGroupObjects = allGroupObjects.concat(enabledGroups[groupName]);
+          }
+          if (disabledGroups[groupName]) {
+            allGroupObjects = allGroupObjects.concat(disabledGroups[groupName]);
+          }
+
+          // Sort objects within the group by label
+          const sortedObjects = allGroupObjects.sort((a, b) => {
+            const labelA = (a.label || '').toLowerCase();
+            const labelB = (b.label || '').toLowerCase();
+            return labelA.localeCompare(labelB);
+          });
+
+          // Add objects to the group
+          sortedObjects.forEach(obj => {
+            const label = obj.label || obj.match;
+            const matchString = obj.match;
+            markdown += `- ${label} | ${matchString}\n`;
+          });
+
+          markdown += '\n';
+        });
+      }
+
+      // Append sample.md content
+      try {
+        const sampleResponse = await fetch('sample.md');
+        if (sampleResponse.ok) {
+          const sampleContent = await sampleResponse.text();
+          markdown += '\n' + sampleContent;
+        }
+      } catch (error) {
+        console.warn('Could not load sample.md:', error);
+      }
 
       // Set the markdown in the textarea
       document.getElementById('sourceText').value = markdown;
