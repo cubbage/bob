@@ -1336,7 +1336,20 @@
       jsonElement.innerHTML = prettifyJson(data);
     }
 
+    let applyRulesTimeout;
     function applyRules() {
+      // Clear any pending timeout to debounce rapid calls
+      if (applyRulesTimeout) {
+        clearTimeout(applyRulesTimeout);
+      }
+
+      // Set a new timeout to execute after a short delay
+      applyRulesTimeout = setTimeout(() => {
+        applyRulesInternal();
+      }, 10);
+    }
+
+    function applyRulesInternal() {
       const text = document.getElementById('sourceText').value || '';
       const words = text.split(/(\s+)/); // keep spaces
       const preview = document.getElementById('preview');
@@ -1443,6 +1456,7 @@
                 } else {
                   // For single-word patterns, test against the current token
                   if (regex.test(token)) {
+                    console.log('Creating matched object for:', obj.label, 'Group:', obj.group);
                     matched = {
                       color1: obj.color1,
                       color2: obj.color2,
@@ -1451,6 +1465,7 @@
                       label: obj.label || obj.group,
                       group: obj.group
                     };
+                    console.log('Created matched object:', matched);
                     break;
                   }
                 }
@@ -1504,6 +1519,13 @@
         span.textContent = token;
         span.className = 'word';
         if (matched) {
+          // Set the title first so symbol style can access the group name
+          console.log('Setting span.title to:', matched.group || '');
+          span.title = matched.group || '';
+
+          // Track if symbol style has been applied to prevent duplicates
+          let symbolApplied = false;
+
           // Apply styles based on the new style system
           if (matched.color1 && matched.color1.trim() !== '' && matched.style1 && matched.style1.trim() !== '') {
             applyStyleToElement(span, matched.color1, matched.style1);
@@ -1515,13 +1537,14 @@
             }
           }
           // Apply symbol style independently of color - check both style1 and style2
-          if (matched.style1 === 'symbol') {
+          if (matched.style1 === 'symbol' && !symbolApplied) {
             applyStyleToElement(span, '', 'symbol');
+            symbolApplied = true;
           }
-          if (matched.style2 === 'symbol') {
+          if (matched.style2 === 'symbol' && !symbolApplied) {
             applyStyleToElement(span, '', 'symbol');
+            symbolApplied = true;
           }
-          span.title = matched.group || '';
         } else {
           span.style.color = 'inherit';
         }
@@ -2005,18 +2028,27 @@
     }
 
     function getGroupEmoji(groupName) {
-      if (!groupName) return null;
+      console.log('getGroupEmoji called with:', groupName);
+      if (!groupName) {
+        console.log('No groupName provided');
+        return null;
+      }
 
       // Get category emojis from listsData
       if (listsData && listsData.keyValueLists) {
         const categoriesList = listsData.keyValueLists.find(list => list.name === 'categories');
+        console.log('categoriesList found:', !!categoriesList);
         if (categoriesList && categoriesList.items) {
+          console.log('categoriesList.items:', categoriesList.items);
           const category = categoriesList.items.find(item => item.key === groupName);
+          console.log('category found for', groupName, ':', category);
           if (category) {
+            console.log('Returning emoji:', category.value);
             return category.value;
           }
         }
       }
+      console.log('No emoji found for group:', groupName);
       return null;
     }
 
@@ -2113,9 +2145,17 @@
           case 'symbol':
             // Get the group emoji from the title (which contains the group name)
             const groupName = element.title;
+            console.log('Symbol style - groupName:', groupName);
             const emoji = getGroupEmoji(groupName);
+            console.log('Symbol style - emoji:', emoji);
             if (emoji) {
-              element.textContent = emoji + ' ' + element.textContent;
+              // Check if the emoji is already at the start of the text to prevent duplicates
+              if (!element.textContent.startsWith(emoji + ' ')) {
+                element.textContent = emoji + ' ' + element.textContent;
+                console.log('Symbol style applied:', element.textContent);
+              } else {
+                console.log('Symbol already applied, skipping');
+              }
             }
             break;
         }

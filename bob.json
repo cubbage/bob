@@ -23,7 +23,8 @@
         "color2": "",
         "label": "day of the week",
         "enabled": true,
-        "style1": "border"
+        "style1": "color",
+        "style2": "symbol"
       },
       {
         "match": "",
@@ -31,15 +32,15 @@
         "color2": "",
         "label": "number",
         "enabled": true,
-        "style1": "symbol",
-        "style2": "background"
+        "style1": "color",
+        "style2": ""
       },
       {
         "match": "",
         "color1": "#5487c9",
         "color2": "",
         "label": "letter",
-        "enabled": true,
+        "enabled": false,
         "style1": "color",
         "style2": ""
       },
@@ -48,23 +49,23 @@
         "color1": "magenta",
         "color2": "",
         "label": "color",
-        "enabled": false,
+        "enabled": true,
         "style1": "color"
       },
       {
         "match": "",
         "color1": "magenta",
         "color2": "",
-        "style1": "color",
+        "style1": "",
         "style2": "",
         "label": "month",
-        "enabled": false
+        "enabled": true
       },
       {
         "match": "",
         "color1": "#4ECDC4",
         "color2": "",
-        "style1": "background",
+        "style1": "",
         "style2": "",
         "label": "instrument",
         "enabled": false
@@ -74,9 +75,9 @@
         "color1": "#A9CCE3",
         "color2": "",
         "style1": "background",
-        "style2": "",
+        "style2": "symbol",
         "label": "person",
-        "enabled": false
+        "enabled": true
       },
       {
         "match": "",
@@ -700,7 +701,7 @@
       {
         "label": "0",
         "color1": "#F7DEBF",
-        "color2": "",
+        "color2": "#f4aef4",
         "style1": "color",
         "style2": "",
         "match": "^0.*?",
@@ -710,7 +711,7 @@
       {
         "label": "1",
         "color1": "#F3D25F",
-        "color2": "",
+        "color2": "#0084ff",
         "style1": "color",
         "style2": "",
         "match": "^1.*?",
