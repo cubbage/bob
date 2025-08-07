@@ -1,7 +1,8 @@
 {
   "defaultPattern": {
     "label": "Default",
-    "color": "blue",
+    "color1": "magenta",
+    "color2": "",
     "structure": {
       "startAnchor": false,
       "startWordBoundary": false,

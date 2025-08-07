@@ -1,6 +1,6 @@
 # Free Fish
 
-by 👤Gabriel Cubbage
+by Gabriel Cubbage
 
 Down from the highlands that feed the Das Antas, there unwinds a wild river, home to countless tainhas — shimmering green and gray, ray-finned fish. Most embrace the torrent without care, trusting the currents as they cavort and splash along, leaping to gulp at the air and enjoy the unbroken sunlight. But some few choose to fight the river instead, laboring in the shallows, to slow their downstream rush. Some even leap edgeward from the water’s safety, dashing themselves high against the jagged embankments, threatening to exit the river entirely.
 

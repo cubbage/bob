@@ -250,6 +250,39 @@
       padding: 0.125rem 0.25rem;
       font-size: 0.75rem;
     }
+
+    /* Color button and panel styles */
+    .color-btn {
+      position: relative;
+      border: 2px solid #dee2e6;
+      transition: all 0.2s ease;
+    }
+
+    .color-btn:hover {
+      border-color: #007aff;
+    }
+
+    #defaultColor1Panel,
+    #defaultColor2Panel {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      min-width: 250px;
+      background: white;
+      border: 1px solid #dee2e6;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      z-index: 1000;
+    }
+
+    #defaultColor1Display,
+    #defaultColor2Display {
+      display: inline-block;
+      max-width: 40px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-weight: 600;
+    }
   </style>
 </head>
 
@@ -277,8 +310,46 @@
     </div>
     <div id="defaultPatternContainer">
       <div class="rule-row" data-step="0">
-        <input id="defaultLabel" placeholder="label (optional)" value="Default" style="width: 100px;" />
-        <input id="defaultColor" type="text" placeholder="color (e.g. #ff0000)" value="magenta" style="width: 120px;" />
+        <select id="defaultLabel" style="width: 120px;">
+          <option value="">Select category...</option>
+        </select>
+        <button id="defaultColor1Btn" class="btn btn-secondary color-btn"
+          style="width: 60px; text-align: left; position: relative;">
+          <span id="defaultColor1Display">magenta</span>
+        </button>
+        <button id="defaultColor2Btn" class="btn btn-secondary color-btn"
+          style="width: 60px; text-align: left; position: relative;">
+          <span id="defaultColor2Display">-</span>
+        </button>
+        <div id="defaultColor1Panel" class="inline-form">
+          <div class="inline-form-row">
+            <label for="defaultColor1Text">Color 1:</label>
+            <input id="defaultColor1Text" type="text" placeholder="color (e.g. #ff0000)" value="magenta"
+              style="flex: 1;" />
+          </div>
+          <div class="inline-form-row">
+            <label for="defaultColor1Picker">Picker:</label>
+            <input id="defaultColor1Picker" type="color" value="#ff00ff" style="width: 50px; height: 30px;" />
+          </div>
+          <div class="inline-form-actions">
+            <button class="btn btn-success btn-small" id="applyDefaultColor1">Apply</button>
+            <button class="btn btn-danger btn-small" id="cancelDefaultColor1">Cancel</button>
+          </div>
+        </div>
+        <div id="defaultColor2Panel" class="inline-form">
+          <div class="inline-form-row">
+            <label for="defaultColor2Text">Color 2:</label>
+            <input id="defaultColor2Text" type="text" placeholder="color (e.g. #ff0000)" value="" style="flex: 1;" />
+          </div>
+          <div class="inline-form-row">
+            <label for="defaultColor2Picker">Picker:</label>
+            <input id="defaultColor2Picker" type="color" value="#0000ff" style="width: 50px; height: 30px;" />
+          </div>
+          <div class="inline-form-actions">
+            <button class="btn btn-success btn-small" id="applyDefaultColor2">Apply</button>
+            <button class="btn btn-danger btn-small" id="cancelDefaultColor2">Cancel</button>
+          </div>
+        </div>
         <button class="btn btn-secondary wrapper-toggle" data-wrapper="start-anchor" data-active="false">^</button>
         <button class="btn btn-secondary" id="addPrependRegexToggle">+</button>
         <div id="prependTogglesContainer" style="display: flex; gap: 0.25rem; align-items: center;"></div>
@@ -312,8 +383,8 @@
       <strong>Constructed Pattern:</strong> <code id="constructedPattern">[A-Z]{1,4}</code>
     </div>
     <div style="margin-top: 0.5rem;">
-      <strong>Pattern Hierarchy:</strong>
-      <pre id="patternHierarchy" class="code" style="max-height:100px; overflow:auto; font-size: 0.875rem;"></pre>
+      <strong>Current Matches:</strong>
+      <pre id="currentMatches" class="code" style="max-height:100px; overflow:auto; font-size: 0.875rem;"></pre>
     </div>
     <div style="margin-top: 0.5rem;">
       <strong>Reconstructed Pattern:</strong> <code id="reconstructedPattern" class="code"></code>
@@ -404,7 +475,8 @@
     // Default pattern JSON structure
     let defaultPattern = {
       label: "Default",
-      color: "magenta",
+      color1: "magenta",
+      color2: "",
       structure: {
         startAnchor: false,
         startWordBoundary: false,
@@ -635,10 +707,44 @@
       // Get default pattern settings
       const defaultEnabled = document.getElementById('defaultPatternEnabled').checked;
       const defaultPattern = buildPatternFromJSON();
-      const defaultColor = defaultPattern.color;
       const defaultLabel = defaultPattern.label;
 
-      words.forEach(token => {
+      // Find all matches for multi-word patterns first
+      const multiWordMatches = new Set();
+
+      // Check dictionary rules for multi-word patterns
+      for (const rule of dictionary.rules) {
+        if (rule.match.includes(' ')) {
+          try {
+            const flags = 'gi';
+            let regex = new RegExp(rule.match, flags);
+            let match;
+            while ((match = regex.exec(text)) !== null) {
+              // Store the start and end positions of the match
+              multiWordMatches.add(`${match.index}-${match.index + match[0].length}`);
+            }
+          } catch (e) {
+            console.warn('bad regex', rule.match);
+          }
+        }
+      }
+
+      // Check default pattern for multi-word patterns
+      if (defaultEnabled && defaultPattern && defaultPattern.pattern.includes(' ')) {
+        try {
+          const flags = 'gi';
+          let regex = new RegExp(defaultPattern.pattern, flags);
+          let match;
+          while ((match = regex.exec(text)) !== null) {
+            // Store the start and end positions of the match
+            multiWordMatches.add(`${match.index}-${match.index + match[0].length}`);
+          }
+        } catch (e) {
+          console.warn('bad default regex', defaultPattern.pattern);
+        }
+      }
+
+      words.forEach((token, index) => {
         let cleaned = token;
         if (token.trim() === '') {
           preview.append(document.createTextNode(token));
@@ -646,14 +752,41 @@
         }
         let matched = null;
 
+        // Calculate the position of this token in the original text
+        const tokenStart = words.slice(0, index).join('').length;
+        const tokenEnd = tokenStart + token.length;
+        const tokenRange = `${tokenStart}-${tokenEnd}`;
+
+        // Check if this token is part of a multi-word match
+        let isPartOfMultiWordMatch = false;
+        for (const matchRange of multiWordMatches) {
+          const [matchStart, matchEnd] = matchRange.split('-').map(Number);
+          // Check if this token overlaps with the match
+          if (tokenStart < matchEnd && tokenEnd > matchStart) {
+            isPartOfMultiWordMatch = true;
+            break;
+          }
+        }
+
         // First check dictionary rules
         for (const rule of dictionary.rules) {
           try {
             const flags = 'i';
             let regex = new RegExp(rule.match, flags);
-            if (regex.test(token)) {
-              matched = rule;
-              break;
+
+            // Check if pattern contains spaces (multi-word pattern)
+            if (rule.match.includes(' ')) {
+              // For multi-word patterns, check if this token is part of a match
+              if (isPartOfMultiWordMatch) {
+                matched = rule;
+                break;
+              }
+            } else {
+              // For single-word patterns, test against the current token
+              if (regex.test(token)) {
+                matched = rule;
+                break;
+              }
             }
           } catch (e) {
             // invalid regex; skip
@@ -665,13 +798,31 @@
         if (!matched && defaultEnabled && defaultPattern) {
           try {
             const flags = 'i';
-            let regex = new RegExp(defaultPattern, flags);
-            if (regex.test(token)) {
-              matched = { color: defaultColor, label: defaultLabel };
+            let regex = new RegExp(defaultPattern.pattern, flags);
+
+            // Check if pattern contains spaces (multi-word pattern)
+            if (defaultPattern.pattern.includes(' ')) {
+              // For multi-word patterns, check if this token is part of a match
+              if (isPartOfMultiWordMatch) {
+                matched = {
+                  color1: defaultPattern.color1,
+                  color2: defaultPattern.color2,
+                  label: defaultPattern.label
+                };
+              }
+            } else {
+              // For single-word patterns, test against the current token
+              if (regex.test(token)) {
+                matched = {
+                  color1: defaultPattern.color1,
+                  color2: defaultPattern.color2,
+                  label: defaultPattern.label
+                };
+              }
             }
           } catch (e) {
             // invalid regex; skip
-            console.warn('bad default regex', defaultPattern);
+            console.warn('bad default regex', defaultPattern.pattern);
           }
         }
 
@@ -679,13 +830,30 @@
         span.textContent = token;
         span.className = 'word';
         if (matched) {
-          span.style.color = matched.color || '';
+          // Handle gradient if two colors are present
+          if (matched.color1 && matched.color2 && matched.color2.trim() !== '') {
+            // Create gradient background
+            span.style.background = `linear-gradient(90deg, ${matched.color1}, ${matched.color2})`;
+            span.style.color = getContrastColor(matched.color1); // Use contrast from first color
+            span.style.padding = '2px 4px';
+            span.style.borderRadius = '3px';
+          } else if (matched.color1) {
+            // Single color - use text color
+            span.style.color = matched.color1;
+          }
           span.title = matched.label || '';
         } else {
           span.style.color = 'inherit';
         }
         preview.appendChild(span);
       });
+
+      // Update current matches display
+      const matchesDisplay = document.getElementById('currentMatches');
+      if (matchesDisplay) {
+        const matches = findCurrentMatches();
+        matchesDisplay.textContent = matches.length > 0 ? matches.join(', ') : 'No matches found';
+      }
     }
 
     function downloadMarkdown() {
@@ -825,13 +993,21 @@
         pattern += '$';
       }
 
-      return pattern;
+      return {
+        pattern: pattern,
+        color1: defaultPattern.color1,
+        color2: defaultPattern.color2,
+        label: defaultPattern.label
+      };
     }
 
     function updatePatternUI() {
       // Update input fields
-      document.getElementById('defaultLabel').value = defaultPattern.label;
-      document.getElementById('defaultColor').value = defaultPattern.color;
+      const defaultLabelSelect = document.getElementById('defaultLabel');
+      if (defaultLabelSelect) {
+        defaultLabelSelect.value = defaultPattern.label;
+      }
+      updateDefaultColorButtons();
       document.getElementById('basePatternInput').value = defaultPattern.structure.basePattern;
 
       // Update wrapper button states
@@ -858,13 +1034,14 @@
       const pattern = buildPatternFromJSON();
       const display = document.getElementById('constructedPattern');
       if (display) {
-        display.textContent = pattern || '(empty)';
+        display.textContent = pattern.pattern || '(empty)';
       }
 
-      // Update pattern hierarchy display
-      const hierarchyDisplay = document.getElementById('patternHierarchy');
-      if (hierarchyDisplay) {
-        hierarchyDisplay.textContent = JSON.stringify(defaultPattern, null, 2);
+      // Update current matches display
+      const matchesDisplay = document.getElementById('currentMatches');
+      if (matchesDisplay) {
+        const matches = findCurrentMatches();
+        matchesDisplay.textContent = matches.length > 0 ? matches.join(', ') : 'No matches found';
       }
 
       // Update reconstructed pattern display
@@ -1146,21 +1323,179 @@
       return reconstructedPattern;
     }
 
-    function updateConstructedPatternDisplay() {
-      const pattern = buildDefaultPattern();
-      const display = document.getElementById('constructedPattern');
-      if (display) {
-        display.textContent = pattern || '(empty)';
+    function findCurrentMatches() {
+      const text = document.getElementById('sourceText').value || '';
+      const matches = [];
+
+      // Get default pattern settings
+      const defaultEnabled = document.getElementById('defaultPatternEnabled').checked;
+      const defaultPattern = buildPatternFromJSON();
+
+      // Split text the same way as applyRules() does
+      const tokens = text.split(/(\s+)/); // keep spaces
+
+      // Find all matches for multi-word patterns first
+      const multiWordMatches = new Set();
+
+      // Check dictionary rules for multi-word patterns
+      for (const rule of dictionary.rules) {
+        if (rule.match.includes(' ')) {
+          try {
+            const flags = 'gi';
+            let regex = new RegExp(rule.match, flags);
+            let match;
+            while ((match = regex.exec(text)) !== null) {
+              // Store the start and end positions of the match
+              multiWordMatches.add(`${match.index}-${match.index + match[0].length}`);
+            }
+          } catch (e) {
+            console.warn('bad regex', rule.match);
+          }
+        }
       }
 
-      // Update pattern hierarchy display
-      const hierarchy = buildPatternHierarchy();
-      const hierarchyDisplay = document.getElementById('patternHierarchy');
-      if (hierarchyDisplay) {
-        hierarchyDisplay.textContent = JSON.stringify(hierarchy, null, 2);
+      // Check default pattern for multi-word patterns
+      if (defaultEnabled && defaultPattern && defaultPattern.pattern.includes(' ')) {
+        try {
+          const flags = 'gi';
+          let regex = new RegExp(defaultPattern.pattern, flags);
+          let match;
+          while ((match = regex.exec(text)) !== null) {
+            // Store the start and end positions of the match
+            multiWordMatches.add(`${match.index}-${match.index + match[0].length}`);
+          }
+        } catch (e) {
+          console.warn('bad default regex', defaultPattern.pattern);
+        }
+      }
+
+      // For multi-word patterns, we need to extract the actual matched phrases
+      const matchedPhrases = new Set();
+
+      // Extract matched phrases from dictionary rules
+      for (const rule of dictionary.rules) {
+        if (rule.match.includes(' ')) {
+          try {
+            const flags = 'gi';
+            let regex = new RegExp(rule.match, flags);
+            let match;
+            while ((match = regex.exec(text)) !== null) {
+              matchedPhrases.add(match[0]);
+            }
+          } catch (e) {
+            console.warn('bad regex', rule.match);
+          }
+        }
+      }
+
+      // Extract matched phrases from default pattern
+      if (defaultEnabled && defaultPattern && defaultPattern.pattern.includes(' ')) {
+        try {
+          const flags = 'gi';
+          let regex = new RegExp(defaultPattern.pattern, flags);
+          let match;
+          while ((match = regex.exec(text)) !== null) {
+            matchedPhrases.add(match[0]);
+          }
+        } catch (e) {
+          console.warn('bad default regex', defaultPattern.pattern);
+        }
+      }
+
+      // Add multi-word matched phrases
+      matchedPhrases.forEach(phrase => {
+        matches.push(phrase);
+      });
+
+      // Process individual tokens for single-word patterns
+      tokens.forEach((token, index) => {
+        if (token.trim() === '') {
+          return; // Skip empty tokens
+        }
+
+        let matched = false;
+
+        // Calculate the position of this token in the original text
+        const tokenStart = tokens.slice(0, index).join('').length;
+        const tokenEnd = tokenStart + token.length;
+
+        // Check if this token is part of a multi-word match
+        let isPartOfMultiWordMatch = false;
+        for (const matchRange of multiWordMatches) {
+          const [matchStart, matchEnd] = matchRange.split('-').map(Number);
+          // Check if this token overlaps with the match
+          if (tokenStart < matchEnd && tokenEnd > matchStart) {
+            isPartOfMultiWordMatch = true;
+            break;
+          }
+        }
+
+        // Skip tokens that are part of multi-word matches (we already added the full phrases)
+        if (isPartOfMultiWordMatch) {
+          return;
+        }
+
+        // First check dictionary rules
+        for (const rule of dictionary.rules) {
+          try {
+            const flags = 'i';
+            let regex = new RegExp(rule.match, flags);
+
+            // Only check single-word patterns here
+            if (!rule.match.includes(' ')) {
+              const match = token.match(regex);
+              if (match) {
+                matches.push(match[0]);
+                matched = true;
+                break;
+              }
+            }
+          } catch (e) {
+            // invalid regex; skip
+            console.warn('bad regex', rule.match);
+          }
+        }
+
+        // If no match found and default pattern is enabled, try default pattern
+        if (!matched && defaultEnabled && defaultPattern) {
+          try {
+            const flags = 'i';
+            let regex = new RegExp(defaultPattern.pattern, flags);
+
+            // Only check single-word patterns here
+            if (!defaultPattern.pattern.includes(' ')) {
+              const match = token.match(regex);
+              if (match) {
+                matches.push(match[0]);
+              }
+            }
+          } catch (e) {
+            // invalid regex; skip
+            console.warn('bad default regex', defaultPattern.pattern);
+          }
+        }
+      });
+
+      // Remove duplicates and return
+      return [...new Set(matches)];
+    }
+
+    function updateConstructedPatternDisplay() {
+      const pattern = buildPatternFromJSON();
+      const display = document.getElementById('constructedPattern');
+      if (display) {
+        display.textContent = pattern.pattern || '(empty)';
+      }
+
+      // Update current matches display
+      const matchesDisplay = document.getElementById('currentMatches');
+      if (matchesDisplay) {
+        const matches = findCurrentMatches();
+        matchesDisplay.textContent = matches.length > 0 ? matches.join(', ') : 'No matches found';
       }
 
       // Update reconstructed pattern display
+      const hierarchy = buildPatternHierarchy();
       const reconstructedPattern = reconstructPatternFromHierarchy(hierarchy);
       const reconstructedDisplay = document.getElementById('reconstructedPattern');
       if (reconstructedDisplay) {
@@ -1321,13 +1656,214 @@
 
     // Default pattern event listeners
     document.getElementById('defaultPatternEnabled').addEventListener('change', applyRules);
-    document.getElementById('defaultColor').addEventListener('input', () => {
-      defaultPattern.color = document.getElementById('defaultColor').value;
+
+    // Color button and panel functionality
+    const defaultColor1Btn = document.getElementById('defaultColor1Btn');
+    const defaultColor2Btn = document.getElementById('defaultColor2Btn');
+    const defaultColor1Panel = document.getElementById('defaultColor1Panel');
+    const defaultColor2Panel = document.getElementById('defaultColor2Panel');
+    const defaultColor1Text = document.getElementById('defaultColor1Text');
+    const defaultColor2Text = document.getElementById('defaultColor2Text');
+    const defaultColor1Picker = document.getElementById('defaultColor1Picker');
+    const defaultColor2Picker = document.getElementById('defaultColor2Picker');
+    const defaultColor1Display = document.getElementById('defaultColor1Display');
+    const defaultColor2Display = document.getElementById('defaultColor2Display');
+    const applyDefaultColor1Btn = document.getElementById('applyDefaultColor1');
+    const applyDefaultColor2Btn = document.getElementById('applyDefaultColor2');
+    const cancelDefaultColor1Btn = document.getElementById('cancelDefaultColor1');
+    const cancelDefaultColor2Btn = document.getElementById('cancelDefaultColor2');
+
+    // Show/hide color panels
+    defaultColor1Btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isVisible = defaultColor1Panel.classList.contains('show');
+      if (isVisible) {
+        hideDefaultColorPanel(1);
+      } else {
+        showDefaultColorPanel(1);
+      }
+    });
+
+    defaultColor2Btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isVisible = defaultColor2Panel.classList.contains('show');
+      if (isVisible) {
+        hideDefaultColorPanel(2);
+      } else {
+        showDefaultColorPanel(2);
+      }
+    });
+
+    // Hide panels when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!defaultColor1Btn.contains(e.target) && !defaultColor1Panel.contains(e.target)) {
+        hideDefaultColorPanel(1);
+      }
+      if (!defaultColor2Btn.contains(e.target) && !defaultColor2Panel.contains(e.target)) {
+        hideDefaultColorPanel(2);
+      }
+    });
+
+    // Sync color pickers with text inputs
+    defaultColor1Text.addEventListener('input', () => {
+      const color = defaultColor1Text.value;
+      if (color.match(/^#[0-9A-Fa-f]{6}$/)) {
+        defaultColor1Picker.value = color;
+      }
+    });
+
+    defaultColor2Text.addEventListener('input', () => {
+      const color = defaultColor2Text.value;
+      if (color.match(/^#[0-9A-Fa-f]{6}$/)) {
+        defaultColor2Picker.value = color;
+      }
+    });
+
+    // Sync text inputs with color pickers
+    defaultColor1Picker.addEventListener('input', () => {
+      defaultColor1Text.value = defaultColor1Picker.value;
+    });
+
+    defaultColor2Picker.addEventListener('input', () => {
+      defaultColor2Text.value = defaultColor2Picker.value;
+    });
+
+    // Allow Enter key to apply colors
+    defaultColor1Text.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        applyDefaultColor1Btn.click();
+      }
+    });
+
+    defaultColor2Text.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        applyDefaultColor2Btn.click();
+      }
+    });
+
+    // Apply color changes
+    applyDefaultColor1Btn.addEventListener('click', () => {
+      const color = defaultColor1Text.value;
+      defaultPattern.color1 = color;
+      defaultColor1Display.textContent = color;
+      updateDefaultColorButtons();
       updatePatternUI();
       applyRules();
       autoSavePatternHierarchy();
+      hideDefaultColorPanel(1);
     });
-    document.getElementById('defaultLabel').addEventListener('input', () => {
+
+    applyDefaultColor2Btn.addEventListener('click', () => {
+      const color = defaultColor2Text.value;
+      defaultPattern.color2 = color;
+      defaultColor2Display.textContent = color || '-';
+      updateDefaultColorButtons();
+      updatePatternUI();
+      applyRules();
+      autoSavePatternHierarchy();
+      hideDefaultColorPanel(2);
+    });
+
+    // Cancel color changes
+    cancelDefaultColor1Btn.addEventListener('click', () => {
+      hideDefaultColorPanel(1);
+      // Reset to current value
+      defaultColor1Text.value = defaultPattern.color1;
+      defaultColor1Display.textContent = defaultPattern.color1;
+    });
+
+    cancelDefaultColor2Btn.addEventListener('click', () => {
+      hideDefaultColorPanel(2);
+      // Reset to current value
+      defaultColor2Text.value = defaultPattern.color2;
+      defaultColor2Display.textContent = defaultPattern.color2 || '-';
+    });
+
+    function showDefaultColorPanel(colorNum) {
+      const panel = colorNum === 1 ? defaultColor1Panel : defaultColor2Panel;
+      const textInput = colorNum === 1 ? defaultColor1Text : defaultColor2Text;
+      const picker = colorNum === 1 ? defaultColor1Picker : defaultColor2Picker;
+      const display = colorNum === 1 ? defaultColor1Display : defaultColor2Display;
+      const color = colorNum === 1 ? defaultPattern.color1 : defaultPattern.color2;
+
+      // Set current values
+      textInput.value = color;
+      display.textContent = color || '-';
+
+      // Try to set color picker value if it's a hex color
+      if (color && color.match(/^#[0-9A-Fa-f]{6}$/)) {
+        picker.value = color;
+      }
+
+      panel.classList.add('show');
+      textInput.focus();
+    }
+
+    function hideDefaultColorPanel(colorNum) {
+      const panel = colorNum === 1 ? defaultColor1Panel : defaultColor2Panel;
+      panel.classList.remove('show');
+    }
+
+    function updateDefaultColorButtons() {
+      updateDefaultColorButton(1, defaultPattern.color1);
+      updateDefaultColorButton(2, defaultPattern.color2);
+    }
+
+    function updateDefaultColorButton(colorNum, color) {
+      const button = colorNum === 1 ? defaultColor1Btn : defaultColor2Btn;
+      const display = colorNum === 1 ? defaultColor1Display : defaultColor2Display;
+
+      if (button) {
+        if (color && color.trim() !== '') {
+          // Try to set the background color
+          try {
+            button.style.backgroundColor = color;
+            // Ensure text is readable by setting appropriate text color
+            button.style.color = getContrastColor(color);
+            display.textContent = color;
+          } catch (e) {
+            // If color is invalid, reset to default
+            button.style.backgroundColor = '';
+            button.style.color = '';
+            display.textContent = color || '-';
+          }
+        } else {
+          // No color set, use default styling
+          button.style.backgroundColor = '';
+          button.style.color = '';
+          display.textContent = '-';
+        }
+      }
+    }
+
+    function getContrastColor(color) {
+      // Handle hex colors
+      if (color.startsWith('#')) {
+        const hex = color.replace('#', '');
+        if (hex.length === 6) {
+          // Convert to RGB
+          const r = parseInt(hex.substr(0, 2), 16);
+          const g = parseInt(hex.substr(2, 2), 16);
+          const b = parseInt(hex.substr(4, 2), 16);
+
+          // Calculate luminance
+          const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+
+          // Return black or white based on luminance
+          return luminance > 0.5 ? '#000000' : '#ffffff';
+        }
+      }
+
+      // For non-hex colors, use a simple heuristic
+      const colorLower = color.toLowerCase();
+      if (colorLower === 'white' || colorLower === 'yellow' || colorLower === 'cyan' || colorLower === 'lightgray' || colorLower === 'lightgrey') {
+        return '#000000';
+      } else {
+        return '#ffffff';
+      }
+    }
+
+    document.getElementById('defaultLabel').addEventListener('change', () => {
       defaultPattern.label = document.getElementById('defaultLabel').value;
       updatePatternUI();
       applyRules();
@@ -1353,6 +1889,103 @@
     // Load pattern hierarchy from bob.json on page load
     loadPatternHierarchy();
 
+    // Function to populate category dropdown
+    function populateCategoryDropdown() {
+      const dropdown = document.getElementById('defaultLabel');
+      if (!dropdown) return;
+
+      // Clear existing options except the first one
+      while (dropdown.children.length > 1) {
+        dropdown.removeChild(dropdown.lastChild);
+      }
+
+      // Find the categories list
+      const categoriesList = listsData.keyValueLists.find(list => list.name === 'categories');
+      if (categoriesList && categoriesList.items) {
+        categoriesList.items.forEach(item => {
+          const option = document.createElement('option');
+          option.value = item.key;
+          option.textContent = `${item.value} ${item.key}`;
+          dropdown.appendChild(option);
+        });
+      }
+    }
+
+    // Call populateCategoryDropdown after loading data
+    async function loadPatternHierarchy() {
+      // First try to load from localStorage
+      const localStorageData = localStorage.getItem('bobPatternHierarchy');
+      if (localStorageData) {
+        try {
+          const data = JSON.parse(localStorageData);
+
+          // Load default pattern
+          if (data.defaultPattern) {
+            defaultPattern = data.defaultPattern;
+          }
+
+          // Load dictionary
+          if (data.dictionary) {
+            dictionary = data.dictionary;
+          }
+
+          // Load lists and arrays data
+          if (data.listsData) {
+            listsData = data.listsData;
+          }
+
+          // Update UI
+          updatePatternUI();
+          refreshRuleUI();
+          refreshListsUI();
+          populateCategoryDropdown();
+          applyRules();
+
+          console.log('Pattern hierarchy loaded from localStorage');
+          return;
+        } catch (error) {
+          console.error('Error parsing localStorage data:', error);
+        }
+      }
+
+      // Fallback to loading from bob.json file
+      try {
+        const response = await fetch('bob.json');
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+
+        // Load default pattern
+        if (data.defaultPattern) {
+          defaultPattern = data.defaultPattern;
+        }
+
+        // Load dictionary
+        if (data.dictionary) {
+          dictionary = data.dictionary;
+        }
+
+        // Load lists and arrays data
+        if (data.listsData) {
+          listsData = data.listsData;
+        }
+
+        // Update UI
+        updatePatternUI();
+        refreshRuleUI();
+        refreshListsUI();
+        populateCategoryDropdown();
+        applyRules();
+
+        console.log('Pattern hierarchy loaded from bob.json');
+      } catch (error) {
+        console.error('Error loading bob.json:', error);
+        // If neither localStorage nor file exists, start with empty data
+        console.log('No existing data found, starting with empty configuration');
+      }
+    }
+
     // Lists and Arrays Management
     let listsData = {
       keyValueLists: [],
@@ -1374,6 +2007,9 @@
         const arrayElement = createArrayElement(array, arrayIndex);
         container.appendChild(arrayElement);
       });
+
+      // Update category dropdown
+      populateCategoryDropdown();
     }
 
     function createKeyValueListElement(list, listIndex) {
