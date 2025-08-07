@@ -465,6 +465,7 @@
     <div id="input-preview" class="tab-content active">
       <div style="margin-bottom:0.5rem;">
         <button class="btn" id="loadSampleMd">Load Sample.md</button>
+        <button class="btn btn-secondary" id="convertBob">Convert Bob</button>
       </div>
 
       <div class="section-header">
@@ -540,10 +541,12 @@
             <div class="inline-form-row">
               <label for="defaultStyle1Select">Style:</label>
               <select id="defaultStyle1Select" style="flex: 1;">
+                <option value="">None</option>
                 <option value="background">Background</option>
                 <option value="color">Text Color</option>
                 <option value="underline">Underline</option>
                 <option value="border">Border</option>
+                <option value="symbol">Symbol</option>
               </select>
             </div>
             <div class="inline-form-actions">
@@ -563,10 +566,12 @@
             <div class="inline-form-row">
               <label for="defaultStyle2Select">Style:</label>
               <select id="defaultStyle2Select" style="flex: 1;">
+                <option value="">None</option>
                 <option value="background">Background</option>
                 <option value="color">Text Color</option>
                 <option value="underline">Underline</option>
                 <option value="border">Border</option>
+                <option value="symbol">Symbol</option>
               </select>
             </div>
             <div class="inline-form-actions">
@@ -635,6 +640,25 @@
       <div class="section-header">
         <h3>Objects</h3>
       </div>
+
+      <!-- Bulk Load Objects Section -->
+      <div
+        style="margin-bottom: 1rem; padding: 1rem; background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 6px;">
+        <h4 style="margin: 0 0 0.5rem 0; font-size: 1rem;">Bulk Load Objects</h4>
+        <p class="small" style="margin: 0 0 0.5rem 0;">Import multiple objects using CSV format:
+          label,color1,color2,style1,style2,match,group,enabled</p>
+        <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+          <textarea id="bulkObjectsInput"
+            placeholder="label,color1,color2,style1,style2,match,group,enabled&#10;red,#ff0000,#ffffff,background,color,red,color,true&#10;blue,#0000ff,#ffffff,background,color,blue,color,true"
+            style="width: 100%; height: 100px; font-family: monospace; font-size: 0.875rem;"></textarea>
+        </div>
+        <div style="margin-top: 0.5rem;">
+          <button class="btn btn-success" id="bulkLoadObjects">Load Objects</button>
+          <button class="btn btn-secondary" id="clearBulkObjects">Clear</button>
+          <button class="btn btn-secondary" id="downloadObjectsTemplate">Download Template</button>
+        </div>
+      </div>
+
       <div style="margin-top:0.5rem;">
         <div id="objectsContainer"></div>
         <div style="margin-top:0.5rem;">
@@ -687,15 +711,12 @@
       <select class="category" style="width: 150px;">
         <option value="">💜</option>
       </select>
-      <button class="color1-btn btn btn-secondary color-btn" style="width: 80px; text-align: left; position: relative;">
-        <span class="color1-display">magenta</span>
-        <span class="style1-display">bg</span>
+      <button class="style1-btn btn btn-secondary color-btn" style="width: 80px; text-align: left; position: relative;">
+        <span class="style1-display">background</span>
       </button>
-      <button class="color2-btn btn btn-secondary color-btn" style="width: 80px; text-align: left; position: relative;">
-        <span class="color2-display">-</span>
-        <span class="style2-display"></span>
+      <button class="style2-btn btn btn-secondary color-btn" style="width: 80px; text-align: left; position: relative;">
+        <span class="style2-display">-</span>
       </button>
-      <input aria-label="match" placeholder="regex (e.g. ^[A-M])" class="match" />
       <button class="btn btn-secondary removeRule">✕</button>
     </div>
   </template>
@@ -707,11 +728,9 @@
       <input aria-label="label" placeholder="label (optional)" class="label" style="width: 120px;" />
       <button class="color1-btn btn btn-secondary color-btn" style="width: 80px; text-align: left; position: relative;">
         <span class="color1-display">magenta</span>
-        <span class="style1-display">bg</span>
       </button>
       <button class="color2-btn btn btn-secondary color-btn" style="width: 80px; text-align: left; position: relative;">
         <span class="color2-display">-</span>
-        <span class="style2-display"></span>
       </button>
       <input aria-label="match" placeholder="regex (e.g. ^[A-M])" class="match" />
       <button class="btn btn-secondary removeObject">✕</button>
@@ -1070,7 +1089,6 @@
         }
 
         // Set values
-        row.querySelector('.match').value = r.match || '';
         row.querySelector('.category').value = r.label || '';
 
         // Set toggle state
@@ -1082,38 +1100,32 @@
           toggleBtn.title = isEnabled ? 'Group enabled' : 'Group disabled';
         }
 
-        // Set color and style displays
-        const color1Display = row.querySelector('.color1-display');
-        const color2Display = row.querySelector('.color2-display');
+        // Set style displays
         const style1Display = row.querySelector('.style1-display');
         const style2Display = row.querySelector('.style2-display');
-        const color1Btn = row.querySelector('.color1-btn');
-        const color2Btn = row.querySelector('.color2-btn');
+        const style1Btn = row.querySelector('.style1-btn');
+        const style2Btn = row.querySelector('.style2-btn');
 
-        if (r.color1) {
-          color1Display.textContent = r.color1;
-          style1Display.textContent = getStyleAbbreviation(r.style1 || 'background');
-          applyStyleToButton(color1Btn, r.color1, r.style1 || 'background');
+        if (r.style1 && r.style1.trim() !== '') {
+          style1Display.textContent = r.style1;
+          applyStyleToButton(style1Btn, '#007aff', r.style1);
         } else {
-          color1Display.textContent = 'magenta';
-          style1Display.textContent = 'bg';
-          color1Btn.style.backgroundColor = '';
-          color1Btn.style.color = '';
-          color1Btn.style.border = '';
-          color1Btn.style.textDecoration = '';
+          style1Display.textContent = 'background';
+          style1Btn.style.backgroundColor = '';
+          style1Btn.style.color = '';
+          style1Btn.style.border = '';
+          style1Btn.style.textDecoration = '';
         }
 
-        if (r.color2) {
-          color2Display.textContent = r.color2;
-          style2Display.textContent = getStyleAbbreviation(r.style2 || 'background');
-          applyStyleToButton(color2Btn, r.color2, r.style2 || 'background');
+        if (r.style2 && r.style2.trim() !== '') {
+          style2Display.textContent = r.style2;
+          applyStyleToButton(style2Btn, '#007aff', r.style2);
         } else {
-          color2Display.textContent = '-';
-          style2Display.textContent = '';
-          color2Btn.style.backgroundColor = '';
-          color2Btn.style.color = '';
-          color2Btn.style.border = '';
-          color2Btn.style.textDecoration = '';
+          style2Display.textContent = '-';
+          style2Btn.style.backgroundColor = '';
+          style2Btn.style.color = '';
+          style2Btn.style.border = '';
+          style2Btn.style.textDecoration = '';
         }
 
         // Add event listeners
@@ -1139,27 +1151,21 @@
         }
 
         // Live change listeners
-        row.querySelector('.match').addEventListener('input', () => {
-          dictionary.rules[idx].match = row.querySelector('.match').value;
-          updateRawJson();
-          autoSavePatternHierarchy();
-        });
-
         row.querySelector('.category').addEventListener('change', () => {
           dictionary.rules[idx].label = row.querySelector('.category').value;
           updateRawJson();
           autoSavePatternHierarchy();
         });
 
-        // Color button click handlers
-        color1Btn.addEventListener('click', (e) => {
+        // Style button click handlers
+        style1Btn.addEventListener('click', (e) => {
           e.stopPropagation();
-          showRuleColorPanel(idx, 1);
+          showRuleStylePanel(idx, 1);
         });
 
-        color2Btn.addEventListener('click', (e) => {
+        style2Btn.addEventListener('click', (e) => {
           e.stopPropagation();
-          showRuleColorPanel(idx, 2);
+          showRuleStylePanel(idx, 2);
         });
 
         container.appendChild(node);
@@ -1217,21 +1223,17 @@
             objectToggleBtn.title = isEnabled ? 'Object enabled' : 'Object disabled';
           }
 
-          // Set color and style displays
+          // Set color displays
           const color1Display = row.querySelector('.color1-display');
           const color2Display = row.querySelector('.color2-display');
-          const style1Display = row.querySelector('.style1-display');
-          const style2Display = row.querySelector('.style2-display');
           const color1Btn = row.querySelector('.color1-btn');
           const color2Btn = row.querySelector('.color2-btn');
 
           if (obj.color1) {
             color1Display.textContent = obj.color1;
-            style1Display.textContent = getStyleAbbreviation(obj.style1 || 'background');
-            applyStyleToButton(color1Btn, obj.color1, obj.style1 || 'background');
+            applyStyleToButton(color1Btn, obj.color1, 'background');
           } else {
             color1Display.textContent = 'magenta';
-            style1Display.textContent = 'bg';
             color1Btn.style.backgroundColor = '';
             color1Btn.style.color = '';
             color1Btn.style.border = '';
@@ -1240,11 +1242,9 @@
 
           if (obj.color2) {
             color2Display.textContent = obj.color2;
-            style2Display.textContent = getStyleAbbreviation(obj.style2 || 'background');
-            applyStyleToButton(color2Btn, obj.color2, obj.style2 || 'background');
+            applyStyleToButton(color2Btn, obj.color2, 'background');
           } else {
             color2Display.textContent = '-';
-            style2Display.textContent = '';
             color2Btn.style.backgroundColor = '';
             color2Btn.style.color = '';
             color2Btn.style.border = '';
@@ -1290,11 +1290,13 @@
           // Color button click handlers
           color1Btn.addEventListener('click', (e) => {
             e.stopPropagation();
+            console.log('Object color1 button clicked for:', obj.label);
             showObjectColorPanel(objectsData.objects.indexOf(obj), 1);
           });
 
           color2Btn.addEventListener('click', (e) => {
             e.stopPropagation();
+            console.log('Object color2 button clicked for:', obj.label);
             showObjectColorPanel(objectsData.objects.indexOf(obj), 2);
           });
 
@@ -1405,108 +1407,61 @@
           }
         }
 
-        // First check dictionary rules (only if enabled)
+        // Check objects for all enabled groups
         for (const rule of dictionary.rules) {
           // Skip disabled rules
           if (rule.enabled === false) {
             continue;
           }
 
-          // Skip rules with empty regex - these will be handled by objects
-          if (!rule.match || rule.match.trim() === '') {
-            continue;
-          }
-
-          try {
-            const flags = 'i';
-            let regex = new RegExp(rule.match, flags);
-
-            // Check if pattern contains spaces (multi-word pattern)
-            if (rule.match.includes(' ')) {
-              // For multi-word patterns, check if this token is part of a match
-              if (isPartOfMultiWordMatch) {
-                matched = {
-                  color1: rule.color1,
-                  color2: rule.color2,
-                  style1: rule.style1,
-                  style2: rule.style2,
-                  label: rule.label
-                };
-                break;
-              }
-            } else {
-              // For single-word patterns, test against the current token
-              if (regex.test(token)) {
-                matched = {
-                  color1: rule.color1,
-                  color2: rule.color2,
-                  style1: rule.style1,
-                  style2: rule.style2,
-                  label: rule.label
-                };
-                break;
-              }
-            }
-          } catch (e) {
-            // invalid regex; skip
-            console.warn('bad regex', rule.match);
-          }
-        }
-
-        // If no match found, check objects for groups without regex
-        if (!matched) {
-          for (const rule of dictionary.rules) {
-            // Skip disabled rules or rules with regex
-            if (rule.enabled === false || rule.match.trim() !== '') {
+          // Check objects for this group
+          for (const obj of objectsData.objects) {
+            // Skip disabled objects
+            if (obj.enabled === false) {
               continue;
             }
 
-            // Check objects for this group
-            for (const obj of objectsData.objects) {
-              // Skip disabled objects
-              if (obj.enabled === false) {
-                continue;
-              }
+            // Check if object belongs to this group
+            if (obj.group === rule.label) {
+              try {
+                const flags = 'i';
+                let regex = new RegExp(obj.match, flags);
 
-              // Check if object belongs to this group
-              if (obj.group === rule.label) {
-                try {
-                  const flags = 'i';
-                  let regex = new RegExp(obj.match, flags);
-
-                  if (obj.match.includes(' ')) {
-                    // For multi-word patterns, check if this token is part of a match
-                    if (isPartOfMultiWordMatch) {
-                      matched = {
-                        color1: obj.color1,
-                        color2: obj.color2,
-                        style1: obj.style1,
-                        style2: obj.style2,
-                        label: obj.label || obj.group
-                      };
-                      break;
-                    }
-                  } else {
-                    // For single-word patterns, test against the current token
-                    if (regex.test(token)) {
-                      matched = {
-                        color1: obj.color1,
-                        color2: obj.color2,
-                        style1: obj.style1,
-                        style2: obj.style2,
-                        label: obj.label || obj.group
-                      };
-                      break;
-                    }
+                if (obj.match.includes(' ')) {
+                  // For multi-word patterns, check if this token is part of a match
+                  if (isPartOfMultiWordMatch) {
+                    matched = {
+                      color1: obj.color1,
+                      color2: obj.color2,
+                      style1: rule.style1,
+                      style2: rule.style2,
+                      label: obj.label || obj.group,
+                      group: obj.group
+                    };
+                    break;
                   }
-                } catch (e) {
-                  // invalid regex; skip
-                  console.warn('bad object regex', obj.match);
+                } else {
+                  // For single-word patterns, test against the current token
+                  if (regex.test(token)) {
+                    matched = {
+                      color1: obj.color1,
+                      color2: obj.color2,
+                      style1: rule.style1,
+                      style2: rule.style2,
+                      label: obj.label || obj.group,
+                      group: obj.group
+                    };
+                    break;
+                  }
                 }
+              } catch (e) {
+                // invalid regex; skip
+                console.warn('bad object regex', obj.match);
               }
             }
             if (matched) break;
           }
+          if (matched) break;
         }
 
         // If no match found and default pattern is enabled, try default pattern
@@ -1550,16 +1505,23 @@
         span.className = 'word';
         if (matched) {
           // Apply styles based on the new style system
-          if (matched.color1) {
-            applyStyleToElement(span, matched.color1, matched.style1 || 'background');
+          if (matched.color1 && matched.color1.trim() !== '' && matched.style1 && matched.style1.trim() !== '') {
+            applyStyleToElement(span, matched.color1, matched.style1);
           }
-          if (matched.color2 && matched.color2.trim() !== '') {
+          if (matched.color2 && matched.color2.trim() !== '' && matched.style2 && matched.style2.trim() !== '') {
             // For color2, only apply if it's different from color1's style
-            if (matched.style2 && matched.style2 !== matched.style1) {
+            if (matched.style2 !== matched.style1) {
               applyStyleToElement(span, matched.color2, matched.style2);
             }
           }
-          span.title = matched.label || '';
+          // Apply symbol style independently of color - check both style1 and style2
+          if (matched.style1 === 'symbol') {
+            applyStyleToElement(span, '', 'symbol');
+          }
+          if (matched.style2 === 'symbol') {
+            applyStyleToElement(span, '', 'symbol');
+          }
+          span.title = matched.group || '';
         } else {
           span.style.color = 'inherit';
         }
@@ -2042,6 +2004,22 @@
       return [...new Set(matches)];
     }
 
+    function getGroupEmoji(groupName) {
+      if (!groupName) return null;
+
+      // Get category emojis from listsData
+      if (listsData && listsData.keyValueLists) {
+        const categoriesList = listsData.keyValueLists.find(list => list.name === 'categories');
+        if (categoriesList && categoriesList.items) {
+          const category = categoriesList.items.find(item => item.key === groupName);
+          if (category) {
+            return category.value;
+          }
+        }
+      }
+      return null;
+    }
+
     function getContrastColor(color) {
       // Handle hex colors
       if (color.startsWith('#')) {
@@ -2075,6 +2053,7 @@
         case 'color': return 'txt';
         case 'underline': return 'ul';
         case 'border': return 'bd';
+        case 'symbol': return 'sym';
         default: return 'bg';
       }
     }
@@ -2130,6 +2109,14 @@
             element.style.border = `2px solid ${color}`;
             element.style.padding = '1px 3px';
             element.style.borderRadius = '3px';
+            break;
+          case 'symbol':
+            // Get the group emoji from the title (which contains the group name)
+            const groupName = element.title;
+            const emoji = getGroupEmoji(groupName);
+            if (emoji) {
+              element.textContent = emoji + ' ' + element.textContent;
+            }
             break;
         }
       } catch (e) {
@@ -2352,12 +2339,12 @@
       const styleDisplay = colorNum === 1 ? document.getElementById('defaultStyle1Display') : document.getElementById('defaultStyle2Display');
 
       if (button) {
-        if (color && color.trim() !== '') {
+        if (color && color.trim() !== '' && style && style.trim() !== '') {
           colorDisplay.textContent = color;
-          styleDisplay.textContent = getStyleAbbreviation(style || 'background');
-          applyStyleToButton(button, color, style || 'background');
+          styleDisplay.textContent = getStyleAbbreviation(style);
+          applyStyleToButton(button, color, style);
         } else {
-          // No color set, use default styling
+          // No color or style set, use default styling
           button.style.backgroundColor = '';
           button.style.color = '';
           button.style.border = '';
@@ -2405,34 +2392,24 @@
       panel.classList.remove('show');
     }
 
-    // Rule color panel functions
-    function showRuleColorPanel(ruleIndex, colorNum) {
-      // Create or get the color panel for this rule
-      let panel = document.getElementById(`ruleColorPanel_${ruleIndex}_${colorNum}`);
+    // Rule style panel functions
+    function showRuleStylePanel(ruleIndex, styleNum) {
+      // Create or get the style panel for this rule
+      let panel = document.getElementById(`ruleStylePanel_${ruleIndex}_${styleNum}`);
       if (!panel) {
-        panel = createRuleColorPanel(ruleIndex, colorNum);
+        panel = createRuleStylePanel(ruleIndex, styleNum);
         document.body.appendChild(panel);
       }
 
       const rule = dictionary.rules[ruleIndex];
-      const color = colorNum === 1 ? rule.color1 : rule.color2;
-      const style = colorNum === 1 ? rule.style1 : rule.style2;
+      const style = styleNum === 1 ? rule.style1 : rule.style2;
 
       // Set current values
-      const textInput = panel.querySelector('.color-text');
-      const picker = panel.querySelector('.color-picker');
       const styleSelect = panel.querySelector('.style-select');
-
-      textInput.value = color || '';
       styleSelect.value = style || 'background';
 
-      // Try to set color picker value if it's a hex color
-      if (color && color.match(/^#[0-9A-Fa-f]{6}$/)) {
-        picker.value = color;
-      }
-
       // Position the panel relative to the button
-      const button = document.querySelector(`[data-idx="${ruleIndex}"] .color${colorNum}-btn`);
+      const button = document.querySelector(`[data-idx="${ruleIndex}"] .style${styleNum}-btn`);
       if (button) {
         const rect = button.getBoundingClientRect();
         panel.style.position = 'absolute';
@@ -2441,16 +2418,16 @@
       }
 
       panel.classList.add('show');
-      textInput.focus();
+      styleSelect.focus();
     }
 
-    function createRuleColorPanel(ruleIndex, colorNum) {
+    function createRuleStylePanel(ruleIndex, styleNum) {
       const panel = document.createElement('div');
-      panel.id = `ruleColorPanel_${ruleIndex}_${colorNum}`;
+      panel.id = `ruleStylePanel_${ruleIndex}_${styleNum}`;
       panel.className = 'inline-form';
       panel.style.cssText = `
         position: absolute;
-        min-width: 250px;
+        min-width: 200px;
         background: white;
         border: 1px solid #dee2e6;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -2459,71 +2436,49 @@
 
       panel.innerHTML = `
         <div class="inline-form-row">
-          <label>Color ${colorNum}:</label>
-          <input type="text" class="color-text" placeholder="color (e.g. #ff0000)" style="flex: 1;" />
-        </div>
-        <div class="inline-form-row">
-          <label>Picker:</label>
-          <input type="color" class="color-picker" value="#ff00ff" style="width: 50px; height: 30px;" />
-        </div>
-        <div class="inline-form-row">
-          <label>Style:</label>
+          <label>Style ${styleNum}:</label>
           <select class="style-select" style="flex: 1;">
+            <option value="">None</option>
             <option value="background">Background</option>
             <option value="color">Text Color</option>
             <option value="underline">Underline</option>
             <option value="border">Border</option>
+            <option value="symbol">Symbol</option>
           </select>
         </div>
         <div class="inline-form-actions">
-          <button class="btn btn-success btn-small apply-rule-color">Apply</button>
-          <button class="btn btn-danger btn-small cancel-rule-color">Cancel</button>
+          <button class="btn btn-success btn-small apply-rule-style">Apply</button>
+          <button class="btn btn-danger btn-small cancel-rule-style">Cancel</button>
         </div>
       `;
 
       // Add event listeners
-      const applyBtn = panel.querySelector('.apply-rule-color');
-      const cancelBtn = panel.querySelector('.cancel-rule-color');
-      const textInput = panel.querySelector('.color-text');
-      const picker = panel.querySelector('.color-picker');
+      const applyBtn = panel.querySelector('.apply-rule-style');
+      const cancelBtn = panel.querySelector('.cancel-rule-style');
 
       applyBtn.addEventListener('click', () => {
-        const color = textInput.value;
         const style = panel.querySelector('.style-select').value;
         const rule = dictionary.rules[ruleIndex];
-        if (colorNum === 1) {
-          rule.color1 = color;
+        if (styleNum === 1) {
           rule.style1 = style;
         } else {
-          rule.color2 = color;
           rule.style2 = style;
         }
         refreshRuleUI();
         applyRules();
         autoSavePatternHierarchy();
-        hideRuleColorPanel(ruleIndex, colorNum);
+        hideRuleStylePanel(ruleIndex, styleNum);
       });
 
       cancelBtn.addEventListener('click', () => {
-        hideRuleColorPanel(ruleIndex, colorNum);
-      });
-
-      // Sync picker with text input
-      picker.addEventListener('input', () => {
-        textInput.value = picker.value;
-      });
-
-      textInput.addEventListener('input', () => {
-        if (textInput.value.match(/^#[0-9A-Fa-f]{6}$/)) {
-          picker.value = textInput.value;
-        }
+        hideRuleStylePanel(ruleIndex, styleNum);
       });
 
       return panel;
     }
 
-    function hideRuleColorPanel(ruleIndex, colorNum) {
-      const panel = document.getElementById(`ruleColorPanel_${ruleIndex}_${colorNum}`);
+    function hideRuleStylePanel(ruleIndex, styleNum) {
+      const panel = document.getElementById(`ruleStylePanel_${ruleIndex}_${styleNum}`);
       if (panel) {
         panel.classList.remove('show');
       }
@@ -2545,10 +2500,8 @@
       // Set current values
       const textInput = panel.querySelector('.color-text');
       const picker = panel.querySelector('.color-picker');
-      const styleSelect = panel.querySelector('.style-select');
 
       textInput.value = color || '';
-      styleSelect.value = style || 'background';
 
       // Try to set color picker value if it's a hex color
       if (color && color.match(/^#[0-9A-Fa-f]{6}$/)) {
@@ -2584,20 +2537,11 @@
       panel.innerHTML = `
         <div class="inline-form-row">
           <label>Color ${colorNum}:</label>
-          <input type="text" class="color-text" placeholder="color (e.g. #ff0000)" style="flex: 1;" />
+          <input type="text" class="color-text" placeholder="color (e.g. #ff0000) or leave empty for none" style="flex: 1;" />
         </div>
         <div class="inline-form-row">
           <label>Picker:</label>
           <input type="color" class="color-picker" value="#ff00ff" style="width: 50px; height: 30px;" />
-        </div>
-        <div class="inline-form-row">
-          <label>Style:</label>
-          <select class="style-select" style="flex: 1;">
-            <option value="background">Background</option>
-            <option value="color">Text Color</option>
-            <option value="underline">Underline</option>
-            <option value="border">Border</option>
-          </select>
         </div>
         <div class="inline-form-actions">
           <button class="btn btn-success btn-small apply-object-color">Apply</button>
@@ -2613,14 +2557,11 @@
 
       applyBtn.addEventListener('click', () => {
         const color = textInput.value;
-        const style = panel.querySelector('.style-select').value;
         const obj = objectsData.objects[objectIndex];
         if (colorNum === 1) {
           obj.color1 = color;
-          obj.style1 = style;
         } else {
           obj.color2 = color;
-          obj.style2 = style;
         }
         refreshObjectsUI();
         applyRules();
@@ -3092,8 +3033,14 @@
         autoSavePatternHierarchy();
       });
 
+      // Bulk load objects event listeners
+      document.getElementById('bulkLoadObjects').addEventListener('click', bulkLoadObjects);
+      document.getElementById('clearBulkObjects').addEventListener('click', clearBulkObjects);
+      document.getElementById('downloadObjectsTemplate').addEventListener('click', downloadObjectsTemplate);
+
       // Preview buttons event listeners
       document.getElementById('loadSampleMd').addEventListener('click', loadSampleMd);
+      document.getElementById('convertBob').addEventListener('click', convertBobToMarkdown);
 
       // Refresh button event listener
       document.getElementById('refreshBtn').addEventListener('click', refreshFromBobJson);
@@ -3108,6 +3055,151 @@
       // Load pattern hierarchy from bob.json on page load
       loadPatternHierarchy();
     });
+
+    // Bulk load objects functions
+    function bulkLoadObjects() {
+      const input = document.getElementById('bulkObjectsInput').value.trim();
+      if (!input) {
+        alert('Please enter CSV data to load objects.');
+        return;
+      }
+
+      const lines = input.split('\n');
+      let loadedCount = 0;
+      let errorCount = 0;
+      const errors = [];
+
+      // Skip header line if it matches the expected format
+      const startIndex = lines[0].toLowerCase().includes('label,color1,color2,style1,style2,match,group,enabled') ? 1 : 0;
+
+      for (let i = startIndex; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (!line) continue;
+
+        const parts = line.split(',').map(part => part.trim());
+
+        if (parts.length < 7) {
+          errors.push(`Line ${i + 1}: Insufficient columns (expected 8, got ${parts.length})`);
+          errorCount++;
+          continue;
+        }
+
+        const [label, color1, color2, style1, style2, match, group, enabled] = parts;
+
+        // Validate required fields
+        if (!match || !group) {
+          errors.push(`Line ${i + 1}: Missing required fields (match and group are required)`);
+          errorCount++;
+          continue;
+        }
+
+        // Create new object
+        const newObject = {
+          label: label || '',
+          color1: color1 || '',
+          color2: color2 || '',
+          style1: style1 || 'background',
+          style2: style2 || '',
+          match: match,
+          group: group,
+          enabled: enabled === 'true' || enabled === '1' || enabled === ''
+        };
+
+        objectsData.objects.push(newObject);
+        loadedCount++;
+      }
+
+      // Show results
+      let message = `Loaded ${loadedCount} objects successfully.`;
+      if (errorCount > 0) {
+        message += `\n\n${errorCount} errors:\n${errors.join('\n')}`;
+      }
+
+      if (errorCount > 0) {
+        alert(message);
+      } else {
+        alert(message);
+      }
+
+      // Refresh UI and save
+      refreshObjectsUI();
+      applyRules();
+      autoSavePatternHierarchy();
+    }
+
+    function clearBulkObjects() {
+      document.getElementById('bulkObjectsInput').value = '';
+    }
+
+    function downloadObjectsTemplate() {
+      const template = `label,color1,color2,style1,style2,match,group,enabled
+red,#ff0000,#ffffff,background,color,red,color,true
+blue,#0000ff,#ffffff,background,color,blue,color,true
+green,#00ff00,#000000,background,color,green,color,true
+monday,#ff8fff,#cfcfcf,background,color,monday,day of the week,true
+tuesday,#4ECDC4,#ffffff,background,color,tuesday,day of the week,true
+a,#ff293e,,color,,^a,letter,true
+b,#684ccd,,color,,^b,letter,true`;
+
+      const blob = new Blob([template], { type: 'text/csv' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'objects_template.csv';
+      a.click();
+    }
+
+    function convertBobToMarkdown() {
+      let markdown = '# Bob\n\n';
+
+      // Get category emojis from listsData
+      const categoryEmojis = {};
+      if (listsData && listsData.keyValueLists) {
+        const categoriesList = listsData.keyValueLists.find(list => list.name === 'categories');
+        if (categoriesList && categoriesList.items) {
+          categoriesList.items.forEach(item => {
+            categoryEmojis[item.key] = item.value;
+          });
+        }
+      }
+
+      // Group objects by their group
+      const groupedObjects = {};
+      objectsData.objects.forEach(obj => {
+        if (!groupedObjects[obj.group]) {
+          groupedObjects[obj.group] = [];
+        }
+        groupedObjects[obj.group].push(obj);
+      });
+
+      // Sort groups alphabetically
+      const sortedGroups = Object.keys(groupedObjects).sort();
+
+      // Generate markdown for each group
+      sortedGroups.forEach(groupName => {
+        const emoji = categoryEmojis[groupName] || '❓';
+        markdown += `## ${emoji} ${groupName}\n\n`;
+
+        // Sort objects within the group by label
+        const sortedObjects = groupedObjects[groupName].sort((a, b) => {
+          const labelA = (a.label || '').toLowerCase();
+          const labelB = (b.label || '').toLowerCase();
+          return labelA.localeCompare(labelB);
+        });
+
+        // Add objects to the group
+        sortedObjects.forEach(obj => {
+          const label = obj.label || obj.match;
+          const matchString = obj.match;
+          markdown += `- ${label} | ${matchString}\n`;
+        });
+
+        markdown += '\n';
+      });
+
+      // Set the markdown in the textarea
+      document.getElementById('sourceText').value = markdown;
+      applyRules();
+    }
   </script>
 </body>
 

@@ -19,19 +19,19 @@
     "rules": [
       {
         "match": "",
-        "color1": "magenta",
+        "color1": "#b1d7e7",
         "color2": "",
         "label": "day of the week",
-        "enabled": false,
-        "style1": "underline"
+        "enabled": true,
+        "style1": "border"
       },
       {
         "match": "",
         "color1": "magenta",
         "color2": "",
         "label": "number",
-        "enabled": false,
-        "style1": "color",
+        "enabled": true,
+        "style1": "symbol",
         "style2": "background"
       },
       {
@@ -40,8 +40,8 @@
         "color2": "",
         "label": "letter",
         "enabled": true,
-        "style1": "background",
-        "style2": "background"
+        "style1": "color",
+        "style2": ""
       },
       {
         "match": "",
@@ -58,6 +58,69 @@
         "style1": "color",
         "style2": "",
         "label": "month",
+        "enabled": false
+      },
+      {
+        "match": "",
+        "color1": "#4ECDC4",
+        "color2": "",
+        "style1": "background",
+        "style2": "",
+        "label": "instrument",
+        "enabled": false
+      },
+      {
+        "match": "",
+        "color1": "#A9CCE3",
+        "color2": "",
+        "style1": "background",
+        "style2": "",
+        "label": "person",
+        "enabled": false
+      },
+      {
+        "match": "",
+        "color1": "#A3E4D7",
+        "color2": "",
+        "style1": "background",
+        "style2": "",
+        "label": "shape",
+        "enabled": false
+      },
+      {
+        "match": "",
+        "color1": "#D5A6BD",
+        "color2": "",
+        "style1": "background",
+        "style2": "",
+        "label": "sound",
+        "enabled": false
+      },
+      {
+        "match": "",
+        "color1": "#FAD7A0",
+        "color2": "",
+        "style1": "background",
+        "style2": "",
+        "label": "texture",
+        "enabled": false
+      },
+      {
+        "match": "",
+        "color1": "#D5A6BD",
+        "color2": "",
+        "style1": "background",
+        "style2": "",
+        "label": "school subject",
+        "enabled": false
+      },
+      {
+        "match": "",
+        "color1": "#45B7D1",
+        "color2": "",
+        "style1": "background",
+        "style2": "",
+        "label": "colorality",
         "enabled": false
       }
     ]
@@ -106,6 +169,14 @@
           {
             "key": "texture",
             "value": "🧶"
+          },
+          {
+            "key": "school subject",
+            "value": "🎓"
+          },
+          {
+            "key": "colorality",
+            "value": "🩶"
           }
         ]
       }
@@ -127,74 +198,1194 @@
   "objectsData": {
     "objects": [
       {
-        "label": "Monday",
-        "color1": "#ff8fff",
-        "color2": "#cfcfcf",
-        "style1": "background",
-        "style2": "color",
-        "match": "monday",
-        "group": "day of the week",
-        "enabled": false
-      },
-      {
-        "label": "Tuesday",
-        "color1": "#4ECDC4",
-        "color2": "#ffffff",
-        "style1": "background",
-        "style2": "color",
-        "match": "tuesday",
-        "group": "day of the week",
-        "enabled": false
-      },
-      {
-        "label": "a",
-        "color1": "#ff293e",
+        "label": "Blue",
+        "color1": "#457ABF",
         "color2": "",
         "style1": "color",
-        "style2": "color",
-        "match": "^a",
-        "group": "letter",
-        "enabled": true
-      },
-      {
-        "label": "b",
-        "color1": "#684ccd",
-        "color2": "",
-        "style1": "color",
-        "style2": "color",
-        "match": "^b",
-        "group": "letter",
-        "enabled": true
-      },
-      {
-        "label": "red",
-        "color1": "#ff0000",
-        "color2": "#ffffff",
-        "style1": "background",
-        "style2": "color",
-        "match": "red",
-        "group": "color",
-        "enabled": false
-      },
-      {
-        "label": "blue",
-        "color1": "#0000ff",
-        "color2": "#ffffff",
-        "style1": "background",
-        "style2": "color",
+        "style2": "",
         "match": "blue",
         "group": "color",
-        "enabled": false
+        "enabled": true
       },
       {
-        "label": "",
-        "color1": "#4ECDC4",
+        "label": "Brown",
+        "color1": "#4D2D1E",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "brown",
+        "group": "color",
+        "enabled": true
+      },
+      {
+        "label": "Burgundy",
+        "color1": "#550C0B",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "burgundy",
+        "group": "color",
+        "enabled": true
+      },
+      {
+        "label": "Gray",
+        "color1": "#514F4D",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "gray",
+        "group": "color",
+        "enabled": true
+      },
+      {
+        "label": "Green",
+        "color1": "#62A03F",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "green",
+        "group": "color",
+        "enabled": true
+      },
+      {
+        "label": "Orange",
+        "color1": "#C96907",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "orange",
+        "group": "color",
+        "enabled": true
+      },
+      {
+        "label": "Pink",
+        "color1": "#C251A7",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "pink",
+        "group": "color",
+        "enabled": true
+      },
+      {
+        "label": "Purple",
+        "color1": "#814DA4",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "purple",
+        "group": "color",
+        "enabled": true
+      },
+      {
+        "label": "Red",
+        "color1": "#D01C26",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "red",
+        "group": "color",
+        "enabled": true
+      },
+      {
+        "label": "Yellow",
+        "color1": "#EBD33F",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "yellow",
+        "group": "color",
+        "enabled": true
+      },
+      {
+        "label": "🩶Azure Colorality",
+        "color1": "#377EDE",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "🩶azure",
+        "group": "colorality",
+        "enabled": true
+      },
+      {
+        "label": "🩶Brown Colorality",
+        "color1": "#4D302A",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "🩶brown",
+        "group": "colorality",
+        "enabled": true
+      },
+      {
+        "label": "🩶Green Colorality",
+        "color1": "#63953C",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "🩶green",
+        "group": "colorality",
+        "enabled": true
+      },
+      {
+        "label": "🩶Mulberry Colorality",
+        "color1": "#39052F",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "🩶mulberry",
+        "group": "colorality",
+        "enabled": true
+      },
+      {
+        "label": "🩶Orange Colorality",
+        "color1": "#E58238",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "🩶orange",
+        "group": "colorality",
+        "enabled": true
+      },
+      {
+        "label": "🩶Purple Colorality",
+        "color1": "#68527B",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "🩶purple",
+        "group": "colorality",
+        "enabled": true
+      },
+      {
+        "label": "🩶Red Colorality",
+        "color1": "#BA342A",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "🩶red",
+        "group": "colorality",
+        "enabled": true
+      },
+      {
+        "label": "🩶Royal Blue Colorality",
+        "color1": "#141C48",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "🩶blue",
+        "group": "colorality",
+        "enabled": true
+      },
+      {
+        "label": "🩶Teal Colorality",
+        "color1": "#5CC9DC",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "🩶teal",
+        "group": "colorality",
+        "enabled": true
+      },
+      {
+        "label": "🩶Yellow Colorality",
+        "color1": "#FCF18C",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "🩶yellow",
+        "group": "colorality",
+        "enabled": true
+      },
+      {
+        "label": "Friday",
+        "color1": "#5DB0D9",
+        "color2": "#9d5c9d",
+        "style1": "border",
+        "style2": "color",
+        "match": "friday",
+        "group": "day of the week",
+        "enabled": true
+      },
+      {
+        "label": "Monday",
+        "color1": "#F4A157",
+        "color2": "",
+        "style1": "background",
+        "style2": "symbol",
+        "match": "monday",
+        "group": "day of the week",
+        "enabled": true
+      },
+      {
+        "label": "Saturday",
+        "color1": "#E5E9EC",
         "color2": "",
         "style1": "background",
         "style2": "",
-        "match": "",
-        "group": "color",
-        "enabled": false
+        "match": "saturday",
+        "group": "day of the week",
+        "enabled": true
+      },
+      {
+        "label": "Sunday",
+        "color1": "#5d55c3",
+        "color2": "",
+        "style1": "symbol",
+        "style2": "",
+        "match": "sunday",
+        "group": "day of the week",
+        "enabled": true
+      },
+      {
+        "label": "Thursday",
+        "color1": "#4ABD37",
+        "color2": "",
+        "style1": "symbol",
+        "style2": "symbol",
+        "match": "thursday",
+        "group": "day of the week",
+        "enabled": true
+      },
+      {
+        "label": "Tuesday",
+        "color1": "#3A6C91",
+        "color2": "",
+        "style1": "symbol",
+        "style2": "",
+        "match": "tuesday",
+        "group": "day of the week",
+        "enabled": true
+      },
+      {
+        "label": "Wednesday",
+        "color1": "#FFF947",
+        "color2": "",
+        "style1": "symbol",
+        "style2": "",
+        "match": "wednesday",
+        "group": "day of the week",
+        "enabled": true
+      },
+      {
+        "label": "Acoustic Guitar",
+        "color1": "#A65803",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "acoustic",
+        "group": "instrument",
+        "enabled": true
+      },
+      {
+        "label": "Bass Guitar",
+        "color1": "#12104D",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "bass",
+        "group": "instrument",
+        "enabled": true
+      },
+      {
+        "label": "Bells / Tambourine / Etc.",
+        "color1": "#F5CB31",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "bells",
+        "group": "instrument",
+        "enabled": true
+      },
+      {
+        "label": "Clarinet",
+        "color1": "#AF7AB8",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "clarinet",
+        "group": "instrument",
+        "enabled": true
+      },
+      {
+        "label": "Drums",
+        "color1": "#DA381D",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "drums",
+        "group": "instrument",
+        "enabled": true
+      },
+      {
+        "label": "Electric Guitar",
+        "color1": "#1143DA",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "guitar",
+        "group": "instrument",
+        "enabled": true
+      },
+      {
+        "label": "Flutes",
+        "color1": "#FFE84A",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "flutes",
+        "group": "instrument",
+        "enabled": true
+      },
+      {
+        "label": "Piano",
+        "color1": "#EE725B",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "piano",
+        "group": "instrument",
+        "enabled": true
+      },
+      {
+        "label": "Tubas / Trombones / Etc.",
+        "color1": "#355916",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "tuba",
+        "group": "instrument",
+        "enabled": true
+      },
+      {
+        "label": "Ukulele",
+        "color1": "#FFBBD4",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "ukulele",
+        "group": "instrument",
+        "enabled": true
+      },
+      {
+        "label": "Violin",
+        "color1": "#FFC131",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "violin",
+        "group": "instrument",
+        "enabled": true
+      },
+      {
+        "label": "January",
+        "color1": "white",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "january",
+        "group": "month",
+        "enabled": true
+      },
+      {
+        "label": "February",
+        "color1": "",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "february",
+        "group": "month",
+        "enabled": true
+      },
+      {
+        "label": "March",
+        "color1": "",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "march",
+        "group": "month",
+        "enabled": true
+      },
+      {
+        "label": "April",
+        "color1": "",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "april",
+        "group": "month",
+        "enabled": true
+      },
+      {
+        "label": "May",
+        "color1": "",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "may",
+        "group": "month",
+        "enabled": true
+      },
+      {
+        "label": "June",
+        "color1": "",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "june",
+        "group": "month",
+        "enabled": true
+      },
+      {
+        "label": "July",
+        "color1": "",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "july",
+        "group": "month",
+        "enabled": true
+      },
+      {
+        "label": "August",
+        "color1": "",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "august",
+        "group": "month",
+        "enabled": true
+      },
+      {
+        "label": "September",
+        "color1": "",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "september",
+        "group": "month",
+        "enabled": true
+      },
+      {
+        "label": "October",
+        "color1": "",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "october",
+        "group": "month",
+        "enabled": true
+      },
+      {
+        "label": "November",
+        "color1": "",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "november",
+        "group": "month",
+        "enabled": true
+      },
+      {
+        "label": "December",
+        "color1": "",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "december",
+        "group": "month",
+        "enabled": true
+      },
+      {
+        "label": "0",
+        "color1": "#F7DEBF",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "^0.*?",
+        "group": "number",
+        "enabled": true
+      },
+      {
+        "label": "1",
+        "color1": "#F3D25F",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "^1.*?",
+        "group": "number",
+        "enabled": true
+      },
+      {
+        "label": "2",
+        "color1": "#357CE3",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "^2.*?",
+        "group": "number",
+        "enabled": true
+      },
+      {
+        "label": "3",
+        "color1": "#F09DD4",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "^3.*?",
+        "group": "number",
+        "enabled": true
+      },
+      {
+        "label": "4",
+        "color1": "#419A27",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "^4.*?",
+        "group": "number",
+        "enabled": true
+      },
+      {
+        "label": "5",
+        "color1": "#914FC2",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "^5.*?",
+        "group": "number",
+        "enabled": true
+      },
+      {
+        "label": "6",
+        "color1": "#5C1F20",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "^6.*?",
+        "group": "number",
+        "enabled": true
+      },
+      {
+        "label": "7",
+        "color1": "#1F25AF",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "^7.*?",
+        "group": "number",
+        "enabled": true
+      },
+      {
+        "label": "8",
+        "color1": "#C3091D",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "^8.*?",
+        "group": "number",
+        "enabled": true
+      },
+      {
+        "label": "9",
+        "color1": "#08005F",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "^9.*?",
+        "group": "number",
+        "enabled": true
+      },
+      {
+        "label": "A",
+        "color1": "#BD0008",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "^a.*?",
+        "group": "letter",
+        "enabled": true
+      },
+      {
+        "label": "B",
+        "color1": "#364B62",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "^b.*?",
+        "group": "letter",
+        "enabled": true
+      },
+      {
+        "label": "C",
+        "color1": "#E2D234",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "^c.*?",
+        "group": "letter",
+        "enabled": true
+      },
+      {
+        "label": "D",
+        "color1": "#E68A00",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "^d.*?",
+        "group": "letter",
+        "enabled": true
+      },
+      {
+        "label": "E",
+        "color1": "#6A588B",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "^e.*?",
+        "group": "letter",
+        "enabled": true
+      },
+      {
+        "label": "F",
+        "color1": "#140E3D",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "^f.*?",
+        "group": "letter",
+        "enabled": true
+      },
+      {
+        "label": "G",
+        "color1": "#590600",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "^g.*?",
+        "group": "letter",
+        "enabled": true
+      },
+      {
+        "label": "H",
+        "color1": "#3D074D",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "^h.*?",
+        "group": "letter",
+        "enabled": true
+      },
+      {
+        "label": "I",
+        "color1": "#DF9E1C",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "^i.*?",
+        "group": "letter",
+        "enabled": true
+      },
+      {
+        "label": "J",
+        "color1": "#EEE448",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "^j.*?",
+        "group": "letter",
+        "enabled": true
+      },
+      {
+        "label": "K",
+        "color1": "#161E4D",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "^k.*?",
+        "group": "letter",
+        "enabled": true
+      },
+      {
+        "label": "L",
+        "color1": "#B3EC01",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "^l.*?",
+        "group": "letter",
+        "enabled": true
+      },
+      {
+        "label": "M",
+        "color1": "#508AA9",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "^m.*?",
+        "group": "letter",
+        "enabled": true
+      },
+      {
+        "label": "N",
+        "color1": "#C389B7",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "^n.*?",
+        "group": "letter",
+        "enabled": true
+      },
+      {
+        "label": "O",
+        "color1": "#C80194",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "^o.*?",
+        "group": "letter",
+        "enabled": true
+      },
+      {
+        "label": "P",
+        "color1": "#3F7417",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "^p.*?",
+        "group": "letter",
+        "enabled": true
+      },
+      {
+        "label": "Q",
+        "color1": "#11002B",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "^q.*?",
+        "group": "letter",
+        "enabled": true
+      },
+      {
+        "label": "R",
+        "color1": "#FF5502",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "^r.*?",
+        "group": "letter",
+        "enabled": true
+      },
+      {
+        "label": "S",
+        "color1": "#4CB1D3",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "^s.*?",
+        "group": "letter",
+        "enabled": true
+      },
+      {
+        "label": "T",
+        "color1": "#44B511",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "^t.*?",
+        "group": "letter",
+        "enabled": true
+      },
+      {
+        "label": "U",
+        "color1": "#CE77B3",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "^u.*?",
+        "group": "letter",
+        "enabled": true
+      },
+      {
+        "label": "V",
+        "color1": "#919191",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "^v.*?",
+        "group": "letter",
+        "enabled": true
+      },
+      {
+        "label": "W",
+        "color1": "#36210B",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "^w.*?",
+        "group": "letter",
+        "enabled": true
+      },
+      {
+        "label": "X",
+        "color1": "#474746",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "^x.*?",
+        "group": "letter",
+        "enabled": true
+      },
+      {
+        "label": "Y",
+        "color1": "#9316A8",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "^y.*?",
+        "group": "letter",
+        "enabled": true
+      },
+      {
+        "label": "Z",
+        "color1": "#0A2F05",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "^z.*?",
+        "group": "letter",
+        "enabled": true
+      },
+      {
+        "label": "👤Ada",
+        "color1": "#BD010E",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "👤ada",
+        "group": "person",
+        "enabled": true
+      },
+      {
+        "label": "👤Bruno",
+        "color1": "#EF6533",
+        "color2": "#FFCC00",
+        "style1": "background",
+        "style2": "background",
+        "match": "👤bruno",
+        "group": "person",
+        "enabled": true
+      },
+      {
+        "label": "👤Gabriel",
+        "color1": "#2F201A",
+        "color2": "#291139",
+        "style1": "background",
+        "style2": "background",
+        "match": "👤gabriel",
+        "group": "person",
+        "enabled": true
+      },
+      {
+        "label": "👤Kris Fog",
+        "color1": "#5B8D40",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "👤kris",
+        "group": "person",
+        "enabled": true
+      },
+      {
+        "label": "👤Marta",
+        "color1": "#6F3984",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "👤marta",
+        "group": "person",
+        "enabled": true
+      },
+      {
+        "label": "👤Mat",
+        "color1": "#0129AD",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "👤mat",
+        "group": "person",
+        "enabled": true
+      },
+      {
+        "label": "👤Mom",
+        "color1": "#FF3649",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "👤mom",
+        "group": "person",
+        "enabled": true
+      },
+      {
+        "label": "👤Sophie",
+        "color1": "",
+        "color2": "",
+        "style1": "background",
+        "style2": "",
+        "match": "👤sophie",
+        "group": "person",
+        "enabled": true
+      },
+      {
+        "label": "Behavioral Science",
+        "color1": "#8A5F9F",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "behavioral science",
+        "group": "school subject",
+        "enabled": true
+      },
+      {
+        "label": "Biology",
+        "color1": "#769940",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "biology",
+        "group": "school subject",
+        "enabled": true
+      },
+      {
+        "label": "Chemistry",
+        "color1": "#6D9A49",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "chemistry",
+        "group": "school subject",
+        "enabled": true
+      },
+      {
+        "label": "Dutch",
+        "color1": "#B87A32",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "dutch",
+        "group": "school subject",
+        "enabled": true
+      },
+      {
+        "label": "English",
+        "color1": "#2597E6",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "english",
+        "group": "school subject",
+        "enabled": true
+      },
+      {
+        "label": "French",
+        "color1": "#61408F",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "french",
+        "group": "school subject",
+        "enabled": true
+      },
+      {
+        "label": "History",
+        "color1": "#831A01",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "history",
+        "group": "school subject",
+        "enabled": true
+      },
+      {
+        "label": "Maths",
+        "color1": "#F7EA47",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "maths",
+        "group": "school subject",
+        "enabled": true
+      },
+      {
+        "label": "Physics",
+        "color1": "#0049FF",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "physics",
+        "group": "school subject",
+        "enabled": true
+      },
+      {
+        "label": "Polish",
+        "color1": "#FF7300",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "polish",
+        "group": "school subject",
+        "enabled": true
+      },
+      {
+        "label": "Bird",
+        "color1": "#FFF38E",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "bird",
+        "group": "sound",
+        "enabled": true
+      },
+      {
+        "label": "Cat Purring",
+        "color1": "#DD6D1D",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "purring",
+        "group": "sound",
+        "enabled": true
+      },
+      {
+        "label": "Clapping",
+        "color1": "#F47E1C",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "clapping",
+        "group": "sound",
+        "enabled": true
+      },
+      {
+        "label": "Clock",
+        "color1": "#2676E1",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "clock",
+        "group": "sound",
+        "enabled": true
+      },
+      {
+        "label": "Dog Barking",
+        "color1": "#AB101E",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "dog",
+        "group": "sound",
+        "enabled": true
+      },
+      {
+        "label": "Electronic Synth1",
+        "color1": "#F6FF3E",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "electronic",
+        "group": "sound",
+        "enabled": true
+      },
+      {
+        "label": "Electronic Synth2",
+        "color1": "#6BC400",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "electronic2",
+        "group": "sound",
+        "enabled": true
+      },
+      {
+        "label": "Keys Jingling",
+        "color1": "#E4C456",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "keys",
+        "group": "sound",
+        "enabled": true
+      },
+      {
+        "label": "Kids Crying",
+        "color1": "#FF000B",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "crying",
+        "group": "sound",
+        "enabled": true
+      },
+      {
+        "label": "Mechanical Sounds",
+        "color1": "#6D7181",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "mechanical",
+        "group": "sound",
+        "enabled": true
+      },
+      {
+        "label": "Pigeons",
+        "color1": "#93BBCD",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "pigeons",
+        "group": "sound",
+        "enabled": true
+      },
+      {
+        "label": "Rain",
+        "color1": "#4A5684",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "rain",
+        "group": "sound",
+        "enabled": true
+      },
+      {
+        "label": "Snapping Fingers",
+        "color1": "#CB1FA9",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "snapping",
+        "group": "sound",
+        "enabled": true
+      },
+      {
+        "label": "Whispers",
+        "color1": "#A8D3E8",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "whispers",
+        "group": "sound",
+        "enabled": true
+      },
+      {
+        "label": "Sandpaper",
+        "color1": "#EDEA98",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "match": "sandpaper",
+        "group": "texture",
+        "enabled": true
       }
     ]
   }
