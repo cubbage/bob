@@ -19,30 +19,30 @@
     "rules": [
       {
         "match": "",
+        "color1": "#A9CCE3",
+        "color2": "",
+        "style1": "background",
+        "style2": "background",
+        "label": "person",
+        "enabled": true
+      },
+      {
+        "match": "",
         "color1": "#b1d7e7",
         "color2": "",
         "label": "day of the week",
         "enabled": true,
-        "style1": "color",
-        "style2": "symbol"
+        "style1": "symbol",
+        "style2": "background"
       },
       {
         "match": "",
         "color1": "magenta",
         "color2": "",
-        "label": "number",
-        "enabled": true,
-        "style1": "color",
-        "style2": ""
-      },
-      {
-        "match": "",
-        "color1": "#5487c9",
-        "color2": "",
-        "label": "letter",
-        "enabled": true,
-        "style1": "color",
-        "style2": ""
+        "style1": "symbol",
+        "style2": "background",
+        "label": "month",
+        "enabled": true
       },
       {
         "match": "",
@@ -56,10 +56,37 @@
         "match": "",
         "color1": "magenta",
         "color2": "",
+        "label": "number",
+        "enabled": true,
         "style1": "color",
-        "style2": "symbol",
-        "label": "month",
+        "style2": ""
+      },
+      {
+        "match": "",
+        "color1": "#D5A6BD",
+        "color2": "",
+        "style1": "background",
+        "style2": "",
+        "label": "school subject",
         "enabled": true
+      },
+      {
+        "match": "",
+        "color1": "#A3E4D7",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "label": "shape",
+        "enabled": true
+      },
+      {
+        "match": "",
+        "color1": "#5487c9",
+        "color2": "",
+        "label": "letter",
+        "enabled": true,
+        "style1": "color",
+        "style2": ""
       },
       {
         "match": "",
@@ -72,27 +99,18 @@
       },
       {
         "match": "",
-        "color1": "#A9CCE3",
+        "color1": "#45B7D1",
         "color2": "",
-        "style1": "background",
-        "style2": "symbol",
-        "label": "person",
-        "enabled": true
-      },
-      {
-        "match": "",
-        "color1": "#A3E4D7",
-        "color2": "",
-        "style1": "background",
+        "style1": "",
         "style2": "",
-        "label": "shape",
+        "label": "colorality",
         "enabled": false
       },
       {
         "match": "",
         "color1": "#D5A6BD",
         "color2": "",
-        "style1": "background",
+        "style1": "",
         "style2": "",
         "label": "sound",
         "enabled": false
@@ -101,27 +119,9 @@
         "match": "",
         "color1": "#FAD7A0",
         "color2": "",
-        "style1": "background",
+        "style1": "",
         "style2": "",
         "label": "texture",
-        "enabled": false
-      },
-      {
-        "match": "",
-        "color1": "#D5A6BD",
-        "color2": "",
-        "style1": "background",
-        "style2": "",
-        "label": "school subject",
-        "enabled": false
-      },
-      {
-        "match": "",
-        "color1": "#45B7D1",
-        "color2": "",
-        "style1": "background",
-        "style2": "",
-        "label": "colorality",
         "enabled": false
       }
     ]
@@ -401,7 +401,7 @@
       {
         "label": "Friday",
         "color1": "#5DB0D9",
-        "color2": "",
+        "color2": "#5DB0D9",
         "style1": "color",
         "style2": "",
         "match": "friday",
@@ -411,7 +411,7 @@
       {
         "label": "Monday",
         "color1": "#F4A157",
-        "color2": "",
+        "color2": "#F4A157",
         "style1": "color",
         "style2": "",
         "match": "monday",
@@ -421,7 +421,7 @@
       {
         "label": "Saturday",
         "color1": "#E5E9EC",
-        "color2": "",
+        "color2": "#E5E9EC",
         "style1": "color",
         "style2": "",
         "match": "saturday",
@@ -431,7 +431,7 @@
       {
         "label": "Sunday",
         "color1": "#514D8A",
-        "color2": "",
+        "color2": "#514D8A",
         "style1": "color",
         "style2": "",
         "match": "sunday",
@@ -441,7 +441,7 @@
       {
         "label": "Thursday",
         "color1": "#4ABD37",
-        "color2": "",
+        "color2": "#4ABD37",
         "style1": "color",
         "style2": "",
         "match": "thursday",
@@ -451,7 +451,7 @@
       {
         "label": "Tuesday",
         "color1": "#3A6C91",
-        "color2": "",
+        "color2": "#3A6C91",
         "style1": "color",
         "style2": "",
         "match": "tuesday",
@@ -461,7 +461,7 @@
       {
         "label": "Wednesday",
         "color1": "#FFF947",
-        "color2": "",
+        "color2": "#FFF947",
         "style1": "color",
         "style2": "",
         "match": "wednesday",

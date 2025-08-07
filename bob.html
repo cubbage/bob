@@ -446,6 +446,55 @@
     .rule-row .color-btn {
       flex-shrink: 0;
     }
+
+    /* Move buttons for group reordering */
+    .move-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      margin-right: 8px;
+    }
+
+    .move-btn {
+      width: 24px;
+      height: 20px;
+      padding: 0;
+      border: 1px solid #dee2e6;
+      background: #f8f9fa;
+      color: #6c757d;
+      cursor: pointer;
+      font-size: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 2px;
+      transition: all 0.2s ease;
+    }
+
+    .move-btn:hover {
+      background: #e9ecef;
+      color: #495057;
+    }
+
+    .move-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .move-btn:disabled:hover {
+      background: #f8f9fa;
+      color: #6c757d;
+    }
+
+    .group-priority-info {
+      font-size: 0.75rem;
+      color: #6c757d;
+      margin-top: 0.5rem;
+      padding: 0.5rem;
+      background: #f8f9fa;
+      border: 1px solid #dee2e6;
+      border-radius: 4px;
+    }
   </style>
 </head>
 
@@ -637,6 +686,17 @@
             </div>
           </div>
         </div>
+        <div class="group-priority-info">
+          <strong>Priority Order:</strong> Groups are applied in the order shown above. Use the ▲▼ buttons to reorder
+          groups and change priority. The first matching group's style will be applied.
+          <div id="currentPriorityOrder" style="margin-top: 0.5rem; font-size: 0.7rem; color: #495057;"></div>
+          <div style="margin-top: 0.5rem;">
+            <button class="btn btn-secondary btn-small" id="showPriorityOrder" style="font-size: 0.75rem;">Show Current
+              Order</button>
+            <button class="btn btn-secondary btn-small" id="resetPriorityOrder" style="font-size: 0.75rem;">Reset to
+              Alphabetical</button>
+          </div>
+        </div>
       </div>
       <p class="small">Groups match words using JavaScript regular expressions (case-insensitive by default). First
         matching group applies.</p>
@@ -710,6 +770,10 @@
 
   <template id="ruleTemplate">
     <div class="rule-row">
+      <div class="move-buttons">
+        <button class="move-btn move-up" title="Move group up">▲</button>
+        <button class="move-btn move-down" title="Move group down">▼</button>
+      </div>
       <button class="btn btn-secondary group-toggle" style="width: 40px; font-weight: bold;"
         title="Toggle group on/off">✓</button>
       <select class="category" style="width: 150px;">
@@ -1069,6 +1133,80 @@
         const row = node.querySelector('.rule-row');
         row.dataset.idx = idx;
 
+        // Add priority number indicator
+        const priorityNumber = document.createElement('div');
+        priorityNumber.style.cssText = `
+          position: absolute;
+          top: -8px;
+          left: -8px;
+          background: #007aff;
+          color: white;
+          border-radius: 50%;
+          width: 20px;
+          height: 20px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 10px;
+          font-weight: bold;
+          z-index: 10;
+        `;
+        priorityNumber.textContent = idx + 1;
+        row.style.position = 'relative';
+        row.appendChild(priorityNumber);
+
+        // Add move button functionality
+        const moveUpBtn = row.querySelector('.move-up');
+        const moveDownBtn = row.querySelector('.move-down');
+
+        if (moveUpBtn) {
+          // Disable up button for first item
+          moveUpBtn.disabled = idx === 0;
+
+          moveUpBtn.addEventListener('click', () => {
+            if (idx > 0) {
+              // Visual feedback
+              moveUpBtn.style.transform = 'scale(0.9)';
+              setTimeout(() => {
+                moveUpBtn.style.transform = 'scale(1)';
+              }, 150);
+
+              // Swap with previous item
+              const temp = dictionary.rules[idx];
+              dictionary.rules[idx] = dictionary.rules[idx - 1];
+              dictionary.rules[idx - 1] = temp;
+
+              refreshRuleUI();
+              applyRules();
+              autoSavePatternHierarchy();
+            }
+          });
+        }
+
+        if (moveDownBtn) {
+          // Disable down button for last item
+          moveDownBtn.disabled = idx === dictionary.rules.length - 1;
+
+          moveDownBtn.addEventListener('click', () => {
+            if (idx < dictionary.rules.length - 1) {
+              // Visual feedback
+              moveDownBtn.style.transform = 'scale(0.9)';
+              setTimeout(() => {
+                moveDownBtn.style.transform = 'scale(1)';
+              }, 150);
+
+              // Swap with next item
+              const temp = dictionary.rules[idx];
+              dictionary.rules[idx] = dictionary.rules[idx + 1];
+              dictionary.rules[idx + 1] = temp;
+
+              refreshRuleUI();
+              applyRules();
+              autoSavePatternHierarchy();
+            }
+          });
+        }
+
         // Populate category dropdown
         const categorySelect = row.querySelector('.category');
         categorySelect.innerHTML = '';
@@ -1175,6 +1313,7 @@
         container.appendChild(node);
       });
       updateRawJson();
+      updatePriorityOrderDisplay();
     }
 
     function refreshObjectsUI() {
@@ -3099,6 +3238,10 @@
       // Refresh button event listener
       document.getElementById('refreshBtn').addEventListener('click', refreshFromBobJson);
 
+      // Priority order management event listeners
+      document.getElementById('showPriorityOrder').addEventListener('click', showPriorityOrder);
+      document.getElementById('resetPriorityOrder').addEventListener('click', resetPriorityOrder);
+
       // Initialize UI
       updatePatternUI();
       refreshRuleUI();
@@ -3200,6 +3343,44 @@ b,#684ccd,,color,,^b,letter,true`;
       a.href = URL.createObjectURL(blob);
       a.download = 'objects_template.csv';
       a.click();
+    }
+
+    // Priority order management functions
+    function showPriorityOrder() {
+      const orderList = dictionary.rules.map((rule, index) => {
+        const emoji = getGroupEmoji(rule.label) || '❓';
+        return `${index + 1}. ${emoji} ${rule.label || 'Unnamed Group'}`;
+      }).join('\n');
+
+      alert(`Current Group Priority Order:\n\n${orderList}\n\nGroups are applied in this order. The first matching group's style will be applied.`);
+    }
+
+    function resetPriorityOrder() {
+      // Sort rules alphabetically by label
+      dictionary.rules.sort((a, b) => {
+        const labelA = (a.label || '').toLowerCase();
+        const labelB = (b.label || '').toLowerCase();
+        return labelA.localeCompare(labelB);
+      });
+
+      refreshRuleUI();
+      applyRules();
+      autoSavePatternHierarchy();
+
+      alert('Groups have been reset to alphabetical order.');
+    }
+
+    function updatePriorityOrderDisplay() {
+      const display = document.getElementById('currentPriorityOrder');
+      if (display && dictionary.rules.length > 0) {
+        const orderText = dictionary.rules.map((rule, index) => {
+          const emoji = getGroupEmoji(rule.label) || '❓';
+          return `${index + 1}. ${emoji} ${rule.label || 'Unnamed Group'}`;
+        }).join(' → ');
+        display.textContent = `Current order: ${orderText}`;
+      } else if (display) {
+        display.textContent = 'No groups defined';
+      }
     }
 
     function convertBobToMarkdown() {
