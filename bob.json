@@ -40,7 +40,7 @@
         "color1": "#5487c9",
         "color2": "",
         "label": "letter",
-        "enabled": false,
+        "enabled": true,
         "style1": "color",
         "style2": ""
       },
@@ -704,7 +704,7 @@
         "color2": "",
         "style1": "color",
         "style2": "",
-        "match": "0",
+        "match": "\\b0\\S*\\b",
         "group": "number",
         "enabled": true
       },
@@ -714,7 +714,7 @@
         "color2": "",
         "style1": "color",
         "style2": "",
-        "match": "1",
+        "match": "\\b1\\S*\\b",
         "group": "number",
         "enabled": true
       },
@@ -724,7 +724,7 @@
         "color2": "",
         "style1": "color",
         "style2": "",
-        "match": "2",
+        "match": "\\b2\\S*\\b",
         "group": "number",
         "enabled": true
       },
@@ -734,7 +734,7 @@
         "color2": "",
         "style1": "color",
         "style2": "",
-        "match": "3",
+        "match": "\\b3\\S*\\b",
         "group": "number",
         "enabled": true
       },
@@ -744,7 +744,7 @@
         "color2": "",
         "style1": "color",
         "style2": "",
-        "match": "4",
+        "match": "\\b4\\S*\\b",
         "group": "number",
         "enabled": true
       },
@@ -754,7 +754,7 @@
         "color2": "",
         "style1": "color",
         "style2": "",
-        "match": "5",
+        "match": "\\b5\\S*\\b",
         "group": "number",
         "enabled": true
       },
@@ -764,7 +764,7 @@
         "color2": "",
         "style1": "color",
         "style2": "",
-        "match": "6",
+        "match": "\\b6\\S*\\b",
         "group": "number",
         "enabled": true
       },
@@ -774,7 +774,7 @@
         "color2": "",
         "style1": "color",
         "style2": "",
-        "match": "7",
+        "match": "\\b7\\S*\\b",
         "group": "number",
         "enabled": true
       },
@@ -784,7 +784,7 @@
         "color2": "",
         "style1": "color",
         "style2": "",
-        "match": "8",
+        "match": "\\b8\\S*\\b",
         "group": "number",
         "enabled": true
       },
@@ -794,7 +794,7 @@
         "color2": "",
         "style1": "color",
         "style2": "",
-        "match": "9",
+        "match": "\\b9\\S*\\b",
         "group": "number",
         "enabled": true
       },
@@ -804,7 +804,7 @@
         "color2": "",
         "style1": "color",
         "style2": "",
-        "match": "a",
+        "match": "\\ba\\S*\\b",
         "group": "letter",
         "enabled": true
       },
@@ -814,7 +814,7 @@
         "color2": "",
         "style1": "color",
         "style2": "",
-        "match": "b",
+        "match": "\\bb\\S*\\b",
         "group": "letter",
         "enabled": true
       },
@@ -824,7 +824,7 @@
         "color2": "",
         "style1": "color",
         "style2": "",
-        "match": "c",
+        "match": "\\bc\\S*\\b",
         "group": "letter",
         "enabled": true
       },
@@ -834,7 +834,7 @@
         "color2": "",
         "style1": "color",
         "style2": "",
-        "match": "d",
+        "match": "\\bd\\S*\\b",
         "group": "letter",
         "enabled": true
       },
@@ -844,7 +844,7 @@
         "color2": "",
         "style1": "color",
         "style2": "",
-        "match": "e",
+        "match": "\\be\\S*\\b",
         "group": "letter",
         "enabled": true
       },
@@ -854,7 +854,7 @@
         "color2": "",
         "style1": "color",
         "style2": "",
-        "match": "f",
+        "match": "\\bf\\S*\\b",
         "group": "letter",
         "enabled": true
       },
@@ -864,7 +864,7 @@
         "color2": "",
         "style1": "color",
         "style2": "",
-        "match": "g",
+        "match": "\\bg\\S*\\b",
         "group": "letter",
         "enabled": true
       },
@@ -874,7 +874,7 @@
         "color2": "",
         "style1": "color",
         "style2": "",
-        "match": "h",
+        "match": "\\bh\\S*\\b",
         "group": "letter",
         "enabled": true
       },
@@ -884,7 +884,7 @@
         "color2": "",
         "style1": "color",
         "style2": "",
-        "match": "i",
+        "match": "\\bi\\S*\\b",
         "group": "letter",
         "enabled": true
       },
@@ -894,7 +894,7 @@
         "color2": "",
         "style1": "color",
         "style2": "",
-        "match": "j",
+        "match": "\\bj\\S*\\b",
         "group": "letter",
         "enabled": true
       },
@@ -904,7 +904,7 @@
         "color2": "",
         "style1": "color",
         "style2": "",
-        "match": "k",
+        "match": "\\bk\\S*\\b",
         "group": "letter",
         "enabled": true
       },
@@ -914,7 +914,7 @@
         "color2": "",
         "style1": "color",
         "style2": "",
-        "match": "l",
+        "match": "\\bl\\S*\\b",
         "group": "letter",
         "enabled": true
       },
@@ -924,7 +924,7 @@
         "color2": "",
         "style1": "color",
         "style2": "",
-        "match": "m",
+        "match": "\\bm\\S*\\b",
         "group": "letter",
         "enabled": true
       },
@@ -934,7 +934,7 @@
         "color2": "",
         "style1": "color",
         "style2": "",
-        "match": "n",
+        "match": "\\bn\\S*\\b",
         "group": "letter",
         "enabled": true
       },
@@ -944,7 +944,7 @@
         "color2": "",
         "style1": "color",
         "style2": "",
-        "match": "o",
+        "match": "\\bo\\S*\\b",
         "group": "letter",
         "enabled": true
       },
@@ -954,7 +954,7 @@
         "color2": "",
         "style1": "color",
         "style2": "",
-        "match": "p",
+        "match": "\\bp\\S*\\b",
         "group": "letter",
         "enabled": true
       },
@@ -964,7 +964,7 @@
         "color2": "",
         "style1": "color",
         "style2": "",
-        "match": "q",
+        "match": "\\bq\\S*\\b",
         "group": "letter",
         "enabled": true
       },
@@ -974,7 +974,7 @@
         "color2": "",
         "style1": "color",
         "style2": "",
-        "match": "r",
+        "match": "\\br\\S*\\b",
         "group": "letter",
         "enabled": true
       },
@@ -984,7 +984,7 @@
         "color2": "",
         "style1": "color",
         "style2": "",
-        "match": "s",
+        "match": "\\bs\\S*\\b",
         "group": "letter",
         "enabled": true
       },
@@ -994,7 +994,7 @@
         "color2": "",
         "style1": "color",
         "style2": "",
-        "match": "t",
+        "match": "\\bt\\S*\\b",
         "group": "letter",
         "enabled": true
       },
@@ -1004,7 +1004,7 @@
         "color2": "",
         "style1": "color",
         "style2": "",
-        "match": "u",
+        "match": "\\bu\\S*\\b",
         "group": "letter",
         "enabled": true
       },
@@ -1014,7 +1014,7 @@
         "color2": "",
         "style1": "color",
         "style2": "",
-        "match": "v",
+        "match": "\\bv\\S*\\b",
         "group": "letter",
         "enabled": true
       },
@@ -1024,7 +1024,7 @@
         "color2": "",
         "style1": "color",
         "style2": "",
-        "match": "w",
+        "match": "\\bw\\S*\\b",
         "group": "letter",
         "enabled": true
       },
@@ -1034,7 +1034,7 @@
         "color2": "",
         "style1": "color",
         "style2": "",
-        "match": "x",
+        "match": "\\bx\\S*\\b",
         "group": "letter",
         "enabled": true
       },
@@ -1044,7 +1044,7 @@
         "color2": "",
         "style1": "color",
         "style2": "",
-        "match": "y",
+        "match": "\\by\\S*\\b",
         "group": "letter",
         "enabled": true
       },
@@ -1054,7 +1054,7 @@
         "color2": "",
         "style1": "color",
         "style2": "",
-        "match": "z",
+        "match": "\\bz\\S*\\b",
         "group": "letter",
         "enabled": true
       },
