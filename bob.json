@@ -1,12 +1,20 @@
 {
   "defaultPattern": {
-    "label": "Default",
+    "label": "day of the week",
     "color1": "magenta",
     "color2": "",
     "structure": {
       "startAnchor": false,
       "startWordBoundary": false,
-      "customPrependToggles": [],
+      "customPrependToggles": [
+        {
+          "id": "1754538953687",
+          "label": "blah",
+          "regex": "blah",
+          "position": "prepend",
+          "active": false
+        }
+      ],
       "basePattern": "fish|river",
       "customAppendToggles": [],
       "endWordBoundary": false,
