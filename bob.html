@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -8,10 +9,53 @@
     body {
       font-family: system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif;
       padding: 1rem;
-      max-width: 900px;
+      max-width: 1200px;
       margin: auto;
     }
 
+    /* Tab Styles */
+    .tab-container {
+      margin-top: 2rem;
+    }
+
+    .tab-buttons {
+      display: flex;
+      border-bottom: 2px solid #e0e0e0;
+      margin-bottom: 1rem;
+    }
+
+    .tab-button {
+      padding: 0.75rem 1.5rem;
+      border: none;
+      background: none;
+      cursor: pointer;
+      font-weight: 500;
+      color: #666;
+      border-bottom: 3px solid transparent;
+      transition: all 0.2s ease;
+    }
+
+    .tab-button.active {
+      color: #007aff;
+      border-bottom-color: #007aff;
+      background: #f8f9fa;
+    }
+
+    .tab-button:hover {
+      color: #007aff;
+      background: #f8f9fa;
+    }
+
+    .tab-content {
+      display: none;
+      padding: 1rem 0;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    /* Existing Styles */
     textarea {
       width: 100%;
       height: 120px;
@@ -117,7 +161,7 @@
 
     .inline-form-row input {
       flex: 1;
-      min-width: 120px;
+      min-width: 80px;
     }
 
     .inline-form-actions {
@@ -251,7 +295,6 @@
       font-size: 0.75rem;
     }
 
-    /* Color button and panel styles */
     .color-btn {
       position: relative;
       border: 2px solid #dee2e6;
@@ -265,8 +308,6 @@
     #defaultColor1Panel,
     #defaultColor2Panel {
       position: absolute;
-      top: 100%;
-      left: 0;
       min-width: 250px;
       background: white;
       border: 1px solid #dee2e6;
@@ -283,183 +324,338 @@
       white-space: nowrap;
       font-weight: 600;
     }
+
+    /* JSON Display */
+    .json-display {
+      background: #f8f9fa;
+      border: 1px solid #dee2e6;
+      border-radius: 6px;
+      padding: 1rem;
+      max-height: 400px;
+      overflow: auto;
+      font-family: monospace;
+      font-size: 0.875rem;
+      line-height: 1.4;
+      white-space: pre;
+    }
+
+    /* JSON Syntax Highlighting */
+    .json-key {
+      color: #0066cc;
+      font-weight: 600;
+    }
+
+    .json-string {
+      color: #28a745;
+    }
+
+    .json-number {
+      color: #fd7e14;
+    }
+
+    .json-boolean {
+      color: #6f42c1;
+    }
+
+    .json-null {
+      color: #6c757d;
+    }
+
+    .json-punctuation {
+      color: #495057;
+    }
+
+    /* Refresh Button */
+    .refresh-btn {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #007aff;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      cursor: pointer;
+      font-size: 20px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+      transition: all 0.2s ease;
+      z-index: 1000;
+    }
+
+    .refresh-btn:hover {
+      background: #0056b3;
+      transform: scale(1.1);
+    }
+
+    .refresh-btn:active {
+      transform: scale(0.95);
+    }
+
+    /* Section headers */
+    .section-header {
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid #e0e0e0;
+    }
+
+    .section-header h3 {
+      margin: 0;
+      color: #333;
+    }
+
+    /* Dropdown styling */
+    .dropdown-option:hover {
+      background-color: #f8f9fa;
+    }
+
+    .dropdown-option:last-child {
+      border-bottom: none !important;
+    }
+
+    /* Style abbreviation styling */
+    .style1-display,
+    .style2-display {
+      font-size: 0.7em;
+      opacity: 0.8;
+      margin-left: 2px;
+    }
+
+    /* Group regex field width */
+    .rule-row .match {
+      width: 80px;
+      min-width: 80px;
+    }
   </style>
 </head>
 
 <body>
-  <h1>Local Parser + Colorizer</h1>
-  <p>Paste/OCR text, load or edit a dictionary of rules; results are rendered with colors. Export to Markdown or PDF.
-  </p>
+  <!-- Refresh Button -->
+  <button class="refresh-btn" id="refreshBtn" title="Refresh from bob.json and switch to JSON tab">🔄</button>
 
-  <section>
-    <h2>1. Input Text</h2>
-    <textarea id="sourceText" placeholder="Paste OCR text here..."></textarea>
-    <div style="margin-top:0.5rem;">
-      <button class="btn" id="applyBtn">Apply Rules</button>
-      <button class="btn btn-secondary" id="clearBtn">Clear</button>
+  <div class="tab-container">
+    <div class="tab-buttons">
+      <button class="tab-button active" data-tab="input-preview">Input Text + Preview + Export</button>
+      <button class="tab-button" data-tab="search-dictionary">Default Search Pattern + Groups</button>
+      <button class="tab-button" data-tab="lists-arrays">Lists and Arrays Manager</button>
+      <button class="tab-button" data-tab="json-view">bob.json</button>
     </div>
-  </section>
 
-  <section>
-    <h2>2. Default Search Pattern</h2>
-    <div style="margin-bottom:0.5rem;">
-      <label>
-        <input type="checkbox" id="defaultPatternEnabled" checked>
-        Enable default search pattern
-      </label>
+    <!-- Tab 1: Input Text + Preview + Export -->
+    <div id="input-preview" class="tab-content active">
+      <div style="margin-bottom:0.5rem;">
+        <button class="btn" id="loadSampleMd">Load Sample.md</button>
+      </div>
+
+      <div class="section-header">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <h3>Input Text</h3>
+          <button class="btn btn-secondary" id="clearBtn">Clear</button>
+        </div>
+      </div>
+      <textarea id="sourceText" placeholder="Paste OCR text here..."></textarea>
+
+      <div class="section-header">
+        <h3>Preview</h3>
+      </div>
+      <div class="preview" id="preview"></div>
+
+      <div class="section-header">
+        <h3>Export</h3>
+      </div>
+      <div class="flex">
+        <div>
+          <label>Markdown filename: <input id="mdName" value="export.md"></label>
+          <div style="margin-top:0.25rem;">
+            <button class="btn" id="downloadMd">Download Markdown</button>
+          </div>
+        </div>
+        <div>
+          <label>PDF filename: <input id="pdfName" value="export.pdf"></label>
+          <div style="margin-top:0.25rem;">
+            <button class="btn" id="downloadPdf">Download PDF</button>
+          </div>
+        </div>
+        <div>
+          <div style="margin-bottom:4px;">Clipboard:</div>
+          <button class="btn" id="copyHtml">Copy Styled HTML</button>
+          <button class="btn" id="copyPlain">Copy Plain Text</button>
+        </div>
+      </div>
     </div>
-    <div id="defaultPatternContainer">
-      <div class="rule-row" data-step="0">
-        <select id="defaultLabel" style="width: 110px;">
-          <option value="">💜</option>
-        </select>
-        <button id="defaultColor1Btn" class="btn btn-secondary color-btn"
-          style="width: 60px; text-align: left; position: relative;">
-          <span id="defaultColor1Display">magenta</span>
-        </button>
-        <button id="defaultColor2Btn" class="btn btn-secondary color-btn"
-          style="width: 60px; text-align: left; position: relative;">
-          <span id="defaultColor2Display">-</span>
-        </button>
-        <div id="defaultColor1Panel" class="inline-form">
+
+    <!-- Tab 2: Default Search Pattern + Dictionary / Rules -->
+    <div id="search-dictionary" class="tab-content">
+      <div class="section-header">
+        <h3>Default Search Pattern</h3>
+      </div>
+      <div style="margin-bottom:0.5rem;">
+        <label>
+          <input type="checkbox" id="defaultPatternEnabled" checked>
+          Enable default search pattern
+        </label>
+      </div>
+      <div id="defaultPatternContainer">
+        <div class="rule-row" data-step="0">
+          <button id="defaultColor1Btn" class="btn btn-secondary color-btn"
+            style="width: 80px; text-align: left; position: relative;">
+            <span id="defaultColor1Display">magenta</span>
+            <span id="defaultStyle1Display">bg</span>
+          </button>
+          <button id="defaultColor2Btn" class="btn btn-secondary color-btn"
+            style="width: 80px; text-align: left; position: relative;">
+            <span id="defaultColor2Display">-</span>
+            <span id="defaultStyle2Display"></span>
+          </button>
+          <div id="defaultColor1Panel" class="inline-form">
+            <div class="inline-form-row">
+              <label for="defaultColor1Text">Color 1:</label>
+              <input id="defaultColor1Text" type="text" placeholder="color (e.g. #ff0000)" value="magenta"
+                style="flex: 1;" />
+            </div>
+            <div class="inline-form-row">
+              <label for="defaultColor1Picker">Picker:</label>
+              <input id="defaultColor1Picker" type="color" value="#ff00ff" style="width: 50px; height: 30px;" />
+            </div>
+            <div class="inline-form-row">
+              <label for="defaultStyle1Select">Style:</label>
+              <select id="defaultStyle1Select" style="flex: 1;">
+                <option value="background">Background</option>
+                <option value="color">Text Color</option>
+                <option value="underline">Underline</option>
+                <option value="border">Border</option>
+              </select>
+            </div>
+            <div class="inline-form-actions">
+              <button class="btn btn-success btn-small" id="applyDefaultColor1">Apply</button>
+              <button class="btn btn-danger btn-small" id="cancelDefaultColor1">Cancel</button>
+            </div>
+          </div>
+          <div id="defaultColor2Panel" class="inline-form">
+            <div class="inline-form-row">
+              <label for="defaultColor2Text">Color 2:</label>
+              <input id="defaultColor2Text" type="text" placeholder="color (e.g. #ff0000)" value="" style="flex: 1;" />
+            </div>
+            <div class="inline-form-row">
+              <label for="defaultColor2Picker">Picker:</label>
+              <input id="defaultColor2Picker" type="color" value="#0000ff" style="width: 50px; height: 30px;" />
+            </div>
+            <div class="inline-form-row">
+              <label for="defaultStyle2Select">Style:</label>
+              <select id="defaultStyle2Select" style="flex: 1;">
+                <option value="background">Background</option>
+                <option value="color">Text Color</option>
+                <option value="underline">Underline</option>
+                <option value="border">Border</option>
+              </select>
+            </div>
+            <div class="inline-form-actions">
+              <button class="btn btn-success btn-small" id="applyDefaultColor2">Apply</button>
+              <button class="btn btn-danger btn-small" id="cancelDefaultColor2">Cancel</button>
+            </div>
+          </div>
+          <button class="btn btn-secondary wrapper-toggle" data-wrapper="start-anchor" data-active="false">^</button>
+          <button class="btn btn-secondary" id="addPrependRegexToggle">+</button>
+          <div id="prependTogglesContainer" style="display: flex; gap: 0; align-items: center;"></div>
+          <input id="basePatternInput" placeholder="Base pattern (e.g. [A-Z])" value="[A-Z]{1,4}"
+            style="width: 70px;" />
+          <div id="appendTogglesContainer" style="display: flex; gap: 0; align-items: center;"></div>
+          <button class="btn btn-secondary" id="addRegexToggle">+</button>
+          <button class="btn btn-secondary wrapper-toggle" data-wrapper="word-boundary" data-active="false">\b</button>
+          <button class="btn btn-secondary wrapper-toggle" data-wrapper="end-anchor" data-active="false">$</button>
+        </div>
+
+        <!-- Inline form for adding regex toggles -->
+        <div id="inlineRegexForm" class="inline-form">
           <div class="inline-form-row">
-            <label for="defaultColor1Text">Color 1:</label>
-            <input id="defaultColor1Text" type="text" placeholder="color (e.g. #ff0000)" value="magenta"
-              style="flex: 1;" />
+            <label for="newRegexValue">Regex:</label>
+            <input type="text" id="newRegexValue" placeholder="Enter regex string (e.g. [0-9]+)" />
+            <button class="btn btn-secondary btn-small" id="togglePrependMode"
+              title="Toggle between append (+) and prepend (^) mode">+</button>
           </div>
           <div class="inline-form-row">
-            <label for="defaultColor1Picker">Picker:</label>
-            <input id="defaultColor1Picker" type="color" value="#ff00ff" style="width: 50px; height: 30px;" />
+            <label for="newRegexLabel">Label:</label>
+            <input type="text" id="newRegexLabel" placeholder="Enter button label (e.g. Numbers)" />
           </div>
           <div class="inline-form-actions">
-            <button class="btn btn-success btn-small" id="applyDefaultColor1">Apply</button>
-            <button class="btn btn-danger btn-small" id="cancelDefaultColor1">Cancel</button>
+            <button class="btn btn-success btn-small" id="saveRegexToggle">Add Toggle</button>
+            <button class="btn btn-danger btn-small" id="cancelRegexToggle">Cancel</button>
           </div>
         </div>
-        <div id="defaultColor2Panel" class="inline-form">
-          <div class="inline-form-row">
-            <label for="defaultColor2Text">Color 2:</label>
-            <input id="defaultColor2Text" type="text" placeholder="color (e.g. #ff0000)" value="" style="flex: 1;" />
+      </div>
+
+      <div style="margin-top: 0.5rem;">
+        <strong>Constructed Pattern:</strong> <code id="constructedPattern">[A-Z]{1,4}</code>
+      </div>
+      <div style="margin-top: 0.5rem;">
+        <strong>Current Matches:</strong>
+        <pre id="currentMatches" class="code" style="max-height:100px; overflow:auto; font-size: 0.875rem;"></pre>
+      </div>
+      <p class="small">This pattern will be applied to any text that doesn't match other rules. Build your pattern
+        progressively by adding wrappers to each step.</p>
+
+      <div class="section-header">
+        <h3>Groups</h3>
+      </div>
+      <div style="margin-top:0.5rem;">
+        <div id="rulesContainer"></div>
+        <div style="margin-top:0.5rem;">
+          <div class="dropdown-container" style="position: relative; display: inline-block;">
+            <button class="btn" id="addRule">+ Add Group</button>
+            <div id="categoryDropdown" class="dropdown-menu"
+              style="display: none; position: absolute; top: 100%; left: 0; background: white; border: 1px solid #dee2e6; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); z-index: 1000; max-width: 100px;">
+              <!-- Categories will be populated dynamically -->
+            </div>
           </div>
-          <div class="inline-form-row">
-            <label for="defaultColor2Picker">Picker:</label>
-            <input id="defaultColor2Picker" type="color" value="#0000ff" style="width: 50px; height: 30px;" />
-          </div>
-          <div class="inline-form-actions">
-            <button class="btn btn-success btn-small" id="applyDefaultColor2">Apply</button>
-            <button class="btn btn-danger btn-small" id="cancelDefaultColor2">Cancel</button>
-          </div>
-        </div>
-        <button class="btn btn-secondary wrapper-toggle" data-wrapper="start-anchor" data-active="false">^</button>
-        <button class="btn btn-secondary" id="addPrependRegexToggle">+</button>
-        <div id="prependTogglesContainer" style="display: flex; gap: 0; align-items: center;"></div>
-        <input id="basePatternInput" placeholder="Base pattern (e.g. [A-Z])" value="[A-Z]{1,4}" style="width: 70px;" />
-        <div id="appendTogglesContainer" style="display: flex; gap: 0; align-items: center;"></div>
-        <button class="btn btn-secondary" id="addRegexToggle">+</button>
-        <button class="btn btn-secondary wrapper-toggle" data-wrapper="word-boundary" data-active="false">\b</button>
-        <button class="btn btn-secondary wrapper-toggle" data-wrapper="end-anchor" data-active="false">$</button>
-      </div>
-
-      <!-- Inline form for adding regex toggles -->
-      <div id="inlineRegexForm" class="inline-form">
-        <div class="inline-form-row">
-          <label for="newRegexValue">Regex:</label>
-          <input type="text" id="newRegexValue" placeholder="Enter regex string (e.g. [0-9]+)" />
-          <button class="btn btn-secondary btn-small" id="togglePrependMode"
-            title="Toggle between append (+) and prepend (^) mode">+</button>
-        </div>
-        <div class="inline-form-row">
-          <label for="newRegexLabel">Label:</label>
-          <input type="text" id="newRegexLabel" placeholder="Enter button label (e.g. Numbers)" />
-        </div>
-        <div class="inline-form-actions">
-          <button class="btn btn-success btn-small" id="saveRegexToggle">Add Toggle</button>
-          <button class="btn btn-danger btn-small" id="cancelRegexToggle">Cancel</button>
         </div>
       </div>
+      <p class="small">Groups match words using JavaScript regular expressions (case-insensitive by default). First
+        matching group applies.</p>
     </div>
 
-    <div style="margin-top: 0.5rem;">
-      <strong>Constructed Pattern:</strong> <code id="constructedPattern">[A-Z]{1,4}</code>
-    </div>
-    <div style="margin-top: 0.5rem;">
-      <strong>Current Matches:</strong>
-      <pre id="currentMatches" class="code" style="max-height:100px; overflow:auto; font-size: 0.875rem;"></pre>
-    </div>
-    <div style="margin-top: 0.5rem;">
-      <strong>Reconstructed Pattern:</strong> <code id="reconstructedPattern" class="code"></code>
-    </div>
-    <p class="small">This pattern will be applied to any text that doesn't match other rules. Build your pattern
-      progressively by adding wrappers to each step.</p>
-  </section>
-
-  <section>
-    <h2>3. Dictionary / Rules</h2>
-    <div>
-      <button class="btn btn-secondary" id="loadBobJson">Load from Storage</button>
-      <button class="btn btn-secondary" id="saveBobJson">Export to File</button>
-    </div>
-    <div style="margin-top:0.5rem;">
-      <div id="rulesContainer"></div>
-      <div style="margin-top:0.5rem;"><button class="btn" id="addRule">+ Add Rule</button></div>
-    </div>
-    <p class="small">Rules match words using JavaScript regular expressions (case-insensitive by default). First
-      matching rule applies.</p>
-  </section>
-
-  <section>
-    <h2>4. Preview</h2>
-    <div style="margin-bottom:0.5rem;">
-      <button class="btn" id="loadSampleMd">Load Sample.md</button>
-      <button class="btn btn-secondary" id="refreshPreview">Refresh Preview</button>
-    </div>
-    <div class="preview" id="preview"></div>
-  </section>
-
-  <section>
-    <h2>5. Export</h2>
-    <div class="flex">
-      <div>
-        <label>Markdown filename: <input id="mdName" value="export.md"></label>
-        <div style="margin-top:0.25rem;">
-          <button class="btn" id="downloadMd">Download Markdown</button>
-        </div>
+    <!-- Tab 3: Lists and Arrays Manager -->
+    <div id="lists-arrays" class="tab-content">
+      <div class="section-header">
+        <h3>Lists and Arrays Manager</h3>
       </div>
-      <div>
-        <label>PDF filename: <input id="pdfName" value="export.pdf"></label>
-        <div style="margin-top:0.25rem;">
-          <button class="btn" id="downloadPdf">Download PDF</button>
-        </div>
+      <div style="margin-bottom:0.5rem;">
+        <button class="btn" id="addKeyValueList">+ Add Key-Value List</button>
+        <button class="btn btn-secondary" id="addArray">+ Add Array</button>
       </div>
-      <div>
-        <div style="margin-bottom:4px;">Clipboard:</div>
-        <button class="btn" id="copyHtml">Copy Styled HTML</button>
-        <button class="btn" id="copyPlain">Copy Plain Text</button>
+      <div id="listsContainer"></div>
+      <p class="small">Manage lists of key:value pairs and arrays that sync with bob.json. Use these for storing
+        configuration data, mappings, or any structured data.</p>
+    </div>
+
+    <!-- Tab 4: bob.json -->
+    <div id="json-view" class="tab-content">
+      <div class="section-header">
+        <h3>bob.json</h3>
+        <p class="small">This shows the current state of your configuration data. The data is automatically saved to
+          localStorage and can be exported to bob.json.</p>
       </div>
+      <div style="margin-bottom:1rem;">
+        <button class="btn btn-secondary" id="loadBobJson">Load from Storage</button>
+        <button class="btn btn-secondary" id="saveBobJson">Export to File</button>
+      </div>
+      <div class="json-display" id="rawJson"></div>
     </div>
-  </section>
-
-  <section>
-    <h2>6. Lists & Arrays Manager</h2>
-    <div style="margin-bottom:0.5rem;">
-      <button class="btn" id="addKeyValueList">+ Add Key-Value List</button>
-      <button class="btn btn-secondary" id="addArray">+ Add Array</button>
-    </div>
-    <div id="listsContainer"></div>
-    <p class="small">Manage lists of key:value pairs and arrays that sync with bob.json. Use these for storing
-      configuration data, mappings, or any structured data.</p>
-  </section>
-
-  <section>
-    <h2>7. Dictionary JSON</h2>
-    <pre id="rawJson" class="code" style="max-height:200px; overflow:auto;"></pre>
-  </section>
+  </div>
 
   <template id="ruleTemplate">
     <div class="rule-row">
+      <select class="category" style="width: 150px;">
+        <option value="">💜</option>
+      </select>
+      <button class="color1-btn btn btn-secondary color-btn" style="width: 80px; text-align: left; position: relative;">
+        <span class="color1-display">magenta</span>
+        <span class="style1-display">bg</span>
+      </button>
+      <button class="color2-btn btn btn-secondary color-btn" style="width: 80px; text-align: left; position: relative;">
+        <span class="color2-display">-</span>
+        <span class="style2-display"></span>
+      </button>
       <input aria-label="match" placeholder="regex (e.g. ^[A-M])" class="match" />
-      <input aria-label="color" type="text" placeholder="color (e.g. #ff0000 or red)" class="color" />
-      <input aria-label="label" placeholder="label (optional)" class="label" />
       <button class="btn btn-secondary removeRule">✕</button>
     </div>
   </template>
@@ -469,6 +665,26 @@
     integrity="sha512-your-integrity-placeholder" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
   <script>
+    // Tab functionality
+    function initTabs() {
+      const tabButtons = document.querySelectorAll('.tab-button');
+      const tabContents = document.querySelectorAll('.tab-content');
+
+      tabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+          const targetTab = button.getAttribute('data-tab');
+
+          // Remove active class from all buttons and contents
+          tabButtons.forEach(btn => btn.classList.remove('active'));
+          tabContents.forEach(content => content.classList.remove('active'));
+
+          // Add active class to clicked button and corresponding content
+          button.classList.add('active');
+          document.getElementById(targetTab).classList.add('active');
+        });
+      });
+    }
+
     // minimal dictionary structure
     let dictionary = { rules: [] };
 
@@ -477,6 +693,8 @@
       label: "Default",
       color1: "magenta",
       color2: "",
+      style1: "background",
+      style2: "",
       structure: {
         startAnchor: false,
         startWordBoundary: false,
@@ -486,6 +704,12 @@
         endWordBoundary: false,
         endAnchor: false
       }
+    };
+
+    // Lists and Arrays Management
+    let listsData = {
+      keyValueLists: [],
+      arrays: []
     };
 
     // Function to load pattern hierarchy from localStorage or bob.json
@@ -559,6 +783,81 @@
         // If neither localStorage nor file exists, start with empty data
         console.log('No existing data found, starting with empty configuration');
       }
+    }
+
+    // Function to refresh from bob.json and switch to JSON tab
+    async function refreshFromBobJson() {
+      try {
+        const response = await fetch('bob.json');
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+
+        // Load default pattern
+        if (data.defaultPattern) {
+          defaultPattern = data.defaultPattern;
+        }
+
+        // Load dictionary
+        if (data.dictionary) {
+          dictionary = data.dictionary;
+        }
+
+        // Load lists and arrays data
+        if (data.listsData) {
+          listsData = data.listsData;
+        }
+
+        // Update UI
+        updatePatternUI();
+        refreshRuleUI();
+        refreshListsUI();
+        applyRules();
+        updateRawJson();
+
+        // Note: Removed auto-switching to JSON tab as requested
+
+        console.log('Refreshed from bob.json');
+
+        // Show success indicator
+        showRefreshIndicator();
+      } catch (error) {
+        console.error('Error refreshing from bob.json:', error);
+        alert('Error loading bob.json. Make sure the file exists and is valid JSON.');
+      }
+    }
+
+    // Function to show refresh indicator
+    function showRefreshIndicator() {
+      // Create or update refresh indicator
+      let indicator = document.getElementById('refreshIndicator');
+      if (!indicator) {
+        indicator = document.createElement('div');
+        indicator.id = 'refreshIndicator';
+        indicator.style.cssText = `
+          position: fixed;
+          top: 80px;
+          right: 20px;
+          background: #28a745;
+          color: white;
+          padding: 8px 12px;
+          border-radius: 4px;
+          font-size: 12px;
+          z-index: 1000;
+          opacity: 0;
+          transition: opacity 0.3s ease;
+        `;
+        document.body.appendChild(indicator);
+      }
+
+      indicator.textContent = '✓ Refreshed from bob.json';
+      indicator.style.opacity = '1';
+
+      // Hide after 2 seconds
+      setTimeout(() => {
+        indicator.style.opacity = '0';
+      }, 2000);
     }
 
     // Function to save pattern hierarchy to localStorage (silent)
@@ -671,30 +970,133 @@
         const node = tpl.content.cloneNode(true);
         const row = node.querySelector('.rule-row');
         row.dataset.idx = idx;
-        row.querySelector('.match').value = r.match;
-        row.querySelector('.color').value = r.color;
-        row.querySelector('.label').value = r.label || '';
+
+        // Populate category dropdown
+        const categorySelect = row.querySelector('.category');
+        categorySelect.innerHTML = '';
+
+        // Add default option
+        const defaultOption = document.createElement('option');
+        defaultOption.value = '';
+        defaultOption.textContent = '💜';
+        categorySelect.appendChild(defaultOption);
+
+        // Add categories from listsData
+        if (listsData && listsData.keyValueLists) {
+          const categoriesList = listsData.keyValueLists.find(list => list.name === 'categories');
+          if (categoriesList && categoriesList.items) {
+            categoriesList.items.forEach(item => {
+              const option = document.createElement('option');
+              option.value = item.key;
+              option.textContent = `${item.value} ${item.key}`;
+              categorySelect.appendChild(option);
+            });
+          }
+        }
+
+        // Set values
+        row.querySelector('.match').value = r.match || '';
+        row.querySelector('.category').value = r.label || '';
+
+        // Set color and style displays
+        const color1Display = row.querySelector('.color1-display');
+        const color2Display = row.querySelector('.color2-display');
+        const style1Display = row.querySelector('.style1-display');
+        const style2Display = row.querySelector('.style2-display');
+        const color1Btn = row.querySelector('.color1-btn');
+        const color2Btn = row.querySelector('.color2-btn');
+
+        if (r.color1) {
+          color1Display.textContent = r.color1;
+          style1Display.textContent = getStyleAbbreviation(r.style1 || 'background');
+          applyStyleToButton(color1Btn, r.color1, r.style1 || 'background');
+        } else {
+          color1Display.textContent = 'magenta';
+          style1Display.textContent = 'bg';
+          color1Btn.style.backgroundColor = '';
+          color1Btn.style.color = '';
+          color1Btn.style.border = '';
+          color1Btn.style.textDecoration = '';
+        }
+
+        if (r.color2) {
+          color2Display.textContent = r.color2;
+          style2Display.textContent = getStyleAbbreviation(r.style2 || 'background');
+          applyStyleToButton(color2Btn, r.color2, r.style2 || 'background');
+        } else {
+          color2Display.textContent = '-';
+          style2Display.textContent = '';
+          color2Btn.style.backgroundColor = '';
+          color2Btn.style.color = '';
+          color2Btn.style.border = '';
+          color2Btn.style.textDecoration = '';
+        }
+
+        // Add event listeners
         row.querySelector('.removeRule').addEventListener('click', () => {
           dictionary.rules.splice(idx, 1);
           refreshRuleUI();
           applyRules();
           autoSavePatternHierarchy();
         });
-        // live change
-        ['match', 'color', 'label'].forEach(k => {
-          row.querySelector('.' + k).addEventListener('input', () => {
-            dictionary.rules[idx][k] = row.querySelector('.' + k).value;
-            updateRawJson();
-            autoSavePatternHierarchy();
-          });
+
+        // Live change listeners
+        row.querySelector('.match').addEventListener('input', () => {
+          dictionary.rules[idx].match = row.querySelector('.match').value;
+          updateRawJson();
+          autoSavePatternHierarchy();
         });
+
+        row.querySelector('.category').addEventListener('change', () => {
+          dictionary.rules[idx].label = row.querySelector('.category').value;
+          updateRawJson();
+          autoSavePatternHierarchy();
+        });
+
+        // Color button click handlers
+        color1Btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          showRuleColorPanel(idx, 1);
+        });
+
+        color2Btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          showRuleColorPanel(idx, 2);
+        });
+
         container.appendChild(node);
       });
       updateRawJson();
     }
 
+    function prettifyJson(json) {
+      const jsonString = JSON.stringify(json, null, 2);
+
+      // Split into lines to preserve formatting
+      const lines = jsonString.split('\n');
+      const formattedLines = lines.map(line => {
+        // Apply syntax highlighting to each line
+        return line
+          .replace(/"([^"]+)":/g, '<span class="json-key">"$1"</span><span class="json-punctuation">:</span>')
+          .replace(/"([^"]*)"/g, '<span class="json-string">"$1"</span>')
+          .replace(/\b(true|false)\b/g, '<span class="json-boolean">$1</span>')
+          .replace(/\b(null)\b/g, '<span class="json-null">$1</span>')
+          .replace(/\b(\d+\.?\d*)\b/g, '<span class="json-number">$1</span>')
+          .replace(/([{}[\],])/g, '<span class="json-punctuation">$1</span>');
+      });
+
+      // Join lines back together, preserving line breaks
+      return formattedLines.join('\n');
+    }
+
     function updateRawJson() {
-      document.getElementById('rawJson').textContent = JSON.stringify(dictionary, null, 2);
+      const data = {
+        defaultPattern: defaultPattern,
+        dictionary: dictionary,
+        listsData: listsData
+      };
+      const jsonElement = document.getElementById('rawJson');
+      jsonElement.innerHTML = prettifyJson(data);
     }
 
     function applyRules() {
@@ -778,13 +1180,25 @@
             if (rule.match.includes(' ')) {
               // For multi-word patterns, check if this token is part of a match
               if (isPartOfMultiWordMatch) {
-                matched = rule;
+                matched = {
+                  color1: rule.color1,
+                  color2: rule.color2,
+                  style1: rule.style1,
+                  style2: rule.style2,
+                  label: rule.label
+                };
                 break;
               }
             } else {
               // For single-word patterns, test against the current token
               if (regex.test(token)) {
-                matched = rule;
+                matched = {
+                  color1: rule.color1,
+                  color2: rule.color2,
+                  style1: rule.style1,
+                  style2: rule.style2,
+                  label: rule.label
+                };
                 break;
               }
             }
@@ -807,6 +1221,8 @@
                 matched = {
                   color1: defaultPattern.color1,
                   color2: defaultPattern.color2,
+                  style1: defaultPattern.style1,
+                  style2: defaultPattern.style2,
                   label: defaultPattern.label
                 };
               }
@@ -816,6 +1232,8 @@
                 matched = {
                   color1: defaultPattern.color1,
                   color2: defaultPattern.color2,
+                  style1: defaultPattern.style1,
+                  style2: defaultPattern.style2,
                   label: defaultPattern.label
                 };
               }
@@ -830,16 +1248,15 @@
         span.textContent = token;
         span.className = 'word';
         if (matched) {
-          // Handle gradient if two colors are present
-          if (matched.color1 && matched.color2 && matched.color2.trim() !== '') {
-            // Create gradient background
-            span.style.background = `linear-gradient(90deg, ${matched.color1}, ${matched.color2})`;
-            span.style.color = getContrastColor(matched.color1); // Use contrast from first color
-            span.style.padding = '2px 4px';
-            span.style.borderRadius = '3px';
-          } else if (matched.color1) {
-            // Single color - use text color
-            span.style.color = matched.color1;
+          // Apply styles based on the new style system
+          if (matched.color1) {
+            applyStyleToElement(span, matched.color1, matched.style1 || 'background');
+          }
+          if (matched.color2 && matched.color2.trim() !== '') {
+            // For color2, only apply if it's different from color1's style
+            if (matched.style2 && matched.style2 !== matched.style1) {
+              applyStyleToElement(span, matched.color2, matched.style2);
+            }
           }
           span.title = matched.label || '';
         } else {
@@ -997,16 +1414,14 @@
         pattern: pattern,
         color1: defaultPattern.color1,
         color2: defaultPattern.color2,
+        style1: defaultPattern.style1,
+        style2: defaultPattern.style2,
         label: defaultPattern.label
       };
     }
 
     function updatePatternUI() {
       // Update input fields
-      const defaultLabelSelect = document.getElementById('defaultLabel');
-      if (defaultLabelSelect) {
-        defaultLabelSelect.value = defaultPattern.label;
-      }
       updateDefaultColorButtons();
       document.getElementById('basePatternInput').value = defaultPattern.structure.basePattern;
 
@@ -1044,11 +1459,7 @@
         matchesDisplay.textContent = matches.length > 0 ? matches.join(', ') : 'No matches found';
       }
 
-      // Update reconstructed pattern display
-      const reconstructedDisplay = document.getElementById('reconstructedPattern');
-      if (reconstructedDisplay) {
-        reconstructedDisplay.textContent = pattern || '(empty)';
-      }
+
 
       // Update custom toggles display
       updateCustomTogglesDisplay();
@@ -1171,156 +1582,6 @@
       updatePatternUI();
       applyRules();
       autoSavePatternHierarchy();
-    }
-
-    function buildPatternHierarchy() {
-      const pattern = buildDefaultPattern();
-      const defaultLabel = document.getElementById('defaultLabel').value;
-      const defaultColor = document.getElementById('defaultColor').value;
-
-      const hierarchy = {
-        pattern: pattern,
-        label: defaultLabel,
-        color: defaultColor,
-        structure: {
-          startAnchor: false,
-          startWordBoundary: false,
-          customPrependToggles: [],
-          basePattern: '',
-          customAppendToggles: [],
-          endWordBoundary: false,
-          endAnchor: false
-        }
-      };
-
-      // Get the base pattern from the input field (without custom toggles)
-      const patternInput = document.querySelector('#defaultPatternContainer .default-pattern-step');
-      let basePattern = patternInput.value;
-
-      // Remove any custom toggles from the base pattern for analysis
-      const activeToggles = document.querySelectorAll('.regex-toggle[data-active="true"]');
-      activeToggles.forEach(toggle => {
-        const regex = toggle.dataset.regex;
-        const isPrepend = toggle.dataset.prepend === 'true';
-
-        if (isPrepend) {
-          // Remove prepend toggles from the beginning (after any anchors/word boundaries)
-          if (basePattern.startsWith('^\\b') && basePattern.substring(3).startsWith(regex)) {
-            // Start anchor + word boundary + regex
-            basePattern = `^\\b${basePattern.substring(3 + regex.length)}`;
-          } else if (basePattern.startsWith('^') && basePattern.substring(1).startsWith(regex)) {
-            // Start anchor + regex
-            basePattern = `^${basePattern.substring(1 + regex.length)}`;
-          } else if (basePattern.startsWith('\\b') && basePattern.substring(2).startsWith(regex)) {
-            // Word boundary + regex
-            basePattern = `\\b${basePattern.substring(2 + regex.length)}`;
-          } else if (basePattern.startsWith(regex)) {
-            // Just regex at start
-            basePattern = basePattern.substring(regex.length);
-          }
-        } else {
-          // Remove append toggles from the end (before any anchors/word boundaries)
-          if (basePattern.endsWith('\\b$') && basePattern.substring(0, basePattern.length - 3).endsWith(regex)) {
-            // Regex + word boundary + end anchor
-            basePattern = `${basePattern.substring(0, basePattern.length - 3 - regex.length)}\\b$`;
-          } else if (basePattern.endsWith('$') && basePattern.substring(0, basePattern.length - 1).endsWith(regex)) {
-            // Regex + end anchor
-            basePattern = `${basePattern.substring(0, basePattern.length - 1 - regex.length)}$`;
-          } else if (basePattern.endsWith('\\b') && basePattern.substring(0, basePattern.length - 2).endsWith(regex)) {
-            // Regex + word boundary
-            basePattern = `${basePattern.substring(0, basePattern.length - 2 - regex.length)}\\b`;
-          } else if (basePattern.endsWith(regex)) {
-            // Just regex at end
-            basePattern = basePattern.substring(0, basePattern.length - regex.length);
-          }
-        }
-      });
-
-      // Analyze the base pattern structure
-      let remainingPattern = basePattern;
-
-      // Check for start anchor
-      if (remainingPattern.startsWith('^')) {
-        hierarchy.structure.startAnchor = true;
-        remainingPattern = remainingPattern.substring(1);
-      }
-
-      // Check for start word boundary
-      if (remainingPattern.startsWith('\\b')) {
-        hierarchy.structure.startWordBoundary = true;
-        remainingPattern = remainingPattern.substring(2);
-      }
-
-      // Check for end anchor
-      if (remainingPattern.endsWith('$')) {
-        hierarchy.structure.endAnchor = true;
-        remainingPattern = remainingPattern.substring(0, remainingPattern.length - 1);
-      }
-
-      // Check for end word boundary
-      if (remainingPattern.endsWith('\\b')) {
-        hierarchy.structure.endWordBoundary = true;
-        remainingPattern = remainingPattern.substring(0, remainingPattern.length - 2);
-      }
-
-      // The remaining pattern is the true base pattern
-      hierarchy.structure.basePattern = remainingPattern;
-
-      // Add custom toggles to the hierarchy
-      activeToggles.forEach(toggle => {
-        const toggleInfo = {
-          label: toggle.dataset.label,
-          regex: toggle.dataset.regex,
-          position: toggle.dataset.prepend === 'true' ? 'prepend' : 'append'
-        };
-
-        if (toggleInfo.position === 'prepend') {
-          hierarchy.structure.customPrependToggles.push(toggleInfo);
-        } else {
-          hierarchy.structure.customAppendToggles.push(toggleInfo);
-        }
-      });
-
-      return hierarchy;
-    }
-
-    function reconstructPatternFromHierarchy(hierarchy) {
-      let reconstructedPattern = '';
-
-      // Add start anchor if present
-      if (hierarchy.structure.startAnchor) {
-        reconstructedPattern += '^';
-      }
-
-      // Add start word boundary if present
-      if (hierarchy.structure.startWordBoundary) {
-        reconstructedPattern += '\\b';
-      }
-
-      // Add custom prepend toggles
-      hierarchy.structure.customPrependToggles.forEach(toggle => {
-        reconstructedPattern += toggle.regex;
-      });
-
-      // Add base pattern
-      reconstructedPattern += hierarchy.structure.basePattern;
-
-      // Add custom append toggles
-      hierarchy.structure.customAppendToggles.forEach(toggle => {
-        reconstructedPattern += toggle.regex;
-      });
-
-      // Add end word boundary if present
-      if (hierarchy.structure.endWordBoundary) {
-        reconstructedPattern += '\\b';
-      }
-
-      // Add end anchor if present
-      if (hierarchy.structure.endAnchor) {
-        reconstructedPattern += '$';
-      }
-
-      return reconstructedPattern;
     }
 
     function findCurrentMatches() {
@@ -1480,362 +1741,6 @@
       return [...new Set(matches)];
     }
 
-    function updateConstructedPatternDisplay() {
-      const pattern = buildPatternFromJSON();
-      const display = document.getElementById('constructedPattern');
-      if (display) {
-        display.textContent = pattern.pattern || '(empty)';
-      }
-
-      // Update current matches display
-      const matchesDisplay = document.getElementById('currentMatches');
-      if (matchesDisplay) {
-        const matches = findCurrentMatches();
-        matchesDisplay.textContent = matches.length > 0 ? matches.join(', ') : 'No matches found';
-      }
-
-      // Update reconstructed pattern display
-      const hierarchy = buildPatternHierarchy();
-      const reconstructedPattern = reconstructPatternFromHierarchy(hierarchy);
-      const reconstructedDisplay = document.getElementById('reconstructedPattern');
-      if (reconstructedDisplay) {
-        reconstructedDisplay.textContent = reconstructedPattern || '(empty)';
-      }
-    }
-
-
-
-    function setupStepEventListeners(stepElement) {
-      const input = stepElement.querySelector('#basePatternInput');
-      const wrapperBtns = stepElement.querySelectorAll('.wrapper-toggle');
-
-      input.addEventListener('input', () => {
-        defaultPattern.structure.basePattern = input.value;
-        updatePatternUI();
-        applyRules();
-        autoSavePatternHierarchy();
-      });
-
-      wrapperBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-          const wrapper = btn.dataset.wrapper;
-          const isActive = btn.dataset.active === 'true';
-
-          switch (wrapper) {
-            case 'word-boundary':
-              updatePatternWithWordBoundaries(!isActive);
-              break;
-            case 'start-anchor':
-              updatePatternWithAnchors('start', !isActive);
-              break;
-            case 'end-anchor':
-              updatePatternWithAnchors('end', !isActive);
-              break;
-          }
-          applyRules();
-        });
-      });
-    }
-
-
-
-    function showInlineRegexForm(prependMode = false) {
-      const form = document.getElementById('inlineRegexForm');
-      const regexInput = document.getElementById('newRegexValue');
-      const labelInput = document.getElementById('newRegexLabel');
-      const prependToggle = document.getElementById('togglePrependMode');
-
-      // Clear previous values
-      regexInput.value = '';
-      labelInput.value = '';
-
-      // Set prepend mode based on parameter
-      prependToggle.textContent = prependMode ? '^' : '+';
-      prependToggle.dataset.mode = prependMode ? 'prepend' : 'append';
-
-      // Show the form with animation
-      form.classList.add('show');
-
-      // Focus on the first input
-      regexInput.focus();
-    }
-
-    function hideInlineRegexForm() {
-      const form = document.getElementById('inlineRegexForm');
-      form.classList.remove('show');
-    }
-
-    function addRegexToggle() {
-      const regexValue = document.getElementById('newRegexValue').value.trim();
-      const label = document.getElementById('newRegexLabel').value.trim();
-      const prependMode = document.getElementById('togglePrependMode').dataset.mode === 'prepend';
-
-      if (!regexValue || !label) {
-        alert('Please fill in both regex value and label');
-        return;
-      }
-
-      // Add to JSON structure with the user-provided label
-      updatePatternWithRegexToggle(regexValue, prependMode, true, label);
-
-      // Hide the form
-      hideInlineRegexForm();
-
-      applyRules();
-      autoSavePatternHierarchy();
-    }
-
-    function setupAddRegexToggleListener() {
-      const addButton = document.getElementById('addRegexToggle');
-      const saveButton = document.getElementById('saveRegexToggle');
-      const cancelButton = document.getElementById('cancelRegexToggle');
-      const prependToggle = document.getElementById('togglePrependMode');
-
-      if (addButton) {
-        addButton.addEventListener('click', () => showInlineRegexForm(false));
-      }
-
-      if (saveButton) {
-        saveButton.addEventListener('click', addRegexToggle);
-      }
-
-      if (cancelButton) {
-        cancelButton.addEventListener('click', hideInlineRegexForm);
-      }
-
-      if (prependToggle) {
-        prependToggle.addEventListener('click', () => {
-          const currentMode = prependToggle.dataset.mode;
-          const newMode = currentMode === 'append' ? 'prepend' : 'append';
-          prependToggle.dataset.mode = newMode;
-          prependToggle.textContent = newMode === 'append' ? '+' : '^';
-          prependToggle.title = newMode === 'append' ? 'Toggle between append (+) and prepend (^) mode' : 'Toggle between append (+) and prepend (^) mode';
-        });
-      }
-
-      // Allow Enter key to submit the form
-      const regexInput = document.getElementById('newRegexValue');
-      const labelInput = document.getElementById('newRegexLabel');
-
-      if (regexInput) {
-        regexInput.addEventListener('keypress', (e) => {
-          if (e.key === 'Enter') {
-            addRegexToggle();
-          }
-        });
-      }
-
-      if (labelInput) {
-        labelInput.addEventListener('keypress', (e) => {
-          if (e.key === 'Enter') {
-            addRegexToggle();
-          }
-        });
-      }
-    }
-
-    document.getElementById('applyBtn').addEventListener('click', () => applyRules());
-    document.getElementById('clearBtn').addEventListener('click', () => {
-      document.getElementById('sourceText').value = '';
-      applyRules();
-    });
-    document.getElementById('addRule').addEventListener('click', () => {
-      dictionary.rules.push({ match: "", color: "", label: "", mode: "word" });
-      refreshRuleUI();
-      autoSavePatternHierarchy();
-    });
-    document.getElementById('downloadMd').addEventListener('click', downloadMarkdown);
-    document.getElementById('downloadPdf').addEventListener('click', downloadPDF);
-    document.getElementById('copyHtml').addEventListener('click', copyStyledHTML);
-    document.getElementById('copyPlain').addEventListener('click', copyPlainText);
-
-
-    // Add event listeners for bob.json operations
-    document.getElementById('loadBobJson').addEventListener('click', loadPatternHierarchy);
-    document.getElementById('saveBobJson').addEventListener('click', exportPatternHierarchy);
-
-    // Default pattern event listeners
-    document.getElementById('defaultPatternEnabled').addEventListener('change', applyRules);
-
-    // Color button and panel functionality
-    const defaultColor1Btn = document.getElementById('defaultColor1Btn');
-    const defaultColor2Btn = document.getElementById('defaultColor2Btn');
-    const defaultColor1Panel = document.getElementById('defaultColor1Panel');
-    const defaultColor2Panel = document.getElementById('defaultColor2Panel');
-    const defaultColor1Text = document.getElementById('defaultColor1Text');
-    const defaultColor2Text = document.getElementById('defaultColor2Text');
-    const defaultColor1Picker = document.getElementById('defaultColor1Picker');
-    const defaultColor2Picker = document.getElementById('defaultColor2Picker');
-    const defaultColor1Display = document.getElementById('defaultColor1Display');
-    const defaultColor2Display = document.getElementById('defaultColor2Display');
-    const applyDefaultColor1Btn = document.getElementById('applyDefaultColor1');
-    const applyDefaultColor2Btn = document.getElementById('applyDefaultColor2');
-    const cancelDefaultColor1Btn = document.getElementById('cancelDefaultColor1');
-    const cancelDefaultColor2Btn = document.getElementById('cancelDefaultColor2');
-
-    // Show/hide color panels
-    defaultColor1Btn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const isVisible = defaultColor1Panel.classList.contains('show');
-      if (isVisible) {
-        hideDefaultColorPanel(1);
-      } else {
-        showDefaultColorPanel(1);
-      }
-    });
-
-    defaultColor2Btn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const isVisible = defaultColor2Panel.classList.contains('show');
-      if (isVisible) {
-        hideDefaultColorPanel(2);
-      } else {
-        showDefaultColorPanel(2);
-      }
-    });
-
-    // Hide panels when clicking outside
-    document.addEventListener('click', (e) => {
-      if (!defaultColor1Btn.contains(e.target) && !defaultColor1Panel.contains(e.target)) {
-        hideDefaultColorPanel(1);
-      }
-      if (!defaultColor2Btn.contains(e.target) && !defaultColor2Panel.contains(e.target)) {
-        hideDefaultColorPanel(2);
-      }
-    });
-
-    // Sync color pickers with text inputs
-    defaultColor1Text.addEventListener('input', () => {
-      const color = defaultColor1Text.value;
-      if (color.match(/^#[0-9A-Fa-f]{6}$/)) {
-        defaultColor1Picker.value = color;
-      }
-    });
-
-    defaultColor2Text.addEventListener('input', () => {
-      const color = defaultColor2Text.value;
-      if (color.match(/^#[0-9A-Fa-f]{6}$/)) {
-        defaultColor2Picker.value = color;
-      }
-    });
-
-    // Sync text inputs with color pickers
-    defaultColor1Picker.addEventListener('input', () => {
-      defaultColor1Text.value = defaultColor1Picker.value;
-    });
-
-    defaultColor2Picker.addEventListener('input', () => {
-      defaultColor2Text.value = defaultColor2Picker.value;
-    });
-
-    // Allow Enter key to apply colors
-    defaultColor1Text.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') {
-        applyDefaultColor1Btn.click();
-      }
-    });
-
-    defaultColor2Text.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') {
-        applyDefaultColor2Btn.click();
-      }
-    });
-
-    // Apply color changes
-    applyDefaultColor1Btn.addEventListener('click', () => {
-      const color = defaultColor1Text.value;
-      defaultPattern.color1 = color;
-      defaultColor1Display.textContent = color;
-      updateDefaultColorButtons();
-      updatePatternUI();
-      applyRules();
-      autoSavePatternHierarchy();
-      hideDefaultColorPanel(1);
-    });
-
-    applyDefaultColor2Btn.addEventListener('click', () => {
-      const color = defaultColor2Text.value;
-      defaultPattern.color2 = color;
-      defaultColor2Display.textContent = color || '-';
-      updateDefaultColorButtons();
-      updatePatternUI();
-      applyRules();
-      autoSavePatternHierarchy();
-      hideDefaultColorPanel(2);
-    });
-
-    // Cancel color changes
-    cancelDefaultColor1Btn.addEventListener('click', () => {
-      hideDefaultColorPanel(1);
-      // Reset to current value
-      defaultColor1Text.value = defaultPattern.color1;
-      defaultColor1Display.textContent = defaultPattern.color1;
-    });
-
-    cancelDefaultColor2Btn.addEventListener('click', () => {
-      hideDefaultColorPanel(2);
-      // Reset to current value
-      defaultColor2Text.value = defaultPattern.color2;
-      defaultColor2Display.textContent = defaultPattern.color2 || '-';
-    });
-
-    function showDefaultColorPanel(colorNum) {
-      const panel = colorNum === 1 ? defaultColor1Panel : defaultColor2Panel;
-      const textInput = colorNum === 1 ? defaultColor1Text : defaultColor2Text;
-      const picker = colorNum === 1 ? defaultColor1Picker : defaultColor2Picker;
-      const display = colorNum === 1 ? defaultColor1Display : defaultColor2Display;
-      const color = colorNum === 1 ? defaultPattern.color1 : defaultPattern.color2;
-
-      // Set current values
-      textInput.value = color;
-      display.textContent = color || '-';
-
-      // Try to set color picker value if it's a hex color
-      if (color && color.match(/^#[0-9A-Fa-f]{6}$/)) {
-        picker.value = color;
-      }
-
-      panel.classList.add('show');
-      textInput.focus();
-    }
-
-    function hideDefaultColorPanel(colorNum) {
-      const panel = colorNum === 1 ? defaultColor1Panel : defaultColor2Panel;
-      panel.classList.remove('show');
-    }
-
-    function updateDefaultColorButtons() {
-      updateDefaultColorButton(1, defaultPattern.color1);
-      updateDefaultColorButton(2, defaultPattern.color2);
-    }
-
-    function updateDefaultColorButton(colorNum, color) {
-      const button = colorNum === 1 ? defaultColor1Btn : defaultColor2Btn;
-      const display = colorNum === 1 ? defaultColor1Display : defaultColor2Display;
-
-      if (button) {
-        if (color && color.trim() !== '') {
-          // Try to set the background color
-          try {
-            button.style.backgroundColor = color;
-            // Ensure text is readable by setting appropriate text color
-            button.style.color = getContrastColor(color);
-            display.textContent = color;
-          } catch (e) {
-            // If color is invalid, reset to default
-            button.style.backgroundColor = '';
-            button.style.color = '';
-            display.textContent = color || '-';
-          }
-        } else {
-          // No color set, use default styling
-          button.style.backgroundColor = '';
-          button.style.color = '';
-          display.textContent = '-';
-        }
-      }
-    }
-
     function getContrastColor(color) {
       // Handle hex colors
       if (color.startsWith('#')) {
@@ -1863,146 +1768,79 @@
       }
     }
 
-    // Setup event listeners after DOM is loaded
-    function setupEventListeners() {
-      const defaultLabelSelect = document.getElementById('defaultLabel');
-      if (defaultLabelSelect) {
-        defaultLabelSelect.addEventListener('change', () => {
-          defaultPattern.label = document.getElementById('defaultLabel').value;
-          updatePatternUI();
-          applyRules();
-          autoSavePatternHierarchy();
-        });
+    function getStyleAbbreviation(style) {
+      switch (style) {
+        case 'background': return 'bg';
+        case 'color': return 'txt';
+        case 'underline': return 'ul';
+        case 'border': return 'bd';
+        default: return 'bg';
       }
     }
 
-    // Setup add regex toggle listener
-    setupAddRegexToggleListener();
+    function applyStyleToButton(button, color, style) {
+      // Reset all styles first
+      button.style.backgroundColor = '';
+      button.style.color = '';
+      button.style.border = '';
+      button.style.textDecoration = '';
 
-    // Add event listener for the new prepend "+" button
-    document.getElementById('addPrependRegexToggle').addEventListener('click', () => showInlineRegexForm(true));
-
-    // Preview buttons event listeners
-    document.getElementById('loadSampleMd').addEventListener('click', loadSampleMd);
-    document.getElementById('refreshPreview').addEventListener('click', refreshPreview);
-
-    // Initialize first step event listeners
-    setupStepEventListeners(document.querySelector('#defaultPatternContainer .rule-row'));
-
-    // Initialize pattern UI
-    updatePatternUI();
-
-    // Load pattern hierarchy from bob.json on page load
-    loadPatternHierarchy();
-
-    // Setup event listeners after everything is loaded
-    setupEventListeners();
-
-    // Function to populate category dropdown
-    function populateCategoryDropdown() {
-      const dropdown = document.getElementById('defaultLabel');
-      if (!dropdown) return;
-
-      // Clear existing options except the first one
-      while (dropdown.children.length > 1) {
-        dropdown.removeChild(dropdown.lastChild);
-      }
-
-      // Find the categories list
-      const categoriesList = listsData.keyValueLists.find(list => list.name === 'categories');
-      if (categoriesList && categoriesList.items) {
-        categoriesList.items.forEach(item => {
-          const option = document.createElement('option');
-          option.value = item.key;
-          option.textContent = `${item.value} ${item.key}`;
-          dropdown.appendChild(option);
-        });
-      }
-    }
-
-    // Call populateCategoryDropdown after loading data
-    async function loadPatternHierarchy() {
-      // First try to load from localStorage
-      const localStorageData = localStorage.getItem('bobPatternHierarchy');
-      if (localStorageData) {
-        try {
-          const data = JSON.parse(localStorageData);
-
-          // Load default pattern
-          if (data.defaultPattern) {
-            defaultPattern = data.defaultPattern;
-          }
-
-          // Load dictionary
-          if (data.dictionary) {
-            dictionary = data.dictionary;
-          }
-
-          // Load lists and arrays data
-          if (data.listsData) {
-            listsData = data.listsData;
-          }
-
-          // Update UI
-          updatePatternUI();
-          refreshRuleUI();
-          refreshListsUI();
-          populateCategoryDropdown();
-          applyRules();
-          setupEventListeners();
-
-          console.log('Pattern hierarchy loaded from localStorage');
-          return;
-        } catch (error) {
-          console.error('Error parsing localStorage data:', error);
-        }
-      }
-
-      // Fallback to loading from bob.json file
       try {
-        const response = await fetch('bob.json');
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+        switch (style) {
+          case 'background':
+            button.style.backgroundColor = color;
+            button.style.color = getContrastColor(color);
+            break;
+          case 'color':
+            button.style.color = color;
+            break;
+          case 'underline':
+            button.style.textDecoration = `underline ${color}`;
+            break;
+          case 'border':
+            button.style.border = `2px solid ${color}`;
+            break;
         }
-        const data = await response.json();
-
-        // Load default pattern
-        if (data.defaultPattern) {
-          defaultPattern = data.defaultPattern;
-        }
-
-        // Load dictionary
-        if (data.dictionary) {
-          dictionary = data.dictionary;
-        }
-
-        // Load lists and arrays data
-        if (data.listsData) {
-          listsData = data.listsData;
-        }
-
-        // Update UI
-        updatePatternUI();
-        refreshRuleUI();
-        refreshListsUI();
-        populateCategoryDropdown();
-        applyRules();
-        setupEventListeners();
-
-        console.log('Pattern hierarchy loaded from bob.json');
-      } catch (error) {
-        console.error('Error loading bob.json:', error);
-        // If neither localStorage nor file exists, start with empty data
-        console.log('No existing data found, starting with empty configuration');
+      } catch (e) {
+        // If color is invalid, reset to default
+        button.style.backgroundColor = '';
+        button.style.color = '';
+        button.style.border = '';
+        button.style.textDecoration = '';
       }
     }
 
-    // Lists and Arrays Management
-    let listsData = {
-      keyValueLists: [],
-      arrays: []
-    };
+    function applyStyleToElement(element, color, style) {
+      try {
+        switch (style) {
+          case 'background':
+            element.style.backgroundColor = color;
+            element.style.color = getContrastColor(color);
+            element.style.padding = '2px 4px';
+            element.style.borderRadius = '3px';
+            break;
+          case 'color':
+            element.style.color = color;
+            break;
+          case 'underline':
+            element.style.textDecoration = `underline ${color}`;
+            break;
+          case 'border':
+            element.style.border = `2px solid ${color}`;
+            element.style.padding = '1px 3px';
+            element.style.borderRadius = '3px';
+            break;
+        }
+      } catch (e) {
+        // If color is invalid, reset to default
+        element.style.backgroundColor = '';
+        element.style.color = '';
+        element.style.border = '';
+        element.style.textDecoration = '';
+      }
+    }
 
+    // Lists and Arrays Management Functions
     function refreshListsUI() {
       const container = document.getElementById('listsContainer');
       container.innerHTML = '';
@@ -2018,9 +1856,6 @@
         const arrayElement = createArrayElement(array, arrayIndex);
         container.appendChild(arrayElement);
       });
-
-      // Update category dropdown
-      populateCategoryDropdown();
     }
 
     function createKeyValueListElement(list, listIndex) {
@@ -2204,23 +2039,553 @@
       return container;
     }
 
-    // Event listeners for lists and arrays
-    document.getElementById('addKeyValueList').addEventListener('click', () => {
-      listsData.keyValueLists.push({
-        name: 'New Key-Value List',
-        items: [{ key: '', value: '' }]
-      });
-      refreshListsUI();
-      autoSavePatternHierarchy();
-    });
+    // Color management functions
+    function updateDefaultColorButtons() {
+      updateDefaultColorButton(1, defaultPattern.color1, defaultPattern.style1);
+      updateDefaultColorButton(2, defaultPattern.color2, defaultPattern.style2);
+    }
 
-    document.getElementById('addArray').addEventListener('click', () => {
-      listsData.arrays.push({
-        name: 'New Array',
-        items: ['']
+    function updateDefaultColorButton(colorNum, color, style) {
+      const button = colorNum === 1 ? document.getElementById('defaultColor1Btn') : document.getElementById('defaultColor2Btn');
+      const colorDisplay = colorNum === 1 ? document.getElementById('defaultColor1Display') : document.getElementById('defaultColor2Display');
+      const styleDisplay = colorNum === 1 ? document.getElementById('defaultStyle1Display') : document.getElementById('defaultStyle2Display');
+
+      if (button) {
+        if (color && color.trim() !== '') {
+          colorDisplay.textContent = color;
+          styleDisplay.textContent = getStyleAbbreviation(style || 'background');
+          applyStyleToButton(button, color, style || 'background');
+        } else {
+          // No color set, use default styling
+          button.style.backgroundColor = '';
+          button.style.color = '';
+          button.style.border = '';
+          button.style.textDecoration = '';
+          colorDisplay.textContent = '-';
+          styleDisplay.textContent = '';
+        }
+      }
+    }
+
+    function showDefaultColorPanel(colorNum) {
+      const panel = colorNum === 1 ? document.getElementById('defaultColor1Panel') : document.getElementById('defaultColor2Panel');
+      const textInput = colorNum === 1 ? document.getElementById('defaultColor1Text') : document.getElementById('defaultColor2Text');
+      const picker = colorNum === 1 ? document.getElementById('defaultColor1Picker') : document.getElementById('defaultColor2Picker');
+      const styleSelect = colorNum === 1 ? document.getElementById('defaultStyle1Select') : document.getElementById('defaultStyle2Select');
+      const display = colorNum === 1 ? document.getElementById('defaultColor1Display') : document.getElementById('defaultColor2Display');
+      const button = colorNum === 1 ? document.getElementById('defaultColor1Btn') : document.getElementById('defaultColor2Btn');
+      const color = colorNum === 1 ? defaultPattern.color1 : defaultPattern.color2;
+      const style = colorNum === 1 ? defaultPattern.style1 : defaultPattern.style2;
+
+      // Set current values
+      textInput.value = color;
+      display.textContent = color || '-';
+      styleSelect.value = style || 'background';
+
+      // Try to set color picker value if it's a hex color
+      if (color && color.match(/^#[0-9A-Fa-f]{6}$/)) {
+        picker.value = color;
+      }
+
+      // Position the panel relative to the button
+      if (button) {
+        const rect = button.getBoundingClientRect();
+        panel.style.position = 'absolute';
+        panel.style.top = (rect.bottom + window.scrollY) + 'px';
+        panel.style.left = rect.left + 'px';
+      }
+
+      panel.classList.add('show');
+      textInput.focus();
+    }
+
+    function hideDefaultColorPanel(colorNum) {
+      const panel = colorNum === 1 ? document.getElementById('defaultColor1Panel') : document.getElementById('defaultColor2Panel');
+      panel.classList.remove('show');
+    }
+
+    // Rule color panel functions
+    function showRuleColorPanel(ruleIndex, colorNum) {
+      // Create or get the color panel for this rule
+      let panel = document.getElementById(`ruleColorPanel_${ruleIndex}_${colorNum}`);
+      if (!panel) {
+        panel = createRuleColorPanel(ruleIndex, colorNum);
+        document.body.appendChild(panel);
+      }
+
+      const rule = dictionary.rules[ruleIndex];
+      const color = colorNum === 1 ? rule.color1 : rule.color2;
+      const style = colorNum === 1 ? rule.style1 : rule.style2;
+
+      // Set current values
+      const textInput = panel.querySelector('.color-text');
+      const picker = panel.querySelector('.color-picker');
+      const styleSelect = panel.querySelector('.style-select');
+
+      textInput.value = color || '';
+      styleSelect.value = style || 'background';
+
+      // Try to set color picker value if it's a hex color
+      if (color && color.match(/^#[0-9A-Fa-f]{6}$/)) {
+        picker.value = color;
+      }
+
+      // Position the panel relative to the button
+      const button = document.querySelector(`[data-idx="${ruleIndex}"] .color${colorNum}-btn`);
+      if (button) {
+        const rect = button.getBoundingClientRect();
+        panel.style.position = 'absolute';
+        panel.style.top = (rect.bottom + window.scrollY) + 'px';
+        panel.style.left = rect.left + 'px';
+      }
+
+      panel.classList.add('show');
+      textInput.focus();
+    }
+
+    function createRuleColorPanel(ruleIndex, colorNum) {
+      const panel = document.createElement('div');
+      panel.id = `ruleColorPanel_${ruleIndex}_${colorNum}`;
+      panel.className = 'inline-form';
+      panel.style.cssText = `
+        position: absolute;
+        min-width: 250px;
+        background: white;
+        border: 1px solid #dee2e6;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+      `;
+
+      panel.innerHTML = `
+        <div class="inline-form-row">
+          <label>Color ${colorNum}:</label>
+          <input type="text" class="color-text" placeholder="color (e.g. #ff0000)" style="flex: 1;" />
+        </div>
+        <div class="inline-form-row">
+          <label>Picker:</label>
+          <input type="color" class="color-picker" value="#ff00ff" style="width: 50px; height: 30px;" />
+        </div>
+        <div class="inline-form-row">
+          <label>Style:</label>
+          <select class="style-select" style="flex: 1;">
+            <option value="background">Background</option>
+            <option value="color">Text Color</option>
+            <option value="underline">Underline</option>
+            <option value="border">Border</option>
+          </select>
+        </div>
+        <div class="inline-form-actions">
+          <button class="btn btn-success btn-small apply-rule-color">Apply</button>
+          <button class="btn btn-danger btn-small cancel-rule-color">Cancel</button>
+        </div>
+      `;
+
+      // Add event listeners
+      const applyBtn = panel.querySelector('.apply-rule-color');
+      const cancelBtn = panel.querySelector('.cancel-rule-color');
+      const textInput = panel.querySelector('.color-text');
+      const picker = panel.querySelector('.color-picker');
+
+      applyBtn.addEventListener('click', () => {
+        const color = textInput.value;
+        const style = panel.querySelector('.style-select').value;
+        const rule = dictionary.rules[ruleIndex];
+        if (colorNum === 1) {
+          rule.color1 = color;
+          rule.style1 = style;
+        } else {
+          rule.color2 = color;
+          rule.style2 = style;
+        }
+        refreshRuleUI();
+        applyRules();
+        autoSavePatternHierarchy();
+        hideRuleColorPanel(ruleIndex, colorNum);
       });
+
+      cancelBtn.addEventListener('click', () => {
+        hideRuleColorPanel(ruleIndex, colorNum);
+      });
+
+      // Sync picker with text input
+      picker.addEventListener('input', () => {
+        textInput.value = picker.value;
+      });
+
+      textInput.addEventListener('input', () => {
+        if (textInput.value.match(/^#[0-9A-Fa-f]{6}$/)) {
+          picker.value = textInput.value;
+        }
+      });
+
+      return panel;
+    }
+
+    function hideRuleColorPanel(ruleIndex, colorNum) {
+      const panel = document.getElementById(`ruleColorPanel_${ruleIndex}_${colorNum}`);
+      if (panel) {
+        panel.classList.remove('show');
+      }
+    }
+
+    // Event Listeners
+    document.addEventListener('DOMContentLoaded', function () {
+      // Initialize tabs
+      initTabs();
+
+      // Basic event listeners
+      document.getElementById('clearBtn').addEventListener('click', () => {
+        document.getElementById('sourceText').value = '';
+        applyRules();
+      });
+
+      // Auto-update preview when input text changes
+      document.getElementById('sourceText').addEventListener('input', () => {
+        applyRules();
+      });
+      document.getElementById('addRule').addEventListener('click', () => {
+        showCategoryDropdown();
+      });
+
+      // Function to show category dropdown
+      function showCategoryDropdown() {
+        const dropdown = document.getElementById('categoryDropdown');
+        const button = document.getElementById('addRule');
+
+        // Clear existing options
+        dropdown.innerHTML = '';
+
+        // Add categories from listsData
+        if (listsData && listsData.keyValueLists) {
+          const categoriesList = listsData.keyValueLists.find(list => list.name === 'categories');
+          if (categoriesList && categoriesList.items) {
+            categoriesList.items.forEach(item => {
+              const option = document.createElement('div');
+              option.className = 'dropdown-option';
+              option.style.cssText = 'padding: 8px 12px; cursor: pointer; border-bottom: 1px solid #f0f0f0;';
+              option.textContent = `${item.value} ${item.key}`;
+              option.addEventListener('click', () => {
+                createNewGroup(item.key);
+                hideCategoryDropdown();
+              });
+              dropdown.appendChild(option);
+            });
+          }
+        }
+
+        // Show dropdown
+        dropdown.style.display = 'block';
+      }
+
+      // Function to hide category dropdown
+      function hideCategoryDropdown() {
+        const dropdown = document.getElementById('categoryDropdown');
+        dropdown.style.display = 'none';
+      }
+
+      // Function to generate random color
+      function generateRandomColor() {
+        const colors = [
+          '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7',
+          '#DDA0DD', '#98D8C8', '#F7DC6F', '#BB8FCE', '#85C1E9',
+          '#F8C471', '#82E0AA', '#F1948A', '#85C1E9', '#D7BDE2',
+          '#FAD7A0', '#A9CCE3', '#F9E79F', '#D5A6BD', '#A3E4D7'
+        ];
+        return colors[Math.floor(Math.random() * colors.length)];
+      }
+
+      // Function to create new group
+      function createNewGroup(category) {
+        // Get the current default pattern
+        const defaultPatternData = buildPatternFromJSON();
+
+        // Create a new rule based on the default pattern with the selected category
+        const newRule = {
+          match: defaultPatternData.pattern,
+          color1: generateRandomColor(),
+          color2: '',
+          style1: 'background',
+          style2: '',
+          label: category
+        };
+
+        dictionary.rules.push(newRule);
+        refreshRuleUI();
+        autoSavePatternHierarchy();
+      }
+
+      // Hide dropdown when clicking outside
+      document.addEventListener('click', (e) => {
+        const dropdown = document.getElementById('categoryDropdown');
+        const button = document.getElementById('addRule');
+        if (!button.contains(e.target) && !dropdown.contains(e.target)) {
+          hideCategoryDropdown();
+        }
+      });
+      document.getElementById('downloadMd').addEventListener('click', downloadMarkdown);
+      document.getElementById('downloadPdf').addEventListener('click', downloadPDF);
+      document.getElementById('copyHtml').addEventListener('click', copyStyledHTML);
+      document.getElementById('copyPlain').addEventListener('click', copyPlainText);
+
+      // bob.json operations
+      document.getElementById('loadBobJson').addEventListener('click', loadPatternHierarchy);
+      document.getElementById('saveBobJson').addEventListener('click', exportPatternHierarchy);
+
+      // Default pattern event listeners
+      document.getElementById('defaultPatternEnabled').addEventListener('change', applyRules);
+
+      // Color button and panel functionality
+      const defaultColor1Btn = document.getElementById('defaultColor1Btn');
+      const defaultColor2Btn = document.getElementById('defaultColor2Btn');
+      const defaultColor1Panel = document.getElementById('defaultColor1Panel');
+      const defaultColor2Panel = document.getElementById('defaultColor2Panel');
+      const defaultColor1Text = document.getElementById('defaultColor1Text');
+      const defaultColor2Text = document.getElementById('defaultColor2Text');
+      const defaultColor1Picker = document.getElementById('defaultColor1Picker');
+      const defaultColor2Picker = document.getElementById('defaultColor2Picker');
+      const applyDefaultColor1Btn = document.getElementById('applyDefaultColor1');
+      const applyDefaultColor2Btn = document.getElementById('applyDefaultColor2');
+      const cancelDefaultColor1Btn = document.getElementById('cancelDefaultColor1');
+      const cancelDefaultColor2Btn = document.getElementById('cancelDefaultColor2');
+
+      // Show/hide color panels
+      defaultColor1Btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isVisible = defaultColor1Panel.classList.contains('show');
+        if (isVisible) {
+          hideDefaultColorPanel(1);
+        } else {
+          showDefaultColorPanel(1);
+        }
+      });
+
+      defaultColor2Btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isVisible = defaultColor2Panel.classList.contains('show');
+        if (isVisible) {
+          hideDefaultColorPanel(2);
+        } else {
+          showDefaultColorPanel(2);
+        }
+      });
+
+      // Hide panels when clicking outside
+      document.addEventListener('click', (e) => {
+        if (!defaultColor1Btn.contains(e.target) && !defaultColor1Panel.contains(e.target)) {
+          hideDefaultColorPanel(1);
+        }
+        if (!defaultColor2Btn.contains(e.target) && !defaultColor2Panel.contains(e.target)) {
+          hideDefaultColorPanel(2);
+        }
+
+        // Hide rule color panels when clicking outside
+        const ruleColorPanels = document.querySelectorAll('[id^="ruleColorPanel_"]');
+        ruleColorPanels.forEach(panel => {
+          if (!panel.contains(e.target)) {
+            panel.classList.remove('show');
+          }
+        });
+      });
+
+      // Apply color changes
+      applyDefaultColor1Btn.addEventListener('click', () => {
+        const color = defaultColor1Text.value;
+        const style = document.getElementById('defaultStyle1Select').value;
+        defaultPattern.color1 = color;
+        defaultPattern.style1 = style;
+        updateDefaultColorButtons();
+        updatePatternUI();
+        applyRules();
+        autoSavePatternHierarchy();
+        hideDefaultColorPanel(1);
+      });
+
+      applyDefaultColor2Btn.addEventListener('click', () => {
+        const color = defaultColor2Text.value;
+        const style = document.getElementById('defaultStyle2Select').value;
+        defaultPattern.color2 = color;
+        defaultPattern.style2 = style;
+        updateDefaultColorButtons();
+        updatePatternUI();
+        applyRules();
+        autoSavePatternHierarchy();
+        hideDefaultColorPanel(2);
+      });
+
+      // Cancel color changes
+      cancelDefaultColor1Btn.addEventListener('click', () => {
+        hideDefaultColorPanel(1);
+        defaultColor1Text.value = defaultPattern.color1;
+        document.getElementById('defaultColor1Display').textContent = defaultPattern.color1;
+      });
+
+      cancelDefaultColor2Btn.addEventListener('click', () => {
+        hideDefaultColorPanel(2);
+        defaultColor2Text.value = defaultPattern.color2;
+        document.getElementById('defaultColor2Display').textContent = defaultPattern.color2 || '-';
+      });
+
+      // Sync color pickers with text inputs
+      defaultColor1Picker.addEventListener('input', () => {
+        defaultColor1Text.value = defaultColor1Picker.value;
+      });
+
+      defaultColor2Picker.addEventListener('input', () => {
+        defaultColor2Text.value = defaultColor2Picker.value;
+      });
+
+      // Sync text inputs with color pickers
+      defaultColor1Text.addEventListener('input', () => {
+        if (defaultColor1Text.value.match(/^#[0-9A-Fa-f]{6}$/)) {
+          defaultColor1Picker.value = defaultColor1Text.value;
+        }
+      });
+
+      defaultColor2Text.addEventListener('input', () => {
+        if (defaultColor2Text.value.match(/^#[0-9A-Fa-f]{6}$/)) {
+          defaultColor2Picker.value = defaultColor2Text.value;
+        }
+      });
+
+      // Pattern building event listeners
+      const basePatternInput = document.getElementById('basePatternInput');
+      if (basePatternInput) {
+        basePatternInput.addEventListener('input', () => {
+          defaultPattern.structure.basePattern = basePatternInput.value;
+          updatePatternUI();
+          applyRules();
+          autoSavePatternHierarchy();
+        });
+      }
+
+
+
+      // Wrapper toggle event listeners
+      const wrapperToggles = document.querySelectorAll('.wrapper-toggle');
+      wrapperToggles.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const wrapper = btn.dataset.wrapper;
+          const isActive = btn.dataset.active === 'true';
+
+          switch (wrapper) {
+            case 'word-boundary':
+              updatePatternWithWordBoundaries(!isActive);
+              break;
+            case 'start-anchor':
+              updatePatternWithAnchors('start', !isActive);
+              break;
+            case 'end-anchor':
+              updatePatternWithAnchors('end', !isActive);
+              break;
+          }
+          applyRules();
+        });
+      });
+
+      // Add regex toggle buttons event listeners
+      document.getElementById('addPrependRegexToggle').addEventListener('click', () => {
+        const form = document.getElementById('inlineRegexForm');
+        const toggleModeBtn = document.getElementById('togglePrependMode');
+        const newRegexValue = document.getElementById('newRegexValue');
+        const newRegexLabel = document.getElementById('newRegexLabel');
+
+        // Set to prepend mode
+        toggleModeBtn.textContent = '^';
+        toggleModeBtn.title = 'Toggle between append (+) and prepend (^) mode';
+
+        // Clear form
+        newRegexValue.value = '';
+        newRegexLabel.value = '';
+
+        // Show form
+        form.classList.add('show');
+        newRegexValue.focus();
+      });
+
+      document.getElementById('addRegexToggle').addEventListener('click', () => {
+        const form = document.getElementById('inlineRegexForm');
+        const toggleModeBtn = document.getElementById('togglePrependMode');
+        const newRegexValue = document.getElementById('newRegexValue');
+        const newRegexLabel = document.getElementById('newRegexLabel');
+
+        // Set to append mode
+        toggleModeBtn.textContent = '+';
+        toggleModeBtn.title = 'Toggle between append (+) and prepend (^) mode';
+
+        // Clear form
+        newRegexValue.value = '';
+        newRegexLabel.value = '';
+
+        // Show form
+        form.classList.add('show');
+        newRegexValue.focus();
+      });
+
+      // Inline regex form event listeners
+      document.getElementById('togglePrependMode').addEventListener('click', () => {
+        const btn = document.getElementById('togglePrependMode');
+        const isPrepend = btn.textContent === '^';
+        btn.textContent = isPrepend ? '+' : '^';
+        btn.title = isPrepend ? 'Toggle between append (+) and prepend (^) mode' : 'Toggle between append (+) and prepend (^) mode';
+      });
+
+      document.getElementById('saveRegexToggle').addEventListener('click', () => {
+        const newRegexValue = document.getElementById('newRegexValue').value;
+        const newRegexLabel = document.getElementById('newRegexLabel').value;
+        const toggleModeBtn = document.getElementById('togglePrependMode');
+        const isPrepend = toggleModeBtn.textContent === '^';
+
+        if (newRegexValue.trim()) {
+          updatePatternWithRegexToggle(newRegexValue, isPrepend, true, newRegexLabel || 'Custom Toggle');
+
+          // Hide form
+          document.getElementById('inlineRegexForm').classList.remove('show');
+
+          // Clear form
+          document.getElementById('newRegexValue').value = '';
+          document.getElementById('newRegexLabel').value = '';
+        }
+      });
+
+      document.getElementById('cancelRegexToggle').addEventListener('click', () => {
+        document.getElementById('inlineRegexForm').classList.remove('show');
+        document.getElementById('newRegexValue').value = '';
+        document.getElementById('newRegexLabel').value = '';
+      });
+
+      // Lists and arrays event listeners
+      document.getElementById('addKeyValueList').addEventListener('click', () => {
+        listsData.keyValueLists.push({
+          name: 'New Key-Value List',
+          items: [{ key: '', value: '' }]
+        });
+        refreshListsUI();
+        autoSavePatternHierarchy();
+      });
+
+      document.getElementById('addArray').addEventListener('click', () => {
+        listsData.arrays.push({
+          name: 'New Array',
+          items: ['']
+        });
+        refreshListsUI();
+        autoSavePatternHierarchy();
+      });
+
+      // Preview buttons event listeners
+      document.getElementById('loadSampleMd').addEventListener('click', loadSampleMd);
+
+      // Refresh button event listener
+      document.getElementById('refreshBtn').addEventListener('click', refreshFromBobJson);
+
+      // Initialize UI
+      updatePatternUI();
+      refreshRuleUI();
       refreshListsUI();
-      autoSavePatternHierarchy();
+      updateRawJson();
+
+      // Load pattern hierarchy from bob.json on page load
+      loadPatternHierarchy();
     });
   </script>
 </body>

@@ -1,28 +1,27 @@
 {
   "defaultPattern": {
     "label": "day of the week",
-    "color1": "magenta",
-    "color2": "",
+    "color1": "#1b181b",
+    "color2": "#cfcfcf",
     "structure": {
       "startAnchor": false,
       "startWordBoundary": false,
-      "customPrependToggles": [
-        {
-          "id": "1754538953687",
-          "label": "blah",
-          "regex": "blah",
-          "position": "prepend",
-          "active": false
-        }
-      ],
-      "basePattern": "fish|river",
+      "customPrependToggles": [],
+      "basePattern": ".*",
       "customAppendToggles": [],
       "endWordBoundary": false,
       "endAnchor": false
     }
   },
   "dictionary": {
-    "rules": []
+    "rules": [
+      {
+        "match": "^fish$",
+        "color1": "magenta",
+        "color2": "#a465a4",
+        "label": "day of the week"
+      }
+    ]
   },
   "listsData": {
     "keyValueLists": [
@@ -79,13 +78,9 @@
           "colors",
           "days of the week",
           "instruments",
-          "letters",
           "months",
-          "numbers",
           "people",
-          "shapes",
-          "sounds",
-          "textures"
+          "sounds"
         ]
       }
     ]
