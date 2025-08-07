@@ -3,13 +3,13 @@
     "label": "Default",
     "color": "blue",
     "structure": {
-      "startAnchor": true,
-      "startWordBoundary": true,
+      "startAnchor": false,
+      "startWordBoundary": false,
       "customPrependToggles": [],
-      "basePattern": "what up",
+      "basePattern": "fish|river",
       "customAppendToggles": [],
-      "endWordBoundary": true,
-      "endAnchor": true
+      "endWordBoundary": false,
+      "endAnchor": false
     }
   },
   "dictionary": {
@@ -18,21 +18,65 @@
   "listsData": {
     "keyValueLists": [
       {
-        "name": "New Key-Value List",
+        "name": "categories",
         "items": [
           {
-            "key": "foo",
-            "value": "bar"
+            "key": "color",
+            "value": "🎨"
+          },
+          {
+            "key": "day of the week",
+            "value": "📅"
+          },
+          {
+            "key": "instrument",
+            "value": "🎸"
+          },
+          {
+            "key": "letter",
+            "value": "🅰️"
+          },
+          {
+            "key": "month",
+            "value": "📆"
+          },
+          {
+            "key": "number",
+            "value": "🔢"
+          },
+          {
+            "key": "person",
+            "value": "👤"
+          },
+          {
+            "key": "shape",
+            "value": "⭐"
+          },
+          {
+            "key": "sound",
+            "value": "🔊"
+          },
+          {
+            "key": "texture",
+            "value": "🧶"
           }
         ]
       }
     ],
     "arrays": [
       {
-        "name": "New Array",
+        "name": "list",
         "items": [
-          "sdf",
-          "sdf"
+          "colors",
+          "days of the week",
+          "instruments",
+          "letters",
+          "months",
+          "numbers",
+          "people",
+          "shapes",
+          "sounds",
+          "textures"
         ]
       }
     ]
