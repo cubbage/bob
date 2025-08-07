@@ -80,7 +80,9 @@
       display: flex;
       gap: 0;
       margin-bottom: 0;
-      flex-wrap: wrap;
+      flex-wrap: nowrap;
+      align-items: center;
+      min-width: 0;
     }
 
     .small {
@@ -425,6 +427,24 @@
     .rule-row .match {
       width: 80px;
       min-width: 80px;
+      flex-shrink: 0;
+    }
+
+    /* Prevent wrapping in rule rows */
+    .rule-row>* {
+      flex-shrink: 0;
+    }
+
+    .rule-row .category {
+      flex-shrink: 0;
+    }
+
+    .rule-row .label {
+      flex-shrink: 0;
+    }
+
+    .rule-row .color-btn {
+      flex-shrink: 0;
     }
   </style>
 </head>
@@ -611,6 +631,24 @@
       </div>
       <p class="small">Groups match words using JavaScript regular expressions (case-insensitive by default). First
         matching group applies.</p>
+
+      <div class="section-header">
+        <h3>Objects</h3>
+      </div>
+      <div style="margin-top:0.5rem;">
+        <div id="objectsContainer"></div>
+        <div style="margin-top:0.5rem;">
+          <div class="dropdown-container" style="position: relative; display: inline-block;">
+            <button class="btn" id="addObject">+ Add Object</button>
+            <div id="objectCategoryDropdown" class="dropdown-menu"
+              style="display: none; position: absolute; top: 100%; left: 0; background: white; border: 1px solid #dee2e6; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); z-index: 1000; max-width: 100px;">
+              <!-- Categories will be populated dynamically -->
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="small">Objects are specific items within Groups. If a Group has no regex, its Objects are searched when
+        the Group is enabled.</p>
     </div>
 
     <!-- Tab 3: Lists and Arrays Manager -->
@@ -644,6 +682,8 @@
 
   <template id="ruleTemplate">
     <div class="rule-row">
+      <button class="btn btn-secondary group-toggle" style="width: 40px; font-weight: bold;"
+        title="Toggle group on/off">✓</button>
       <select class="category" style="width: 150px;">
         <option value="">💜</option>
       </select>
@@ -657,6 +697,24 @@
       </button>
       <input aria-label="match" placeholder="regex (e.g. ^[A-M])" class="match" />
       <button class="btn btn-secondary removeRule">✕</button>
+    </div>
+  </template>
+
+  <template id="objectTemplate">
+    <div class="rule-row">
+      <button class="btn btn-secondary object-toggle" style="width: 40px; font-weight: bold;"
+        title="Toggle object on/off">✓</button>
+      <input aria-label="label" placeholder="label (optional)" class="label" style="width: 120px;" />
+      <button class="color1-btn btn btn-secondary color-btn" style="width: 80px; text-align: left; position: relative;">
+        <span class="color1-display">magenta</span>
+        <span class="style1-display">bg</span>
+      </button>
+      <button class="color2-btn btn btn-secondary color-btn" style="width: 80px; text-align: left; position: relative;">
+        <span class="color2-display">-</span>
+        <span class="style2-display"></span>
+      </button>
+      <input aria-label="match" placeholder="regex (e.g. ^[A-M])" class="match" />
+      <button class="btn btn-secondary removeObject">✕</button>
     </div>
   </template>
 
@@ -687,6 +745,9 @@
 
     // minimal dictionary structure
     let dictionary = { rules: [] };
+
+    // Objects data structure
+    let objectsData = { objects: [] };
 
     // Default pattern JSON structure
     let defaultPattern = {
@@ -735,9 +796,15 @@
             listsData = data.listsData;
           }
 
+          // Load objects data
+          if (data.objectsData) {
+            objectsData = data.objectsData;
+          }
+
           // Update UI
           updatePatternUI();
           refreshRuleUI();
+          refreshObjectsUI();
           refreshListsUI();
           applyRules();
 
@@ -809,9 +876,15 @@
           listsData = data.listsData;
         }
 
+        // Load objects data
+        if (data.objectsData) {
+          objectsData = data.objectsData;
+        }
+
         // Update UI
         updatePatternUI();
         refreshRuleUI();
+        refreshObjectsUI();
         refreshListsUI();
         applyRules();
         updateRawJson();
@@ -866,7 +939,8 @@
         const data = {
           defaultPattern: defaultPattern,
           dictionary: dictionary,
-          listsData: listsData
+          listsData: listsData,
+          objectsData: objectsData
         };
 
         // Save to localStorage for immediate syncing
@@ -883,7 +957,8 @@
         const data = {
           defaultPattern: defaultPattern,
           dictionary: dictionary,
-          listsData: listsData
+          listsData: listsData,
+          objectsData: objectsData
         };
 
         // Try to use File System Access API for silent saving
@@ -998,6 +1073,15 @@
         row.querySelector('.match').value = r.match || '';
         row.querySelector('.category').value = r.label || '';
 
+        // Set toggle state
+        const toggleBtn = row.querySelector('.group-toggle');
+        if (toggleBtn) {
+          const isEnabled = r.enabled !== false; // Default to true if not specified
+          toggleBtn.textContent = isEnabled ? '✓' : '✗';
+          toggleBtn.style.background = isEnabled ? '#28a745' : '#dc3545';
+          toggleBtn.title = isEnabled ? 'Group enabled' : 'Group disabled';
+        }
+
         // Set color and style displays
         const color1Display = row.querySelector('.color1-display');
         const color2Display = row.querySelector('.color2-display');
@@ -1040,6 +1124,20 @@
           autoSavePatternHierarchy();
         });
 
+        // Toggle button event listener
+        const groupToggleBtn = row.querySelector('.group-toggle');
+        if (groupToggleBtn) {
+          groupToggleBtn.addEventListener('click', () => {
+            const isEnabled = r.enabled !== false;
+            r.enabled = !isEnabled;
+            groupToggleBtn.textContent = !isEnabled ? '✓' : '✗';
+            groupToggleBtn.style.background = !isEnabled ? '#28a745' : '#dc3545';
+            groupToggleBtn.title = !isEnabled ? 'Group enabled' : 'Group disabled';
+            applyRules();
+            autoSavePatternHierarchy();
+          });
+        }
+
         // Live change listeners
         row.querySelector('.match').addEventListener('input', () => {
           dictionary.rules[idx].match = row.querySelector('.match').value;
@@ -1065,6 +1163,143 @@
         });
 
         container.appendChild(node);
+      });
+      updateRawJson();
+    }
+
+    function refreshObjectsUI() {
+      const container = document.getElementById('objectsContainer');
+      container.innerHTML = '';
+
+      // Group objects by their group
+      const groupedObjects = {};
+      objectsData.objects.forEach(obj => {
+        if (!groupedObjects[obj.group]) {
+          groupedObjects[obj.group] = [];
+        }
+        groupedObjects[obj.group].push(obj);
+      });
+
+      // Create sections for each group
+      Object.keys(groupedObjects).forEach(groupName => {
+        // Create group header
+        const groupHeader = document.createElement('div');
+        groupHeader.style.cssText = `
+          margin-top: 1rem;
+          margin-bottom: 0.5rem;
+          padding: 0.5rem;
+          background: #f8f9fa;
+          border: 1px solid #dee2e6;
+          border-radius: 4px;
+          font-weight: 600;
+          color: #495057;
+        `;
+        groupHeader.textContent = groupName;
+        container.appendChild(groupHeader);
+
+        // Add objects for this group
+        groupedObjects[groupName].forEach((obj, idx) => {
+          const tpl = document.getElementById('objectTemplate');
+          const node = tpl.content.cloneNode(true);
+          const row = node.querySelector('.rule-row');
+          row.dataset.idx = objectsData.objects.indexOf(obj);
+
+          // Set values
+          row.querySelector('.match').value = obj.match || '';
+          row.querySelector('.label').value = obj.label || '';
+
+          // Set toggle state
+          const objectToggleBtn = row.querySelector('.object-toggle');
+          if (objectToggleBtn) {
+            const isEnabled = obj.enabled !== false; // Default to true if not specified
+            objectToggleBtn.textContent = isEnabled ? '✓' : '✗';
+            objectToggleBtn.style.background = isEnabled ? '#28a745' : '#dc3545';
+            objectToggleBtn.title = isEnabled ? 'Object enabled' : 'Object disabled';
+          }
+
+          // Set color and style displays
+          const color1Display = row.querySelector('.color1-display');
+          const color2Display = row.querySelector('.color2-display');
+          const style1Display = row.querySelector('.style1-display');
+          const style2Display = row.querySelector('.style2-display');
+          const color1Btn = row.querySelector('.color1-btn');
+          const color2Btn = row.querySelector('.color2-btn');
+
+          if (obj.color1) {
+            color1Display.textContent = obj.color1;
+            style1Display.textContent = getStyleAbbreviation(obj.style1 || 'background');
+            applyStyleToButton(color1Btn, obj.color1, obj.style1 || 'background');
+          } else {
+            color1Display.textContent = 'magenta';
+            style1Display.textContent = 'bg';
+            color1Btn.style.backgroundColor = '';
+            color1Btn.style.color = '';
+            color1Btn.style.border = '';
+            color1Btn.style.textDecoration = '';
+          }
+
+          if (obj.color2) {
+            color2Display.textContent = obj.color2;
+            style2Display.textContent = getStyleAbbreviation(obj.style2 || 'background');
+            applyStyleToButton(color2Btn, obj.color2, obj.style2 || 'background');
+          } else {
+            color2Display.textContent = '-';
+            style2Display.textContent = '';
+            color2Btn.style.backgroundColor = '';
+            color2Btn.style.color = '';
+            color2Btn.style.border = '';
+            color2Btn.style.textDecoration = '';
+          }
+
+          // Add event listeners
+          row.querySelector('.removeObject').addEventListener('click', () => {
+            const objIndex = objectsData.objects.indexOf(obj);
+            objectsData.objects.splice(objIndex, 1);
+            refreshObjectsUI();
+            applyRules();
+            autoSavePatternHierarchy();
+          });
+
+          // Toggle button event listener
+          const objToggleBtn = row.querySelector('.object-toggle');
+          if (objToggleBtn) {
+            objToggleBtn.addEventListener('click', () => {
+              const isEnabled = obj.enabled !== false;
+              obj.enabled = !isEnabled;
+              objToggleBtn.textContent = !isEnabled ? '✓' : '✗';
+              objToggleBtn.style.background = !isEnabled ? '#28a745' : '#dc3545';
+              objToggleBtn.title = !isEnabled ? 'Object enabled' : 'Object disabled';
+              applyRules();
+              autoSavePatternHierarchy();
+            });
+          }
+
+          // Live change listeners
+          row.querySelector('.match').addEventListener('input', () => {
+            obj.match = row.querySelector('.match').value;
+            updateRawJson();
+            autoSavePatternHierarchy();
+          });
+
+          row.querySelector('.label').addEventListener('input', () => {
+            obj.label = row.querySelector('.label').value;
+            updateRawJson();
+            autoSavePatternHierarchy();
+          });
+
+          // Color button click handlers
+          color1Btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            showObjectColorPanel(objectsData.objects.indexOf(obj), 1);
+          });
+
+          color2Btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            showObjectColorPanel(objectsData.objects.indexOf(obj), 2);
+          });
+
+          container.appendChild(node);
+        });
       });
       updateRawJson();
     }
@@ -1170,8 +1405,18 @@
           }
         }
 
-        // First check dictionary rules
+        // First check dictionary rules (only if enabled)
         for (const rule of dictionary.rules) {
+          // Skip disabled rules
+          if (rule.enabled === false) {
+            continue;
+          }
+
+          // Skip rules with empty regex - these will be handled by objects
+          if (!rule.match || rule.match.trim() === '') {
+            continue;
+          }
+
           try {
             const flags = 'i';
             let regex = new RegExp(rule.match, flags);
@@ -1205,6 +1450,62 @@
           } catch (e) {
             // invalid regex; skip
             console.warn('bad regex', rule.match);
+          }
+        }
+
+        // If no match found, check objects for groups without regex
+        if (!matched) {
+          for (const rule of dictionary.rules) {
+            // Skip disabled rules or rules with regex
+            if (rule.enabled === false || rule.match.trim() !== '') {
+              continue;
+            }
+
+            // Check objects for this group
+            for (const obj of objectsData.objects) {
+              // Skip disabled objects
+              if (obj.enabled === false) {
+                continue;
+              }
+
+              // Check if object belongs to this group
+              if (obj.group === rule.label) {
+                try {
+                  const flags = 'i';
+                  let regex = new RegExp(obj.match, flags);
+
+                  if (obj.match.includes(' ')) {
+                    // For multi-word patterns, check if this token is part of a match
+                    if (isPartOfMultiWordMatch) {
+                      matched = {
+                        color1: obj.color1,
+                        color2: obj.color2,
+                        style1: obj.style1,
+                        style2: obj.style2,
+                        label: obj.label || obj.group
+                      };
+                      break;
+                    }
+                  } else {
+                    // For single-word patterns, test against the current token
+                    if (regex.test(token)) {
+                      matched = {
+                        color1: obj.color1,
+                        color2: obj.color2,
+                        style1: obj.style1,
+                        style2: obj.style2,
+                        label: obj.label || obj.group
+                      };
+                      break;
+                    }
+                  }
+                } catch (e) {
+                  // invalid regex; skip
+                  console.warn('bad object regex', obj.match);
+                }
+              }
+            }
+            if (matched) break;
           }
         }
 
@@ -2228,6 +2529,130 @@
       }
     }
 
+    // Object color panel functions
+    function showObjectColorPanel(objectIndex, colorNum) {
+      // Create or get the color panel for this object
+      let panel = document.getElementById(`objectColorPanel_${objectIndex}_${colorNum}`);
+      if (!panel) {
+        panel = createObjectColorPanel(objectIndex, colorNum);
+        document.body.appendChild(panel);
+      }
+
+      const obj = objectsData.objects[objectIndex];
+      const color = colorNum === 1 ? obj.color1 : obj.color2;
+      const style = colorNum === 1 ? obj.style1 : obj.style2;
+
+      // Set current values
+      const textInput = panel.querySelector('.color-text');
+      const picker = panel.querySelector('.color-picker');
+      const styleSelect = panel.querySelector('.style-select');
+
+      textInput.value = color || '';
+      styleSelect.value = style || 'background';
+
+      // Try to set color picker value if it's a hex color
+      if (color && color.match(/^#[0-9A-Fa-f]{6}$/)) {
+        picker.value = color;
+      }
+
+      // Position the panel relative to the button
+      const button = document.querySelector(`[data-idx="${objectIndex}"] .color${colorNum}-btn`);
+      if (button) {
+        const rect = button.getBoundingClientRect();
+        panel.style.position = 'absolute';
+        panel.style.top = (rect.bottom + window.scrollY) + 'px';
+        panel.style.left = rect.left + 'px';
+      }
+
+      panel.classList.add('show');
+      textInput.focus();
+    }
+
+    function createObjectColorPanel(objectIndex, colorNum) {
+      const panel = document.createElement('div');
+      panel.id = `objectColorPanel_${objectIndex}_${colorNum}`;
+      panel.className = 'inline-form';
+      panel.style.cssText = `
+        position: absolute;
+        min-width: 250px;
+        background: white;
+        border: 1px solid #dee2e6;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+      `;
+
+      panel.innerHTML = `
+        <div class="inline-form-row">
+          <label>Color ${colorNum}:</label>
+          <input type="text" class="color-text" placeholder="color (e.g. #ff0000)" style="flex: 1;" />
+        </div>
+        <div class="inline-form-row">
+          <label>Picker:</label>
+          <input type="color" class="color-picker" value="#ff00ff" style="width: 50px; height: 30px;" />
+        </div>
+        <div class="inline-form-row">
+          <label>Style:</label>
+          <select class="style-select" style="flex: 1;">
+            <option value="background">Background</option>
+            <option value="color">Text Color</option>
+            <option value="underline">Underline</option>
+            <option value="border">Border</option>
+          </select>
+        </div>
+        <div class="inline-form-actions">
+          <button class="btn btn-success btn-small apply-object-color">Apply</button>
+          <button class="btn btn-danger btn-small cancel-object-color">Cancel</button>
+        </div>
+      `;
+
+      // Add event listeners
+      const applyBtn = panel.querySelector('.apply-object-color');
+      const cancelBtn = panel.querySelector('.cancel-object-color');
+      const textInput = panel.querySelector('.color-text');
+      const picker = panel.querySelector('.color-picker');
+
+      applyBtn.addEventListener('click', () => {
+        const color = textInput.value;
+        const style = panel.querySelector('.style-select').value;
+        const obj = objectsData.objects[objectIndex];
+        if (colorNum === 1) {
+          obj.color1 = color;
+          obj.style1 = style;
+        } else {
+          obj.color2 = color;
+          obj.style2 = style;
+        }
+        refreshObjectsUI();
+        applyRules();
+        autoSavePatternHierarchy();
+        hideObjectColorPanel(objectIndex, colorNum);
+      });
+
+      cancelBtn.addEventListener('click', () => {
+        hideObjectColorPanel(objectIndex, colorNum);
+      });
+
+      // Sync picker with text input
+      picker.addEventListener('input', () => {
+        textInput.value = picker.value;
+      });
+
+      textInput.addEventListener('input', () => {
+        if (textInput.value.match(/^#[0-9A-Fa-f]{6}$/)) {
+          picker.value = textInput.value;
+        }
+      });
+
+      return panel;
+    }
+
+    function hideObjectColorPanel(objectIndex, colorNum) {
+      const panel = document.getElementById(`objectColorPanel_${objectIndex}_${colorNum}`);
+      if (panel) {
+        panel.classList.remove('show');
+      }
+    }
+
     // Event Listeners
     document.addEventListener('DOMContentLoaded', function () {
       // Initialize tabs
@@ -2247,6 +2672,10 @@
         showCategoryDropdown();
       });
 
+      document.getElementById('addObject').addEventListener('click', () => {
+        showObjectCategoryDropdown();
+      });
+
       // Function to show category dropdown
       function showCategoryDropdown() {
         const dropdown = document.getElementById('categoryDropdown');
@@ -2255,20 +2684,26 @@
         // Clear existing options
         dropdown.innerHTML = '';
 
-        // Add categories from listsData
+        // Get existing group labels
+        const existingGroups = dictionary.rules.map(rule => rule.label).filter(label => label);
+
+        // Add categories from listsData that are not already used as groups
         if (listsData && listsData.keyValueLists) {
           const categoriesList = listsData.keyValueLists.find(list => list.name === 'categories');
           if (categoriesList && categoriesList.items) {
             categoriesList.items.forEach(item => {
-              const option = document.createElement('div');
-              option.className = 'dropdown-option';
-              option.style.cssText = 'padding: 8px 12px; cursor: pointer; border-bottom: 1px solid #f0f0f0;';
-              option.textContent = `${item.value} ${item.key}`;
-              option.addEventListener('click', () => {
-                createNewGroup(item.key);
-                hideCategoryDropdown();
-              });
-              dropdown.appendChild(option);
+              // Only show categories that are not already used as groups
+              if (!existingGroups.includes(item.key)) {
+                const option = document.createElement('div');
+                option.className = 'dropdown-option';
+                option.style.cssText = 'padding: 8px 12px; cursor: pointer; border-bottom: 1px solid #f0f0f0;';
+                option.textContent = `${item.value} ${item.key}`;
+                option.addEventListener('click', () => {
+                  createNewGroup(item.key);
+                  hideCategoryDropdown();
+                });
+                dropdown.appendChild(option);
+              }
             });
           }
         }
@@ -2294,6 +2729,56 @@
         return colors[Math.floor(Math.random() * colors.length)];
       }
 
+      // Function to show object category dropdown
+      function showObjectCategoryDropdown() {
+        const dropdown = document.getElementById('objectCategoryDropdown');
+        const button = document.getElementById('addObject');
+
+        // Clear existing options
+        dropdown.innerHTML = '';
+
+        // Get existing group labels
+        const existingGroups = dictionary.rules.map(rule => rule.label).filter(label => label);
+
+        // Add existing groups to the dropdown
+        existingGroups.forEach(groupName => {
+          // Find the category info for this group
+          let categoryInfo = null;
+          if (listsData && listsData.keyValueLists) {
+            const categoriesList = listsData.keyValueLists.find(list => list.name === 'categories');
+            if (categoriesList && categoriesList.items) {
+              categoryInfo = categoriesList.items.find(item => item.key === groupName);
+            }
+          }
+
+          const option = document.createElement('div');
+          option.className = 'dropdown-option';
+          option.style.cssText = 'padding: 8px 12px; cursor: pointer; border-bottom: 1px solid #f0f0f0;';
+
+          // Use category emoji if available, otherwise just the group name
+          if (categoryInfo) {
+            option.textContent = `${categoryInfo.value} ${groupName}`;
+          } else {
+            option.textContent = groupName;
+          }
+
+          option.addEventListener('click', () => {
+            createNewObject(groupName);
+            hideObjectCategoryDropdown();
+          });
+          dropdown.appendChild(option);
+        });
+
+        // Show dropdown
+        dropdown.style.display = 'block';
+      }
+
+      // Function to hide object category dropdown
+      function hideObjectCategoryDropdown() {
+        const dropdown = document.getElementById('objectCategoryDropdown');
+        dropdown.style.display = 'none';
+      }
+
       // Function to create new group
       function createNewGroup(category) {
         // Get the current default pattern
@@ -2314,12 +2799,39 @@
         autoSavePatternHierarchy();
       }
 
+      // Function to create new object
+      function createNewObject(category) {
+        // Find the group to inherit styles from
+        const group = dictionary.rules.find(rule => rule.label === category);
+
+        // Create a new object with the selected category, inheriting group styles
+        const newObject = {
+          label: '',
+          color1: group ? group.color1 : generateRandomColor(),
+          color2: group ? group.color2 : '',
+          style1: group ? group.style1 : 'background',
+          style2: group ? group.style2 : '',
+          match: '',
+          group: category
+        };
+
+        objectsData.objects.push(newObject);
+        refreshObjectsUI();
+        autoSavePatternHierarchy();
+      }
+
       // Hide dropdown when clicking outside
       document.addEventListener('click', (e) => {
         const dropdown = document.getElementById('categoryDropdown');
         const button = document.getElementById('addRule');
         if (!button.contains(e.target) && !dropdown.contains(e.target)) {
           hideCategoryDropdown();
+        }
+
+        const objectDropdown = document.getElementById('objectCategoryDropdown');
+        const objectButton = document.getElementById('addObject');
+        if (!objectButton.contains(e.target) && !objectDropdown.contains(e.target)) {
+          hideObjectCategoryDropdown();
         }
       });
       document.getElementById('downloadMd').addEventListener('click', downloadMarkdown);
@@ -2381,6 +2893,14 @@
         // Hide rule color panels when clicking outside
         const ruleColorPanels = document.querySelectorAll('[id^="ruleColorPanel_"]');
         ruleColorPanels.forEach(panel => {
+          if (!panel.contains(e.target)) {
+            panel.classList.remove('show');
+          }
+        });
+
+        // Hide object color panels when clicking outside
+        const objectColorPanels = document.querySelectorAll('[id^="objectColorPanel_"]');
+        objectColorPanels.forEach(panel => {
           if (!panel.contains(e.target)) {
             panel.classList.remove('show');
           }
@@ -2581,6 +3101,7 @@
       // Initialize UI
       updatePatternUI();
       refreshRuleUI();
+      refreshObjectsUI();
       refreshListsUI();
       updateRawJson();
 

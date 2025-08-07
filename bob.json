@@ -1,8 +1,8 @@
 {
   "defaultPattern": {
-    "label": "day of the week",
-    "color1": "#1b181b",
-    "color2": "#cfcfcf",
+    "label": "instrument",
+    "color1": "#757575",
+    "color2": "#ebebeb",
     "structure": {
       "startAnchor": false,
       "startWordBoundary": false,
@@ -11,15 +11,54 @@
       "customAppendToggles": [],
       "endWordBoundary": false,
       "endAnchor": false
-    }
+    },
+    "style1": "color",
+    "style2": "background"
   },
   "dictionary": {
     "rules": [
       {
-        "match": "^fish$",
+        "match": "",
         "color1": "magenta",
-        "color2": "#a465a4",
-        "label": "day of the week"
+        "color2": "",
+        "label": "day of the week",
+        "enabled": false,
+        "style1": "underline"
+      },
+      {
+        "match": "",
+        "color1": "magenta",
+        "color2": "",
+        "label": "number",
+        "enabled": false,
+        "style1": "color",
+        "style2": "background"
+      },
+      {
+        "match": "",
+        "color1": "#5487c9",
+        "color2": "",
+        "label": "letter",
+        "enabled": true,
+        "style1": "background",
+        "style2": "background"
+      },
+      {
+        "match": "",
+        "color1": "magenta",
+        "color2": "",
+        "label": "color",
+        "enabled": false,
+        "style1": "color"
+      },
+      {
+        "match": "",
+        "color1": "magenta",
+        "color2": "",
+        "style1": "color",
+        "style2": "",
+        "label": "month",
+        "enabled": false
       }
     ]
   },
@@ -82,6 +121,80 @@
           "people",
           "sounds"
         ]
+      }
+    ]
+  },
+  "objectsData": {
+    "objects": [
+      {
+        "label": "Monday",
+        "color1": "#ff8fff",
+        "color2": "#cfcfcf",
+        "style1": "background",
+        "style2": "color",
+        "match": "monday",
+        "group": "day of the week",
+        "enabled": false
+      },
+      {
+        "label": "Tuesday",
+        "color1": "#4ECDC4",
+        "color2": "#ffffff",
+        "style1": "background",
+        "style2": "color",
+        "match": "tuesday",
+        "group": "day of the week",
+        "enabled": false
+      },
+      {
+        "label": "a",
+        "color1": "#ff293e",
+        "color2": "",
+        "style1": "color",
+        "style2": "color",
+        "match": "^a",
+        "group": "letter",
+        "enabled": true
+      },
+      {
+        "label": "b",
+        "color1": "#684ccd",
+        "color2": "",
+        "style1": "color",
+        "style2": "color",
+        "match": "^b",
+        "group": "letter",
+        "enabled": true
+      },
+      {
+        "label": "red",
+        "color1": "#ff0000",
+        "color2": "#ffffff",
+        "style1": "background",
+        "style2": "color",
+        "match": "red",
+        "group": "color",
+        "enabled": false
+      },
+      {
+        "label": "blue",
+        "color1": "#0000ff",
+        "color2": "#ffffff",
+        "style1": "background",
+        "style2": "color",
+        "match": "blue",
+        "group": "color",
+        "enabled": false
+      },
+      {
+        "label": "",
+        "color1": "#4ECDC4",
+        "color2": "",
+        "style1": "background",
+        "style2": "",
+        "match": "",
+        "group": "color",
+        "enabled": false
       }
     ]
   }
