@@ -8,24 +8,37 @@
   <style>
     body {
       font-family: system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif;
-      padding: 1rem;
-      max-width: 1200px;
-      margin: auto;
+      padding: 0;
+      max-width: none;
+      margin: 0;
     }
 
     /* Tab Styles */
     .tab-container {
-      margin-top: 2rem;
+      margin-top: 0;
+      padding: 1rem;
     }
 
     .tab-buttons {
       display: flex;
+      justify-content: space-between;
+      align-items: center;
       border-bottom: 2px solid #e0e0e0;
       margin-bottom: 1rem;
     }
 
+    .tab-buttons-left {
+      display: flex;
+    }
+
+    .tab-buttons-right {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
     .tab-button {
-      padding: 0.75rem 1.5rem;
+      padding: 0.5rem 1rem;
       border: none;
       background: none;
       cursor: pointer;
@@ -33,6 +46,7 @@
       color: #666;
       border-bottom: 3px solid transparent;
       transition: all 0.2s ease;
+      font-size: 0.9rem;
     }
 
     .tab-button.active {
@@ -53,6 +67,290 @@
 
     .tab-content.active {
       display: block;
+    }
+
+    /* Groups Editor Sidebar */
+    .groups-editor-sidebar {
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: 300px;
+      height: 100vh;
+      background: #f8f9fa;
+      border-left: 1px solid #dee2e6;
+      overflow-y: auto;
+      z-index: 100;
+      transform: translateX(100%);
+      transition: transform 0.3s ease;
+    }
+
+    .groups-editor-sidebar.show {
+      transform: translateX(0);
+    }
+
+    .groups-editor-header {
+      padding: 1rem;
+      border-bottom: 1px solid #dee2e6;
+      background: white;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .groups-editor-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin: 0 0 0.5rem 0;
+      color: #333;
+    }
+
+    .groups-editor-toggle {
+      background: #28a745;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      cursor: pointer;
+      font-size: 16px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .groups-editor-toggle:hover {
+      background: #218838;
+      transform: scale(1.1);
+    }
+
+    .groups-editor-toggle:active {
+      transform: scale(0.95);
+    }
+
+    .groups-editor-content {
+      padding: 1rem;
+    }
+
+    .group-rule-compact {
+      background: white;
+      border: 1px solid #dee2e6;
+      border-radius: 6px;
+      margin-bottom: 0.5rem;
+      padding: 0.75rem;
+      position: relative;
+    }
+
+    .group-rule-compact .move-buttons {
+      position: absolute;
+      top: 0.5rem;
+      left: 0.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .group-rule-compact .rule-content {
+      margin-left: 2rem;
+    }
+
+    .group-rule-compact .rule-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .group-rule-compact .group-toggle {
+      width: 24px;
+      height: 24px;
+      padding: 0;
+      border: 1px solid #dee2e6;
+      background: #f8f9fa;
+      color: #6c757d;
+      cursor: pointer;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 3px;
+      transition: all 0.2s ease;
+    }
+
+    .group-rule-compact .group-toggle.active {
+      background: #28a745;
+      color: white;
+    }
+
+    .group-rule-compact .group-name {
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: #333;
+      flex: 1;
+    }
+
+    .group-rule-compact .remove-rule {
+      width: 24px;
+      height: 24px;
+      padding: 0;
+      border: 1px solid #dee2e6;
+      background: #f8f9fa;
+      color: #dc3545;
+      cursor: pointer;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 3px;
+      transition: all 0.2s ease;
+    }
+
+    .group-rule-compact .remove-rule:hover {
+      background: #dc3545;
+      color: white;
+    }
+
+    .group-rule-compact .rule-details {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.5rem;
+      font-size: 0.8rem;
+      color: #666;
+    }
+
+    .group-rule-compact .color-preview {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border-radius: 2px;
+      border: 1px solid #dee2e6;
+      margin-right: 0.25rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .group-rule-compact .color-preview:hover {
+      transform: scale(1.2);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .group-rule-compact .style-edit {
+      cursor: pointer;
+      transition: all 0.2s ease;
+      padding: 2px 4px;
+      border-radius: 3px;
+    }
+
+    .group-rule-compact .style-edit:hover {
+      background: #e9ecef;
+    }
+
+    .sidebar-objects-section {
+      margin-top: 0.5rem;
+      border-top: 1px solid #dee2e6;
+      padding-top: 0.5rem;
+    }
+
+    .sidebar-objects-toggle {
+      background: none;
+      border: none;
+      color: #666;
+      cursor: pointer;
+      font-size: 0.8rem;
+      padding: 0.25rem 0;
+      width: 100%;
+      text-align: left;
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .sidebar-objects-toggle:hover {
+      color: #333;
+    }
+
+    .sidebar-objects-list {
+      margin-top: 0.25rem;
+      padding-left: 1rem;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease;
+    }
+
+    .sidebar-objects-list.expanded {
+      max-height: 1000px;
+    }
+
+    .sidebar-object-item {
+      padding: 0.25rem 0;
+      font-size: 0.75rem;
+      color: #666;
+      border-bottom: 1px solid #f0f0f0;
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      flex-wrap: wrap;
+    }
+
+    .sidebar-object-item:last-child {
+      border-bottom: none;
+    }
+
+    .sidebar-object-toggle {
+      width: 16px;
+      height: 16px;
+      padding: 0;
+      border: 1px solid #dee2e6;
+      background: #f8f9fa;
+      color: #6c757d;
+      cursor: pointer;
+      font-size: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 2px;
+      transition: all 0.2s ease;
+    }
+
+    .sidebar-object-toggle.active {
+      background: #28a745;
+      color: white;
+    }
+
+    /* .sidebar-object-name styles now applied inline to show preview styling */
+
+    .sidebar-add-buttons {
+      margin-top: 0.5rem;
+      display: flex;
+      gap: 0.25rem;
+    }
+
+    .sidebar-add-btn {
+      padding: 0.25rem 0.5rem;
+      border: 1px solid #dee2e6;
+      background: #f8f9fa;
+      color: #666;
+      cursor: pointer;
+      font-size: 0.75rem;
+      border-radius: 3px;
+      transition: all 0.2s ease;
+      flex: 1;
+    }
+
+    .sidebar-add-btn:hover {
+      background: #007aff;
+      color: white;
+    }
+
+    /* Adjust main content when sidebar is open */
+    .main-content-with-sidebar {
+      margin-right: 300px;
+      transition: margin-right 0.3s ease;
+    }
+
+    .main-content-with-sidebar.sidebar-closed {
+      margin-right: 0;
     }
 
     /* Existing Styles */
@@ -374,20 +672,19 @@
 
     /* Refresh Button */
     .refresh-btn {
-      position: fixed;
-      top: 20px;
-      right: 20px;
       background: #007aff;
       color: white;
       border: none;
       border-radius: 50%;
-      width: 50px;
-      height: 50px;
+      width: 40px;
+      height: 40px;
       cursor: pointer;
-      font-size: 20px;
+      font-size: 16px;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
       transition: all 0.2s ease;
-      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .refresh-btn:hover {
@@ -615,6 +912,28 @@
       border: 1px solid #dee2e6;
       border-radius: 4px;
       cursor: pointer;
+      background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.3) 50%, transparent 70%);
+    }
+
+    .color-input-group {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 0.5rem;
+      align-items: end;
+    }
+
+    .color-input-group input[type="text"] {
+      padding: 0.75rem;
+      border: 1px solid #dee2e6;
+      border-radius: 4px;
+      font-size: 0.9rem;
+      transition: border-color 0.2s ease;
+    }
+
+    .color-input-group input[type="text"]:focus {
+      outline: none;
+      border-color: #007aff;
+      box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
     }
 
     .object-editor-actions {
@@ -726,32 +1045,65 @@
       transform: scale(1.05);
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     }
+
+    /* Make words within semantic structures clickable */
+    .semantic-container .word {
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border-radius: 2px;
+      padding: 1px 2px;
+    }
+
+    .semantic-container .word:hover {
+      transform: scale(1.05);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      background-color: rgba(0, 122, 255, 0.1);
+    }
   </style>
 </head>
 
 <body>
   <!-- Refresh Button -->
-  <button class="refresh-btn" id="refreshBtn" title="Refresh from bob.json and switch to JSON tab">🔄</button>
+  <!-- Buttons moved to tab area -->
 
-  <div class="tab-container">
+  <!-- Groups Editor Sidebar -->
+  <div class="groups-editor-sidebar show" id="groupsEditorSidebar">
+    <div class="groups-editor-header">
+      <h3 class="groups-editor-title">Groups Editor</h3>
+      <div class="sidebar-add-buttons">
+        <button class="sidebar-add-btn" id="sidebarAddGroup">+ Group</button>
+        <button class="sidebar-add-btn" id="sidebarAddObject">+ Object</button>
+      </div>
+    </div>
+    <div class="groups-editor-content" id="groupsEditorContent">
+      <!-- Groups will be populated here -->
+    </div>
+  </div>
+
+  <div class="tab-container main-content-with-sidebar" id="mainContent">
     <div class="tab-buttons">
-      <button class="tab-button active" data-tab="input-preview">Input Text + Preview + Export</button>
-      <button class="tab-button" data-tab="search-dictionary">Default Search Pattern + Groups</button>
-      <button class="tab-button" data-tab="lists-arrays">Lists and Arrays Manager</button>
-      <button class="tab-button" data-tab="json-view">bob.json</button>
+      <div class="tab-buttons-left">
+        <button class="tab-button active" data-tab="input-preview">Preview</button>
+        <button class="tab-button" data-tab="search-dictionary">Patterns</button>
+        <button class="tab-button" data-tab="lists-arrays">Lists</button>
+        <button class="tab-button" data-tab="json-view">JSON</button>
+      </div>
+      <div class="tab-buttons-right">
+        <button class="refresh-btn" id="refreshBtn" title="Refresh from bob.json and switch to JSON tab">🔄</button>
+        <button class="groups-editor-toggle" id="groupsEditorToggle" title="Toggle Groups Editor">⚙️</button>
+      </div>
     </div>
 
     <!-- Tab 1: Input Text + Preview + Export -->
     <div id="input-preview" class="tab-content active">
-      <div style="margin-bottom:0.5rem;">
-        <button class="btn" id="loadSampleMd">Load Sample.md</button>
-        <button class="btn btn-secondary" id="convertBob">Convert Bob</button>
-      </div>
-
       <div class="section-header">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 0.5rem;">
           <h3>Input Text</h3>
-          <button class="btn btn-secondary" id="clearBtn">Clear</button>
+          <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <button class="btn btn-secondary" id="loadSampleMd">Load Sample.md</button>
+            <button class="btn btn-secondary" id="convertBob">Convert Bob</button>
+            <button class="btn btn-secondary" id="clearBtn">Clear</button>
+          </div>
         </div>
       </div>
       <textarea id="sourceText" placeholder="Paste OCR text here..."></textarea>
@@ -1084,7 +1436,7 @@
 
         <div class="form-group">
           <label for="objectEditorColor1">Color 1</label>
-          <div class="color-group">
+          <div class="color-input-group">
             <input type="text" id="objectEditorColor1" placeholder="Color (e.g. #ff0000 or red)">
             <input type="color" id="objectEditorColor1Picker" class="color-picker">
           </div>
@@ -1092,7 +1444,7 @@
 
         <div class="form-group">
           <label for="objectEditorColor2">Color 2</label>
-          <div class="color-group">
+          <div class="color-input-group">
             <input type="text" id="objectEditorColor2" placeholder="Color (e.g. #ffffff or white)">
             <input type="color" id="objectEditorColor2Picker" class="color-picker">
           </div>
@@ -1141,6 +1493,7 @@
         </div>
       </form>
     </div>
+  </div>
   </div>
 
   <!-- jsPDF from CDN -->
@@ -1690,11 +2043,17 @@
             objectsData = data.objectsData;
           }
 
+          // Load debug mode
+          if (data.debugMode !== undefined) {
+            debugMode = data.debugMode;
+          }
+
           // Update UI
           updatePatternUI();
           refreshRuleUI();
           refreshObjectsUI();
           refreshListsUI();
+          updateDebugButtonState();
           applyRules();
 
           console.log('Pattern hierarchy loaded from localStorage');
@@ -1835,7 +2194,8 @@
           defaultPattern: defaultPattern,
           dictionary: dictionary,
           listsData: listsData,
-          objectsData: objectsData
+          objectsData: objectsData,
+          debugMode: debugMode
         };
 
         // Save to localStorage for immediate syncing
@@ -1903,9 +2263,12 @@
     // Object Editor functionality
     let currentEditingObject = null;
     let currentEditingObjectIndex = -1;
+    let currentEditingType = 'object'; // 'object' or 'group'
 
     // Function to open object editor
     function openObjectEditor(token, matchedObject) {
+      currentEditingType = 'object'; // Reset to object editing
+
       // Find the object in objectsData
       const objectIndex = findObjectByToken(token, matchedObject);
 
@@ -1923,7 +2286,7 @@
         };
         currentEditingObjectIndex = -1; // New object
       } else {
-        // Edit existing object
+        // Edit existing object - use the object's actual data, not the token
         currentEditingObject = { ...objectsData.objects[objectIndex] };
         currentEditingObjectIndex = objectIndex;
       }
@@ -1931,8 +2294,38 @@
       // Populate the form
       populateObjectEditorForm(token, matchedObject);
 
+      // Update modal title and show all fields for objects
+      document.querySelector('.object-editor-title').textContent = 'Edit Object';
+
+      // Show the object info section for objects
+      const objectInfoSection = document.querySelector('.object-info');
+      if (objectInfoSection) {
+        objectInfoSection.style.display = 'block';
+      }
+
+      // Show all fields for object editing
+      const matchRegexGroup = document.getElementById('objectEditorMatchRegex').parentElement;
+      matchRegexGroup.style.display = 'block';
+
+      const groupSelectGroup = document.getElementById('objectEditorGroupSelect').parentElement;
+      groupSelectGroup.style.display = 'block';
+
+      const color1Group = document.getElementById('objectEditorColor1').parentElement.parentElement;
+      color1Group.style.display = 'block';
+
+      const color2Group = document.getElementById('objectEditorColor2').parentElement.parentElement;
+      color2Group.style.display = 'block';
+
+      // Hide style fields for objects (objects shouldn't have style configuration)
+      const style1Group = document.getElementById('objectEditorStyle1').parentElement;
+      style1Group.style.display = 'none';
+
+      const style2Group = document.getElementById('objectEditorStyle2').parentElement;
+      style2Group.style.display = 'none';
+
       // Show the modal
       const modal = document.getElementById('objectEditorModal');
+      modal.style.display = 'flex';
       modal.classList.add('show');
 
       // Update JSON preview
@@ -1954,13 +2347,18 @@
 
     // Function to populate object editor form
     function populateObjectEditorForm(token, matchedObject) {
-      document.getElementById('objectEditorToken').textContent = token;
+      // For existing objects, show the actual label in the token field, for new objects show the clicked token
+      const displayToken = currentEditingObjectIndex !== -1 ? currentEditingObject.label || token : token;
+      document.getElementById('objectEditorToken').textContent = displayToken;
       document.getElementById('objectEditorGroup').textContent = matchedObject.group || 'Unknown';
       document.getElementById('objectEditorMatch').textContent = currentEditingObject.match || token.toLowerCase();
 
-      // Populate form fields
-      document.getElementById('objectEditorLabel').value = currentEditingObject.label || '';
-      document.getElementById('objectEditorMatchRegex').value = currentEditingObject.match || token.toLowerCase();
+      // Populate form fields - ensure label and match are different
+      const objectLabel = currentEditingObject.label || '';
+      const objectMatch = currentEditingObject.match || token.toLowerCase();
+
+      document.getElementById('objectEditorLabel').value = objectLabel;
+      document.getElementById('objectEditorMatchRegex').value = objectMatch;
       document.getElementById('objectEditorColor1').value = currentEditingObject.color1 || '';
       document.getElementById('objectEditorColor2').value = currentEditingObject.color2 || '';
       document.getElementById('objectEditorStyle1').value = currentEditingObject.style1 || '';
@@ -1976,10 +2374,14 @@
       const color2Picker = document.getElementById('objectEditorColor2Picker');
 
       if (currentEditingObject.color1) {
-        color1Picker.value = normalizeColor(currentEditingObject.color1);
+        const normalizedColor1 = normalizeColor(currentEditingObject.color1);
+        color1Picker.value = normalizedColor1;
+        updateColorPickerBackground('objectEditorColor1Picker', normalizedColor1);
       }
       if (currentEditingObject.color2) {
-        color2Picker.value = normalizeColor(currentEditingObject.color2);
+        const normalizedColor2 = normalizeColor(currentEditingObject.color2);
+        color2Picker.value = normalizedColor2;
+        updateColorPickerBackground('objectEditorColor2Picker', normalizedColor2);
       }
     }
 
@@ -2033,6 +2435,16 @@
       return '#000000';
     }
 
+    // Function to update color picker background
+    function updateColorPickerBackground(pickerId, color) {
+      const picker = document.getElementById(pickerId);
+      if (picker) {
+        const normalizedColor = normalizeColor(color);
+        picker.style.backgroundColor = normalizedColor;
+        picker.style.backgroundImage = `linear-gradient(45deg, ${normalizedColor} 30%, rgba(255,255,255,0.3) 50%, ${normalizedColor} 70%)`;
+      }
+    }
+
     // Function to update JSON preview
     function updateObjectEditorJsonPreview() {
       const formData = getObjectEditorFormData();
@@ -2058,38 +2470,63 @@
     function saveObjectChanges() {
       const formData = getObjectEditorFormData();
 
-      // Validate required fields
-      if (!formData.match.trim()) {
-        alert('Match pattern is required');
-        return;
-      }
+      if (currentEditingType === 'group') {
+        // Validate group fields
+        if (!formData.label.trim()) {
+          alert('Group name is required');
+          return;
+        }
 
-      if (!formData.group.trim()) {
-        alert('Group is required');
-        return;
-      }
+        // Update the group (rule)
+        Object.assign(currentEditingObject, formData);
+        dictionary.rules[currentEditingObjectIndex] = currentEditingObject;
 
-      // Update the object
-      Object.assign(currentEditingObject, formData);
+        // Refresh UI and apply rules
+        refreshRuleUI();
+        refreshGroupsSidebar();
+        applyRules();
+        autoSavePatternHierarchy();
 
-      if (currentEditingObjectIndex === -1) {
-        // Add new object
-        objectsData.objects.push(currentEditingObject);
+        // Close modal
+        closeObjectEditor();
+
+        // Show success message
+        showNotification('Group saved successfully!', 'success');
       } else {
-        // Update existing object
-        objectsData.objects[currentEditingObjectIndex] = currentEditingObject;
+        // Validate object fields
+        if (!formData.match.trim()) {
+          alert('Match pattern is required');
+          return;
+        }
+
+        if (!formData.group.trim()) {
+          alert('Group is required');
+          return;
+        }
+
+        // Update the object
+        Object.assign(currentEditingObject, formData);
+
+        if (currentEditingObjectIndex === -1) {
+          // Add new object
+          objectsData.objects.push(currentEditingObject);
+        } else {
+          // Update existing object
+          objectsData.objects[currentEditingObjectIndex] = currentEditingObject;
+        }
+
+        // Refresh UI and apply rules
+        refreshObjectsUI();
+        refreshGroupsSidebar();
+        applyRules();
+        autoSavePatternHierarchy();
+
+        // Close modal
+        closeObjectEditor();
+
+        // Show success message
+        showNotification('Object saved successfully!', 'success');
       }
-
-      // Refresh UI and apply rules
-      refreshObjectsUI();
-      applyRules();
-      autoSavePatternHierarchy();
-
-      // Close modal
-      closeObjectEditor();
-
-      // Show success message
-      showNotification('Object saved successfully!', 'success');
     }
 
     // Function to delete object
@@ -2114,8 +2551,10 @@
     function closeObjectEditor() {
       const modal = document.getElementById('objectEditorModal');
       modal.classList.remove('show');
+      modal.style.display = 'none';
       currentEditingObject = null;
       currentEditingObjectIndex = -1;
+      currentEditingType = 'object';
     }
 
     // Function to show notification
@@ -2154,6 +2593,445 @@
         }
       }
       return null;
+    }
+
+    // Function to create new group from sidebar
+    function createNewGroupFromSidebar() {
+      const newRule = {
+        match: '',
+        color1: generateRandomColor(),
+        color2: '',
+        style1: 'background',
+        style2: '',
+        label: 'New Group',
+        enabled: true
+      };
+      dictionary.rules.push(newRule);
+      const newIndex = dictionary.rules.length - 1;
+      openGroupEditor(newRule, newIndex);
+    }
+
+    // Function to open group editor (repurposing object editor modal)
+    function openGroupEditor(rule, ruleIndex) {
+      currentEditingObject = rule;
+      currentEditingObjectIndex = ruleIndex;
+      currentEditingType = 'group';
+
+      // Populate the form with group data
+      populateGroupEditorForm(rule);
+
+      // Update modal title
+      document.querySelector('.object-editor-title').textContent = 'Edit Group';
+
+      // Show the modal
+      document.getElementById('objectEditorModal').style.display = 'flex';
+      document.getElementById('objectEditorModal').classList.add('show');
+    }
+
+    // Function to populate group editor form
+    function populateGroupEditorForm(rule) {
+      // Update modal title and info section for groups
+      document.querySelector('.object-editor-title').textContent = 'Edit Group';
+
+      // Hide the object info section entirely for groups
+      const objectInfoSection = document.querySelector('.object-info');
+      if (objectInfoSection) {
+        objectInfoSection.style.display = 'none';
+      }
+
+      // Populate group fields
+      document.getElementById('objectEditorLabel').value = rule.label || '';
+
+      // Hide fields not relevant to groups by hiding their parent form-group
+      const matchRegexGroup = document.getElementById('objectEditorMatchRegex').parentElement;
+      matchRegexGroup.style.display = 'none';
+
+      const groupSelectGroup = document.getElementById('objectEditorGroupSelect').parentElement;
+      groupSelectGroup.style.display = 'none';
+
+      const color1Group = document.getElementById('objectEditorColor1').parentElement.parentElement;
+      color1Group.style.display = 'none';
+
+      const color2Group = document.getElementById('objectEditorColor2').parentElement.parentElement;
+      color2Group.style.display = 'none';
+
+      // Show style fields for groups (groups do have default styles)
+      const style1Group = document.getElementById('objectEditorStyle1').parentElement;
+      style1Group.style.display = 'block';
+
+      const style2Group = document.getElementById('objectEditorStyle2').parentElement;
+      style2Group.style.display = 'block';
+
+      // Set style values
+      document.getElementById('objectEditorStyle1').value = rule.style1 || 'background';
+      document.getElementById('objectEditorStyle2').value = rule.style2 || '';
+      document.getElementById('objectEditorEnabled').checked = rule.enabled !== false;
+
+      updateObjectEditorJsonPreview();
+    }
+
+    // Function to create new object for specific group
+    function createNewObjectForGroup(groupName) {
+      const newObject = {
+        label: 'New Object',
+        color1: '',
+        color2: '',
+        style1: 'background',
+        style2: '',
+        match: 'new object',
+        group: groupName,
+        enabled: true
+      };
+      objectsData.objects.push(newObject);
+
+      // Open object editor for the new object
+      openObjectEditor('', newObject);
+    }
+
+    // Function to create new object from sidebar (with group selection)
+    function createNewObjectFromSidebar() {
+      // Get available groups
+      const availableGroups = dictionary.rules.map(rule => rule.label).filter(label => label);
+
+      if (availableGroups.length === 0) {
+        alert('Please create a group first before adding objects.');
+        return;
+      }
+
+      const newObject = {
+        label: 'New Object',
+        color1: '',
+        color2: '',
+        style1: 'background',
+        style2: '',
+        match: '',
+        group: availableGroups[0], // Default to first group
+        enabled: true
+      };
+
+      objectsData.objects.push(newObject);
+      const newIndex = objectsData.objects.length - 1;
+
+      // Open object editor for the new object
+      openObjectEditor('', newObject);
+    }
+
+    // Function to generate random color
+    function generateRandomColor() {
+      const colors = [
+        '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7',
+        '#DDA0DD', '#98D8C8', '#F7DC6F', '#BB8FCE', '#85C1E9',
+        '#F8C471', '#82E0AA', '#F1948A', '#85C1E9', '#D7BDE2',
+        '#FAD7A0', '#A9CCE3', '#F9E79F', '#D5A6BD', '#A3E4D7'
+      ];
+      return colors[Math.floor(Math.random() * colors.length)];
+    }
+
+    // Function to get object preview style
+    function getObjectPreviewStyle(obj) {
+      let style = '';
+
+      // Apply style1 if color1 exists
+      if (obj.color1 && obj.style1) {
+        if (obj.style1 === 'background') {
+          style += `background-color: ${obj.color1} !important; `;
+          // Add padding and border radius for background styles
+          style += `padding: 2px 4px !important; border-radius: 2px !important; `;
+          // Set text color based on background brightness
+          const brightness = getBrightness(obj.color1);
+          style += `color: ${brightness > 128 ? 'black' : 'white'} !important; `;
+        } else if (obj.style1 === 'color' || obj.style1 === 'text') {
+          style += `color: ${obj.color1} !important; `;
+        } else if (obj.style1 === 'border') {
+          style += `border: 2px solid ${obj.color1} !important; `;
+        } else if (obj.style1 === 'underline') {
+          style += `text-decoration: underline !important; text-decoration-color: ${obj.color1} !important; `;
+        }
+      }
+
+      // Apply style2 if color2 exists (will override style1 if they're the same type)
+      if (obj.color2 && obj.style2) {
+        if (obj.style2 === 'background') {
+          style += `background-color: ${obj.color2} !important; `;
+          style += `padding: 2px 4px !important; border-radius: 2px !important; `;
+          const brightness = getBrightness(obj.color2);
+          style += `color: ${brightness > 128 ? 'black' : 'white'} !important; `;
+        } else if (obj.style2 === 'color' || obj.style2 === 'text') {
+          style += `color: ${obj.color2} !important; `;
+        } else if (obj.style2 === 'border') {
+          style += `border: 2px solid ${obj.color2} !important; `;
+        } else if (obj.style2 === 'underline') {
+          style += `text-decoration: underline !important; text-decoration-color: ${obj.color2} !important; `;
+        }
+      }
+
+      // Add some default padding and ensure text is readable
+      if (style.includes('background-color')) {
+        style += `padding: 2px 4px; border-radius: 3px; `;
+        // If background is dark, ensure text is light
+        const bgColor = obj.color1 || obj.color2;
+        if (bgColor && !style.includes('color:')) {
+          const brightness = getBrightness(bgColor);
+          if (brightness < 128) {
+            style += `color: white !important; `;
+          }
+        }
+      }
+
+      return style;
+    }
+
+    // Helper function to calculate color brightness
+    function getBrightness(color) {
+      if (!color) return 255;
+
+      // Convert hex to RGB
+      const hex = color.replace('#', '');
+      const r = parseInt(hex.substr(0, 2), 16);
+      const g = parseInt(hex.substr(2, 2), 16);
+      const b = parseInt(hex.substr(4, 2), 16);
+
+      // Calculate brightness using YIQ formula
+      return (r * 299 + g * 587 + b * 114) / 1000;
+    }
+
+    // Function to show object color panel (small modal)
+    function showObjectColorPanel(obj, objIndex, colorNumber, colorBox) {
+      // Remove any existing color panel
+      const existingPanel = document.getElementById('objectColorPanel');
+      if (existingPanel) {
+        existingPanel.remove();
+      }
+
+      const isColor1 = colorNumber === 1;
+      const currentColor = isColor1 ? obj.color1 : obj.color2;
+      const currentStyle = isColor1 ? obj.style1 : obj.style2;
+
+      const panel = document.createElement('div');
+      panel.id = 'objectColorPanel';
+      panel.style.cssText = `
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 1rem;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        z-index: 2000;
+        min-width: 250px;
+      `;
+
+      panel.className = 'inline-form';
+      panel.innerHTML = `
+        <div class="inline-form-row">
+          <label>Color ${colorNumber}:</label>
+          <input type="text" id="objColorText" value="${currentColor || ''}" placeholder="color (e.g. #ff0000) or leave empty" style="flex: 1;" />
+        </div>
+        <div class="inline-form-row">
+          <label>Picker:</label>
+          <input type="color" id="objColorPicker" value="${normalizeColor(currentColor || '#ff00ff')}" style="width: 50px; height: 30px;" />
+        </div>
+        <div class="inline-form-row">
+          <label>Style:</label>
+          <select id="objStyleSelect" style="flex: 1;">
+            <option value="" ${!currentStyle ? 'selected' : ''}>None</option>
+            <option value="background" ${currentStyle === 'background' ? 'selected' : ''}>Background</option>
+            <option value="color" ${currentStyle === 'color' ? 'selected' : ''}>Text Color</option>
+            <option value="border" ${currentStyle === 'border' ? 'selected' : ''}>Border</option>
+            <option value="underline" ${currentStyle === 'underline' ? 'selected' : ''}>Underline</option>
+          </select>
+        </div>
+        <div class="inline-form-actions">
+          <button id="saveObjColor" class="btn btn-success btn-small">Apply</button>
+          <button id="cancelObjColor" class="btn btn-danger btn-small">Cancel</button>
+        </div>
+      `;
+
+      document.body.appendChild(panel);
+
+      // Sync color text and picker
+      const colorText = document.getElementById('objColorText');
+      const colorPicker = document.getElementById('objColorPicker');
+
+      colorText.addEventListener('input', () => {
+        if (colorText.value.match(/^#[0-9A-Fa-f]{6}$/)) {
+          colorPicker.value = colorText.value;
+        }
+      });
+
+      colorPicker.addEventListener('input', () => {
+        colorText.value = colorPicker.value;
+      });
+
+      // Save button
+      document.getElementById('saveObjColor').addEventListener('click', () => {
+        const color = colorText.value || colorPicker.value;
+        const style = document.getElementById('objStyleSelect').value;
+
+        if (isColor1) {
+          obj.color1 = color;
+          obj.style1 = style;
+        } else {
+          obj.color2 = color;
+          obj.style2 = style;
+        }
+
+        // Update color box
+        colorBox.style.backgroundColor = color;
+
+        // Refresh sidebar and apply rules
+        refreshGroupsSidebar();
+        applyRules();
+        autoSavePatternHierarchy();
+
+        panel.remove();
+        showNotification(`Object color ${colorNumber} updated!`, 'success');
+      });
+
+      // Cancel button
+      document.getElementById('cancelObjColor').addEventListener('click', () => {
+        panel.remove();
+      });
+    }
+
+    // Function to edit object regex inline
+    function editObjectRegexInline(obj, regexSpan) {
+      const currentRegex = obj.match || '';
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.value = currentRegex;
+      input.style.cssText = `
+        font-size: 0.7rem;
+        font-style: italic;
+        background: #fff;
+        border: 1px solid #007aff;
+        border-radius: 2px;
+        padding: 1px 3px;
+        width: 80px;
+      `;
+
+      function saveRegex() {
+        const newRegex = input.value.trim();
+        if (newRegex !== currentRegex) {
+          obj.match = newRegex;
+          regexSpan.textContent = `/${newRegex || 'none'}/`;
+          applyRules();
+          autoSavePatternHierarchy();
+          showNotification('Regex updated!', 'success');
+        }
+        regexSpan.style.display = 'inline';
+        input.remove();
+      }
+
+      function cancelEdit() {
+        regexSpan.style.display = 'inline';
+        input.remove();
+      }
+
+      regexSpan.style.display = 'none';
+      regexSpan.parentNode.insertBefore(input, regexSpan.nextSibling);
+      input.focus();
+      input.select();
+
+      input.addEventListener('blur', saveRegex);
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          saveRegex();
+        } else if (e.key === 'Escape') {
+          e.preventDefault();
+          cancelEdit();
+        }
+      });
+    }
+
+    // Function to show bulk add form
+    function showBulkAddForm(groupName, container) {
+      // Remove any existing bulk form
+      const existingForm = document.getElementById('sidebarBulkForm');
+      if (existingForm) {
+        existingForm.remove();
+      }
+
+      // Hide existing bulk load form if it exists
+      const existingBulkForm = document.getElementById('bulkLoadSection');
+      if (existingBulkForm) {
+        existingBulkForm.style.display = 'none';
+      }
+
+      const bulkForm = document.createElement('div');
+      bulkForm.id = 'sidebarBulkForm';
+      bulkForm.style.cssText = `
+        border: 1px solid #007aff;
+        border-radius: 4px;
+        padding: 1rem;
+        margin: 0.5rem 0;
+        background: #f8f9fa;
+      `;
+
+      bulkForm.innerHTML = `
+        <h4 style="margin: 0 0 0.5rem 0; color: #007aff;">Bulk Add Objects to "${groupName}"</h4>
+        <div style="margin-bottom: 0.5rem;">
+          <label style="display: block; margin-bottom: 0.25rem; font-weight: bold;">Paste Text (one object per line):</label>
+          <textarea id="bulkTextArea" placeholder="object1&#10;object2&#10;object3" style="width: 100%; height: 100px; padding: 0.5rem; border: 1px solid #ccc; border-radius: 4px; font-family: monospace; font-size: 0.8rem;"></textarea>
+        </div>
+        <div style="display: flex; gap: 0.5rem;">
+          <button id="processBulkAdd" style="background: #007aff; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer;">Add Objects</button>
+          <button id="cancelBulkAdd" style="background: #666; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer;">Cancel</button>
+        </div>
+      `;
+
+      // Insert the form after the container
+      container.parentNode.insertBefore(bulkForm, container.nextSibling);
+
+      // Event listeners
+      document.getElementById('processBulkAdd').addEventListener('click', () => {
+        const textArea = document.getElementById('bulkTextArea');
+        const lines = textArea.value.split('\n').filter(line => line.trim());
+
+        if (lines.length === 0) {
+          alert('Please enter some text to create objects from.');
+          return;
+        }
+
+        // Create objects from lines
+        let addedCount = 0;
+        lines.forEach(line => {
+          const trimmedLine = line.trim();
+          if (trimmedLine) {
+            const newObject = {
+              label: trimmedLine,
+              color1: '',
+              color2: '',
+              style1: 'background',
+              style2: '',
+              match: trimmedLine.toLowerCase(),
+              group: groupName,
+              enabled: true
+            };
+            objectsData.objects.push(newObject);
+            addedCount++;
+          }
+        });
+
+        // Refresh and apply
+        refreshGroupsSidebar();
+        applyRules();
+        autoSavePatternHierarchy();
+
+        // Remove form and show success
+        bulkForm.remove();
+        showNotification(`Added ${addedCount} objects to "${groupName}"!`, 'success');
+      });
+
+      document.getElementById('cancelBulkAdd').addEventListener('click', () => {
+        bulkForm.remove();
+      });
+
+      // Focus the textarea
+      document.getElementById('bulkTextArea').focus();
     }
 
     // Function to show save indicator
@@ -2378,6 +3256,409 @@
       });
       updateRawJson();
       updatePriorityOrderDisplay();
+
+      // Also refresh the sidebar if it's open
+      if (document.getElementById('groupsEditorSidebar').classList.contains('show')) {
+        refreshGroupsSidebar();
+      }
+    }
+
+    // Function to refresh groups in sidebar
+    function refreshGroupsSidebar() {
+      const container = document.getElementById('groupsEditorContent');
+      if (!container) return;
+
+      container.innerHTML = '';
+      dictionary.rules.forEach((rule, idx) => {
+        const ruleElement = createCompactGroupRule(rule, idx);
+        container.appendChild(ruleElement);
+      });
+    }
+
+    // Function to create compact group rule element
+    function createCompactGroupRule(rule, idx) {
+      const ruleElement = document.createElement('div');
+      ruleElement.className = 'group-rule-compact';
+      ruleElement.dataset.idx = idx;
+
+      // Move buttons
+      const moveButtons = document.createElement('div');
+      moveButtons.className = 'move-buttons';
+
+      const moveUpBtn = document.createElement('button');
+      moveUpBtn.className = 'move-btn move-up';
+      moveUpBtn.textContent = '▲';
+      moveUpBtn.title = 'Move group up';
+      moveUpBtn.disabled = idx === 0;
+      moveUpBtn.addEventListener('click', () => {
+        if (idx > 0) {
+          const temp = dictionary.rules[idx];
+          dictionary.rules[idx] = dictionary.rules[idx - 1];
+          dictionary.rules[idx - 1] = temp;
+          refreshGroupsSidebar();
+          applyRules();
+          autoSavePatternHierarchy();
+        }
+      });
+
+      const moveDownBtn = document.createElement('button');
+      moveDownBtn.className = 'move-btn move-down';
+      moveDownBtn.textContent = '▼';
+      moveDownBtn.title = 'Move group down';
+      moveDownBtn.disabled = idx === dictionary.rules.length - 1;
+      moveDownBtn.addEventListener('click', () => {
+        if (idx < dictionary.rules.length - 1) {
+          const temp = dictionary.rules[idx];
+          dictionary.rules[idx] = dictionary.rules[idx + 1];
+          dictionary.rules[idx + 1] = temp;
+          refreshGroupsSidebar();
+          applyRules();
+          autoSavePatternHierarchy();
+        }
+      });
+
+      moveButtons.appendChild(moveUpBtn);
+      moveButtons.appendChild(moveDownBtn);
+
+      // Rule content
+      const ruleContent = document.createElement('div');
+      ruleContent.className = 'rule-content';
+
+      // Rule header
+      const ruleHeader = document.createElement('div');
+      ruleHeader.className = 'rule-header';
+
+      // Toggle button
+      const toggleBtn = document.createElement('button');
+      toggleBtn.className = `group-toggle ${rule.enabled !== false ? 'active' : ''}`;
+      toggleBtn.textContent = rule.enabled !== false ? '✓' : '✗';
+      toggleBtn.addEventListener('click', () => {
+        rule.enabled = !(rule.enabled !== false);
+        toggleBtn.textContent = rule.enabled ? '✓' : '✗';
+        toggleBtn.classList.toggle('active', rule.enabled);
+        applyRules();
+        autoSavePatternHierarchy();
+      });
+
+      // Group name with emoji
+      const groupName = document.createElement('div');
+      groupName.className = 'group-name';
+      const emoji = getGroupEmoji(rule.label);
+      const nameText = rule.label || 'Unnamed Group';
+      groupName.textContent = emoji ? `${emoji} ${nameText}` : nameText;
+
+      // Remove button
+      const removeBtn = document.createElement('button');
+      removeBtn.className = 'remove-rule';
+      removeBtn.textContent = '✕';
+      removeBtn.addEventListener('click', () => {
+        dictionary.rules.splice(idx, 1);
+        refreshGroupsSidebar();
+        applyRules();
+        autoSavePatternHierarchy();
+      });
+
+      ruleHeader.appendChild(toggleBtn);
+      ruleHeader.appendChild(groupName);
+      ruleHeader.appendChild(removeBtn);
+
+      // Rule details - clickable for editing
+      const ruleDetails = document.createElement('div');
+      ruleDetails.className = 'rule-details';
+      ruleDetails.style.cursor = 'pointer';
+      ruleDetails.title = 'Click to edit group';
+
+      const styleInfo = document.createElement('div');
+      styleInfo.innerHTML = `Style1: ${rule.style1 || 'none'} | Style2: ${rule.style2 || 'none'}`;
+
+      // Make entire details section clickable
+      ruleDetails.addEventListener('click', () => {
+        openGroupEditor(rule, idx);
+      });
+
+      ruleDetails.appendChild(styleInfo);
+
+      ruleContent.appendChild(ruleHeader);
+      ruleContent.appendChild(ruleDetails);
+
+      // Objects section
+      const objectsSection = createGroupObjectsSection(rule, idx);
+      ruleContent.appendChild(objectsSection);
+
+      ruleElement.appendChild(moveButtons);
+      ruleElement.appendChild(ruleContent);
+
+      return ruleElement;
+    }
+
+    // Function to create group objects section
+    function createGroupObjectsSection(rule, groupIdx) {
+      const objectsSection = document.createElement('div');
+      objectsSection.className = 'sidebar-objects-section';
+
+      // Get objects for this group
+      const groupObjects = objectsData.objects.filter(obj => obj.group === rule.label);
+
+      // Objects toggle
+      const objectsToggle = document.createElement('button');
+      objectsToggle.className = 'sidebar-objects-toggle';
+      objectsToggle.innerHTML = `<span class="toggle-icon">▶</span> Objects (${groupObjects.length})`;
+
+      // Objects list
+      const objectsList = document.createElement('div');
+      objectsList.className = 'sidebar-objects-list';
+
+      // Populate objects
+      groupObjects.forEach((obj, objIdx) => {
+        const objItem = document.createElement('div');
+        objItem.className = 'sidebar-object-item';
+
+        const objToggle = document.createElement('button');
+        objToggle.className = `sidebar-object-toggle ${obj.enabled !== false ? 'active' : ''}`;
+        objToggle.textContent = obj.enabled !== false ? '✓' : '✗';
+        objToggle.addEventListener('click', (e) => {
+          e.stopPropagation();
+          obj.enabled = !(obj.enabled !== false);
+          objToggle.textContent = obj.enabled ? '✓' : '✗';
+          objToggle.classList.toggle('active', obj.enabled);
+          applyRules();
+          autoSavePatternHierarchy();
+        });
+
+        // Color preview boxes (clickable for color editing)
+        const colorContainer = document.createElement('div');
+        colorContainer.style.cssText = `
+          display: flex;
+          gap: 2px;
+          margin-right: 4px;
+        `;
+
+        const colorBox1 = document.createElement('div');
+        colorBox1.className = 'sidebar-object-color';
+        colorBox1.style.cssText = `
+          width: 10px;
+          height: 12px;
+          border: 1px solid #ccc;
+          border-radius: 2px 0 0 2px;
+          background-color: ${obj.color1 || '#f0f0f0'};
+          cursor: pointer;
+        `;
+        colorBox1.addEventListener('click', (e) => {
+          e.stopPropagation();
+          showObjectColorPanel(obj, objIdx, 1, colorBox1);
+        });
+
+        const colorBox2 = document.createElement('div');
+        colorBox2.className = 'sidebar-object-color';
+        colorBox2.style.cssText = `
+          width: 10px;
+          height: 12px;
+          border: 1px solid #ccc;
+          border-radius: 0 2px 2px 0;
+          background-color: ${obj.color2 || '#f0f0f0'};
+          cursor: pointer;
+        `;
+        colorBox2.addEventListener('click', (e) => {
+          e.stopPropagation();
+          showObjectColorPanel(obj, objIdx, 2, colorBox2);
+        });
+
+        colorContainer.appendChild(colorBox1);
+        colorContainer.appendChild(colorBox2);
+
+        // Object name (clickable, styled like preview)
+        const objName = document.createElement('div');
+        objName.className = 'sidebar-object-name';
+        const baseStyle = `
+          flex: 1;
+          font-size: 0.75rem;
+          cursor: pointer;
+          padding: 2px 4px;
+          border-radius: 2px;
+          display: inline-block;
+        `;
+        const previewStyle = getObjectPreviewStyle(obj);
+        objName.style.cssText = baseStyle + previewStyle;
+        objName.textContent = obj.label || obj.match || 'Unnamed Object';
+        objName.addEventListener('click', (e) => {
+          e.stopPropagation();
+          // Always use fresh object reference from global array
+          const globalObjIndex = objectsData.objects.findIndex(o =>
+            o.match === obj.match && o.group === obj.group && o.label === obj.label
+          );
+          if (globalObjIndex !== -1) {
+            const globalObj = objectsData.objects[globalObjIndex];
+            openObjectEditor(globalObj.label || globalObj.match || '', globalObj);
+          } else {
+            console.error('Object not found in global array');
+          }
+        });
+
+        // Regex match (inline editable)
+        const regexSpan = document.createElement('span');
+        regexSpan.className = 'sidebar-object-regex';
+        regexSpan.style.cssText = `
+          font-size: 0.7rem;
+          color: #666;
+          font-style: italic;
+          cursor: pointer;
+          margin-left: 4px;
+        `;
+        regexSpan.textContent = `/${obj.match || 'none'}/`;
+        regexSpan.title = 'Click to edit regex';
+        regexSpan.addEventListener('click', (e) => {
+          e.stopPropagation();
+          editObjectRegexInline(obj, regexSpan);
+        });
+
+        objItem.appendChild(objToggle);
+        objItem.appendChild(colorContainer);
+        objItem.appendChild(objName);
+        objItem.appendChild(regexSpan);
+        objectsList.appendChild(objItem);
+      });
+
+      // Add object button with expandable options
+      const addObjectContainer = document.createElement('div');
+      addObjectContainer.className = 'sidebar-add-object-container';
+      addObjectContainer.style.cssText = `
+        position: relative;
+        cursor: pointer;
+      `;
+
+      const addObjectBtn = document.createElement('div');
+      addObjectBtn.className = 'sidebar-object-item sidebar-add-object-btn';
+      addObjectBtn.style.cssText = `
+        cursor: pointer;
+        color: #007aff;
+        transition: background-color 0.2s ease;
+        position: relative;
+      `;
+      addObjectBtn.innerHTML = '<span style="width: 16px; text-align: center;">+</span><span>Add Object</span>';
+
+      // Expandable options
+      const expandedOptions = document.createElement('div');
+      expandedOptions.className = 'sidebar-add-options';
+      expandedOptions.style.cssText = `
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        background: white;
+        border: 1px solid #007aff;
+        border-radius: 4px;
+        padding: 0.25rem;
+        display: none;
+        z-index: 1000;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      `;
+
+      const normalAddBtn = document.createElement('div');
+      normalAddBtn.className = 'sidebar-option-btn';
+      normalAddBtn.style.cssText = `
+        padding: 0.25rem 0.5rem;
+        cursor: pointer;
+        border-radius: 2px;
+        font-size: 0.75rem;
+        margin-bottom: 0.25rem;
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+      `;
+      normalAddBtn.innerHTML = '+ Add Single Object';
+      normalAddBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        createNewObjectForGroup(rule.label);
+        hideExpandedOptions();
+      });
+
+      const bulkAddBtn = document.createElement('div');
+      bulkAddBtn.className = 'sidebar-option-btn';
+      bulkAddBtn.style.cssText = `
+        padding: 0.25rem 0.5rem;
+        cursor: pointer;
+        border-radius: 2px;
+        font-size: 0.75rem;
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+      `;
+      bulkAddBtn.innerHTML = '+ Bulk Add Objects';
+      bulkAddBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        showBulkAddForm(rule.label, addObjectContainer);
+        hideExpandedOptions();
+      });
+
+      expandedOptions.appendChild(normalAddBtn);
+      expandedOptions.appendChild(bulkAddBtn);
+
+      function showExpandedOptions() {
+        expandedOptions.style.display = 'block';
+      }
+
+      function hideExpandedOptions() {
+        expandedOptions.style.display = 'none';
+      }
+
+      // Default click for normal add
+      addObjectBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        createNewObjectForGroup(rule.label);
+      });
+
+      // Timeout variables for hover management
+      let showTimeout;
+      let hideTimeout;
+      let isExpanded = false;
+
+      // Show expanded options on hover
+      addObjectContainer.addEventListener('mouseenter', () => {
+        clearTimeout(hideTimeout);
+        if (!isExpanded) {
+          showTimeout = setTimeout(() => {
+            showExpandedOptions();
+            isExpanded = true;
+          }, 150);
+        }
+      });
+
+      addObjectContainer.addEventListener('mouseleave', () => {
+        clearTimeout(showTimeout);
+        hideTimeout = setTimeout(() => {
+          hideExpandedOptions();
+          isExpanded = false;
+        }, 400);
+      });
+
+      // Keep options visible when hovering over them
+      expandedOptions.addEventListener('mouseenter', () => {
+        clearTimeout(hideTimeout);
+        clearTimeout(showTimeout);
+      });
+
+      expandedOptions.addEventListener('mouseleave', () => {
+        hideTimeout = setTimeout(() => {
+          hideExpandedOptions();
+          isExpanded = false;
+        }, 400);
+      });
+
+      addObjectContainer.appendChild(addObjectBtn);
+      addObjectContainer.appendChild(expandedOptions);
+
+      objectsList.appendChild(addObjectContainer);
+
+      // Toggle functionality
+      let isObjectsExpanded = false;
+      objectsToggle.addEventListener('click', () => {
+        isObjectsExpanded = !isObjectsExpanded;
+        objectsList.classList.toggle('expanded', isObjectsExpanded);
+        objectsToggle.querySelector('.toggle-icon').textContent = isObjectsExpanded ? '▼' : '▶';
+      });
+
+      objectsSection.appendChild(objectsToggle);
+      objectsSection.appendChild(objectsList);
+
+      return objectsSection;
     }
 
     function refreshObjectsUI() {
@@ -2544,7 +3825,7 @@
     }
 
     let applyRulesTimeout;
-    let debugMode = true;
+    let debugMode = false; // Default to false
 
     // Semantic structure parsing functions
     function parseSemanticStructures(text) {
@@ -3068,6 +4349,17 @@
 
             // Apply object styles to the word
             if (wordMatched) {
+              // Store the matched object on the element
+              wordSpan.matchedObject = wordMatched;
+              wordSpan.title = wordMatched.group || '';
+
+              // Add click event listener for object editing
+              wordSpan.addEventListener('click', function (e) {
+                e.preventDefault();
+                e.stopPropagation(); // Prevent triggering the semantic container click
+                openObjectEditor(word, wordMatched);
+              });
+
               if (wordMatched.color1 && wordMatched.color1.trim() !== '' && wordMatched.style1 && wordMatched.style1.trim() !== '') {
                 applyStyleToElement(wordSpan, wordMatched.color1, wordMatched.style1);
               }
@@ -3076,6 +4368,23 @@
                   applyStyleToElement(wordSpan, wordMatched.color2, wordMatched.style2);
                 }
               }
+            } else {
+              // Even if no object matches, make the word clickable for creating new objects
+              wordSpan.addEventListener('click', function (e) {
+                e.preventDefault();
+                e.stopPropagation(); // Prevent triggering the semantic container click
+                // Create a basic matched object for the semantic context
+                const semanticMatched = {
+                  color1: '',
+                  color2: '',
+                  style1: '',
+                  style2: '',
+                  label: word,
+                  group: matched.group || 'semantic-structure',
+                  isSemantic: true
+                };
+                openObjectEditor(word, semanticMatched);
+              });
             }
 
             components.push(wordSpan);
@@ -3092,6 +4401,16 @@
 
           // Add all components to container
           components.forEach(comp => container.appendChild(comp));
+
+          // Add click event listener to the semantic container for future semantic-to-object conversion
+          container.addEventListener('click', function (e) {
+            // Only trigger if the click wasn't on a word (which has its own handler)
+            if (e.target === container) {
+              e.preventDefault();
+              // TODO: Future feature - convert semantic structure to object
+              console.log('Semantic container clicked:', matched);
+            }
+          });
 
           // Replace the original span with the container
           preview.appendChild(container);
@@ -4791,14 +6110,25 @@
         });
       });
 
+      // Function to update debug button state
+      function updateDebugButtonState() {
+        const debugBtn = document.getElementById('debugToggle');
+        if (debugBtn) {
+          debugBtn.textContent = `Debug: ${debugMode ? 'ON' : 'OFF'}`;
+          debugBtn.style.background = debugMode ? '#28a745' : '#6c757d';
+        }
+      }
+
       // Debug toggle functionality
       document.getElementById('debugToggle').addEventListener('click', () => {
         debugMode = !debugMode;
-        const debugBtn = document.getElementById('debugToggle');
-        debugBtn.textContent = `Debug: ${debugMode ? 'ON' : 'OFF'}`;
-        debugBtn.style.background = debugMode ? '#28a745' : '#6c757d';
-        console.log(`Debug mode ${debugMode ? 'enabled' : 'disabled'}`);
+        updateDebugButtonState();
+        autoSavePatternHierarchy(); // Persist the debug state
+        console.log(`Debug mode: ${debugMode ? 'enabled' : 'disabled'}`);
       });
+
+      // Initialize debug button state
+      updateDebugButtonState();
 
       // Refresh button event listener
       document.getElementById('refreshBtn').addEventListener('click', refreshFromBobJson);
@@ -4847,10 +6177,33 @@
       document.getElementById('objectEditorColor1Picker').addEventListener('input', (e) => {
         document.getElementById('objectEditorColor1').value = e.target.value;
         updateObjectEditorJsonPreview();
+        updateColorPickerBackground('objectEditorColor1Picker', e.target.value);
       });
 
       document.getElementById('objectEditorColor2Picker').addEventListener('input', (e) => {
         document.getElementById('objectEditorColor2').value = e.target.value;
+        updateObjectEditorJsonPreview();
+        updateColorPickerBackground('objectEditorColor2Picker', e.target.value);
+      });
+
+      // Text input event listeners for color pickers
+      document.getElementById('objectEditorColor1').addEventListener('input', (e) => {
+        const color = e.target.value;
+        const picker = document.getElementById('objectEditorColor1Picker');
+        if (color.match(/^#[0-9A-Fa-f]{6}$/)) {
+          picker.value = color;
+          updateColorPickerBackground('objectEditorColor1Picker', color);
+        }
+        updateObjectEditorJsonPreview();
+      });
+
+      document.getElementById('objectEditorColor2').addEventListener('input', (e) => {
+        const color = e.target.value;
+        const picker = document.getElementById('objectEditorColor2Picker');
+        if (color.match(/^#[0-9A-Fa-f]{6}$/)) {
+          picker.value = color;
+          updateColorPickerBackground('objectEditorColor2Picker', color);
+        }
         updateObjectEditorJsonPreview();
       });
 
@@ -4860,6 +6213,32 @@
           closeObjectEditor();
         }
       });
+
+      // Groups Editor Sidebar functionality
+      const sidebar = document.getElementById('groupsEditorSidebar');
+      const sidebarToggle = document.getElementById('groupsEditorToggle');
+      const mainContent = document.getElementById('mainContent');
+
+      function toggleSidebar() {
+        const isOpen = sidebar.classList.contains('show');
+        if (isOpen) {
+          sidebar.classList.remove('show');
+          mainContent.classList.add('sidebar-closed');
+        } else {
+          sidebar.classList.add('show');
+          mainContent.classList.remove('sidebar-closed');
+          refreshGroupsSidebar();
+        }
+      }
+
+      sidebarToggle.addEventListener('click', toggleSidebar);
+
+      // Sidebar add buttons
+      document.getElementById('sidebarAddGroup').addEventListener('click', createNewGroupFromSidebar);
+      document.getElementById('sidebarAddObject').addEventListener('click', createNewObjectFromSidebar);
+
+      // Note: Removed auto-close functionality as requested
+      // Sidebar stays open until manually closed
 
       // Load pattern hierarchy from bob.json on page load
       loadPatternHierarchy();

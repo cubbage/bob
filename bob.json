@@ -19,21 +19,21 @@
     "rules": [
       {
         "match": "",
-        "color1": "#A9CCE3",
-        "color2": "",
-        "style1": "background",
-        "style2": "background",
-        "label": "person",
-        "enabled": true
-      },
-      {
-        "match": "",
         "color1": "#b1d7e7",
         "color2": "",
         "label": "day of the week",
         "enabled": true,
         "style1": "symbol",
         "style2": "background"
+      },
+      {
+        "match": "",
+        "color1": "#A9CCE3",
+        "color2": "",
+        "style1": "background",
+        "style2": "background",
+        "label": "person",
+        "enabled": true
       },
       {
         "match": "",
@@ -123,6 +123,15 @@
         "style2": "",
         "label": "texture",
         "enabled": false
+      },
+      {
+        "match": "",
+        "color1": "#85C1E9",
+        "color2": "",
+        "style1": "background",
+        "style2": "",
+        "label": "New Group",
+        "enabled": true
       }
     ]
   },
@@ -1084,12 +1093,12 @@
         "enabled": true
       },
       {
-        "label": "\\bada\\S*\\b",
+        "label": "Ada",
         "color1": "#BD010E",
         "color2": "",
         "style1": "color",
         "style2": "",
-        "match": "ada",
+        "match": "\\bada\\b",
         "group": "person",
         "enabled": true
       },
@@ -1099,7 +1108,7 @@
         "color2": "#FFCC00",
         "style1": "background",
         "style2": "background",
-        "match": "\\bbruno\\S*\\b",
+        "match": "\\bbruno\\b",
         "group": "person",
         "enabled": true
       },
@@ -1109,7 +1118,7 @@
         "color2": "#291139",
         "style1": "background",
         "style2": "background",
-        "match": "\\bgabriel\\S*\\b",
+        "match": "\\bgabriel\\b",
         "group": "person",
         "enabled": true
       },
@@ -1119,7 +1128,7 @@
         "color2": "",
         "style1": "color",
         "style2": "",
-        "match": "\\bkris\\S*\\b",
+        "match": "\\bkris\\b",
         "group": "person",
         "enabled": true
       },
