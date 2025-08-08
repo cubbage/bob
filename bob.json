@@ -186,19 +186,19 @@
         "items": [
           {
             "relationship": "supplementary",
-            "syntax": "⦕fragment⟢very brief supplementary summary⟣⦖ "
+            "syntax": "⟢fragment⦓very brief supplementary summary⦔⟣"
           },
           {
             "relationship": "linear progression",
-            "syntax": "⦕fragment⨴very brief progression summary⨵⦖"
+            "syntax": "⨴fragment⦓very brief progression summary⦔⨵"
           },
           {
             "relationship": "parallel set",
-            "syntax": "⦕fragment⨭very brief parallel summary⨮⦖"
+            "syntax": "⨭fragment⦓very brief parallel summary⦔⨮"
           },
           {
             "relationship": "mapping",
-            "syntax": "⦕fragment⊏very brief mapping or contrasting summary⊐⦖"
+            "syntax": "⊏fragment⦓very brief mapping or contrasting summary⦔⊐"
           },
           {
             "relationship": "combination",
@@ -1084,7 +1084,7 @@
         "enabled": true
       },
       {
-        "label": "Ada",
+        "label": "\\bada\\S*\\b",
         "color1": "#BD010E",
         "color2": "",
         "style1": "color",
@@ -1099,7 +1099,7 @@
         "color2": "#FFCC00",
         "style1": "background",
         "style2": "background",
-        "match": "bruno",
+        "match": "\\bbruno\\S*\\b",
         "group": "person",
         "enabled": true
       },
@@ -1109,7 +1109,7 @@
         "color2": "#291139",
         "style1": "background",
         "style2": "background",
-        "match": "gabriel",
+        "match": "\\bgabriel\\S*\\b",
         "group": "person",
         "enabled": true
       },
@@ -1119,7 +1119,7 @@
         "color2": "",
         "style1": "color",
         "style2": "",
-        "match": "kris fog",
+        "match": "\\bkris\\S*\\b",
         "group": "person",
         "enabled": true
       },
@@ -1129,7 +1129,7 @@
         "color2": "",
         "style1": "color",
         "style2": "",
-        "match": "marta",
+        "match": "\\bmarta\\b",
         "group": "person",
         "enabled": true
       },
@@ -1139,7 +1139,7 @@
         "color2": "",
         "style1": "color",
         "style2": "",
-        "match": "mat",
+        "match": "\\bmat\\b",
         "group": "person",
         "enabled": true
       },
@@ -1149,7 +1149,7 @@
         "color2": "",
         "style1": "color",
         "style2": "",
-        "match": "mom",
+        "match": "\\bmom\\b",
         "group": "person",
         "enabled": true
       },
@@ -1159,7 +1159,7 @@
         "color2": "",
         "style1": "background",
         "style2": "",
-        "match": "Sophie",
+        "match": "\\bsophie\\b",
         "group": "person",
         "enabled": true
       },

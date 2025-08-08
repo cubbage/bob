@@ -500,6 +500,232 @@
       border: 1px solid #dee2e6;
       border-radius: 4px;
     }
+
+    /* Object Editor Modal Styles */
+    .object-editor-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 10000;
+      animation: fadeIn 0.2s ease-out;
+    }
+
+    .object-editor-modal.show {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .object-editor-content {
+      background: white;
+      border-radius: 8px;
+      padding: 2rem;
+      max-width: 600px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      animation: slideIn 0.2s ease-out;
+    }
+
+    .object-editor-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid #dee2e6;
+    }
+
+    .object-editor-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #333;
+      margin: 0;
+    }
+
+    .object-editor-close {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: #666;
+      padding: 0;
+      width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      transition: all 0.2s ease;
+    }
+
+    .object-editor-close:hover {
+      background: #f8f9fa;
+      color: #333;
+    }
+
+    .object-editor-form {
+      display: grid;
+      gap: 1rem;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .form-group label {
+      font-weight: 500;
+      color: #495057;
+      font-size: 0.9rem;
+    }
+
+    .form-group input,
+    .form-group select {
+      padding: 0.75rem;
+      border: 1px solid #dee2e6;
+      border-radius: 4px;
+      font-size: 0.9rem;
+      transition: border-color 0.2s ease;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: #007aff;
+      box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+    }
+
+    .color-group {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 0.5rem;
+      align-items: end;
+    }
+
+    .color-picker {
+      width: 50px;
+      height: 40px;
+      border: 1px solid #dee2e6;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .object-editor-actions {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: flex-end;
+      margin-top: 1.5rem;
+      padding-top: 1rem;
+      border-top: 1px solid #dee2e6;
+    }
+
+    .object-editor-actions button {
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: 4px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-save {
+      background: #28a745;
+      color: white;
+    }
+
+    .btn-save:hover {
+      background: #218838;
+    }
+
+    .btn-cancel {
+      background: #6c757d;
+      color: white;
+    }
+
+    .btn-cancel:hover {
+      background: #5a6268;
+    }
+
+    .btn-delete {
+      background: #dc3545;
+      color: white;
+    }
+
+    .btn-delete:hover {
+      background: #c82333;
+    }
+
+    .object-info {
+      background: #f8f9fa;
+      border: 1px solid #dee2e6;
+      border-radius: 4px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .object-info h4 {
+      margin: 0 0 0.5rem 0;
+      color: #495057;
+      font-size: 1rem;
+    }
+
+    .object-info p {
+      margin: 0;
+      color: #6c757d;
+      font-size: 0.875rem;
+    }
+
+    .json-preview {
+      background: #f8f9fa;
+      border: 1px solid #dee2e6;
+      border-radius: 4px;
+      padding: 1rem;
+      font-family: monospace;
+      font-size: 0.875rem;
+      max-height: 200px;
+      overflow-y: auto;
+      margin-top: 1rem;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Make matched tokens clickable */
+    .word[title] {
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .word[title]:hover {
+      transform: scale(1.05);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
   </style>
 </head>
 
@@ -822,6 +1048,100 @@
       <button class="btn btn-secondary removeObject">✕</button>
     </div>
   </template>
+
+  <!-- Object Editor Modal -->
+  <div id="objectEditorModal" class="object-editor-modal">
+    <div class="object-editor-content">
+      <div class="object-editor-header">
+        <h3 class="object-editor-title">Edit Object</h3>
+        <button class="object-editor-close" id="closeObjectEditor">&times;</button>
+      </div>
+
+      <div class="object-info">
+        <h4>Object Information</h4>
+        <p><strong>Token:</strong> <span id="objectEditorToken"></span></p>
+        <p><strong>Group:</strong> <span id="objectEditorGroup"></span></p>
+        <p><strong>Current Match:</strong> <span id="objectEditorMatch"></span></p>
+      </div>
+
+      <form class="object-editor-form" id="objectEditorForm">
+        <div class="form-group">
+          <label for="objectEditorLabel">Label</label>
+          <input type="text" id="objectEditorLabel" placeholder="Enter object label">
+        </div>
+
+        <div class="form-group">
+          <label for="objectEditorMatchRegex">Match Pattern (Regex)</label>
+          <input type="text" id="objectEditorMatchRegex" placeholder="Enter regex pattern">
+        </div>
+
+        <div class="form-group">
+          <label for="objectEditorGroupSelect">Group</label>
+          <select id="objectEditorGroupSelect">
+            <!-- Options will be populated dynamically -->
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="objectEditorColor1">Color 1</label>
+          <div class="color-group">
+            <input type="text" id="objectEditorColor1" placeholder="Color (e.g. #ff0000 or red)">
+            <input type="color" id="objectEditorColor1Picker" class="color-picker">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="objectEditorColor2">Color 2</label>
+          <div class="color-group">
+            <input type="text" id="objectEditorColor2" placeholder="Color (e.g. #ffffff or white)">
+            <input type="color" id="objectEditorColor2Picker" class="color-picker">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="objectEditorStyle1">Style 1</label>
+          <select id="objectEditorStyle1">
+            <option value="">None</option>
+            <option value="background">Background</option>
+            <option value="color">Text Color</option>
+            <option value="underline">Underline</option>
+            <option value="border">Border</option>
+            <option value="symbol">Symbol</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="objectEditorStyle2">Style 2</label>
+          <select id="objectEditorStyle2">
+            <option value="">None</option>
+            <option value="background">Background</option>
+            <option value="color">Text Color</option>
+            <option value="underline">Underline</option>
+            <option value="border">Border</option>
+            <option value="symbol">Symbol</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>
+            <input type="checkbox" id="objectEditorEnabled" checked>
+            Enabled
+          </label>
+        </div>
+
+        <div class="json-preview">
+          <strong>JSON Preview:</strong>
+          <pre id="objectEditorJsonPreview"></pre>
+        </div>
+
+        <div class="object-editor-actions">
+          <button type="button" class="btn-delete" id="deleteObject">Delete Object</button>
+          <button type="button" class="btn-cancel" id="cancelObjectEdit">Cancel</button>
+          <button type="submit" class="btn-save" id="saveObject">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
 
   <!-- jsPDF from CDN -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"
@@ -1580,6 +1900,262 @@
       }, 1000); // Save after 1 second of inactivity
     }
 
+    // Object Editor functionality
+    let currentEditingObject = null;
+    let currentEditingObjectIndex = -1;
+
+    // Function to open object editor
+    function openObjectEditor(token, matchedObject) {
+      // Find the object in objectsData
+      const objectIndex = findObjectByToken(token, matchedObject);
+
+      if (objectIndex === -1) {
+        // Create a new object if none exists
+        currentEditingObject = {
+          label: token,
+          color1: '',
+          color2: '',
+          style1: '',
+          style2: '',
+          match: token.toLowerCase(),
+          group: matchedObject.group || '',
+          enabled: true
+        };
+        currentEditingObjectIndex = -1; // New object
+      } else {
+        // Edit existing object
+        currentEditingObject = { ...objectsData.objects[objectIndex] };
+        currentEditingObjectIndex = objectIndex;
+      }
+
+      // Populate the form
+      populateObjectEditorForm(token, matchedObject);
+
+      // Show the modal
+      const modal = document.getElementById('objectEditorModal');
+      modal.classList.add('show');
+
+      // Update JSON preview
+      updateObjectEditorJsonPreview();
+    }
+
+    // Function to find object by token and matched object
+    function findObjectByToken(token, matchedObject) {
+      return objectsData.objects.findIndex(obj => {
+        // Check if the object matches this token
+        try {
+          const regex = new RegExp(obj.match, 'i');
+          return regex.test(token) && obj.group === matchedObject.group;
+        } catch (e) {
+          return false;
+        }
+      });
+    }
+
+    // Function to populate object editor form
+    function populateObjectEditorForm(token, matchedObject) {
+      document.getElementById('objectEditorToken').textContent = token;
+      document.getElementById('objectEditorGroup').textContent = matchedObject.group || 'Unknown';
+      document.getElementById('objectEditorMatch').textContent = currentEditingObject.match || token.toLowerCase();
+
+      // Populate form fields
+      document.getElementById('objectEditorLabel').value = currentEditingObject.label || '';
+      document.getElementById('objectEditorMatchRegex').value = currentEditingObject.match || token.toLowerCase();
+      document.getElementById('objectEditorColor1').value = currentEditingObject.color1 || '';
+      document.getElementById('objectEditorColor2').value = currentEditingObject.color2 || '';
+      document.getElementById('objectEditorStyle1').value = currentEditingObject.style1 || '';
+      document.getElementById('objectEditorStyle2').value = currentEditingObject.style2 || '';
+      document.getElementById('objectEditorEnabled').checked = currentEditingObject.enabled !== false;
+
+      // Populate group dropdown
+      populateGroupDropdown();
+      document.getElementById('objectEditorGroupSelect').value = currentEditingObject.group || '';
+
+      // Set color picker values
+      const color1Picker = document.getElementById('objectEditorColor1Picker');
+      const color2Picker = document.getElementById('objectEditorColor2Picker');
+
+      if (currentEditingObject.color1) {
+        color1Picker.value = normalizeColor(currentEditingObject.color1);
+      }
+      if (currentEditingObject.color2) {
+        color2Picker.value = normalizeColor(currentEditingObject.color2);
+      }
+    }
+
+    // Function to populate group dropdown
+    function populateGroupDropdown() {
+      const groupSelect = document.getElementById('objectEditorGroupSelect');
+      groupSelect.innerHTML = '';
+
+      // Add groups from dictionary rules
+      dictionary.rules.forEach(rule => {
+        if (rule.label) {
+          const option = document.createElement('option');
+          option.value = rule.label;
+          option.textContent = rule.label;
+          groupSelect.appendChild(option);
+        }
+      });
+    }
+
+    // Function to normalize color for color picker
+    function normalizeColor(color) {
+      if (!color) return '#000000';
+
+      // Handle named colors
+      const namedColors = {
+        'red': '#ff0000',
+        'green': '#00ff00',
+        'blue': '#0000ff',
+        'yellow': '#ffff00',
+        'cyan': '#00ffff',
+        'magenta': '#ff00ff',
+        'black': '#000000',
+        'white': '#ffffff',
+        'gray': '#808080',
+        'grey': '#808080',
+        'orange': '#ffa500',
+        'purple': '#800080',
+        'pink': '#ffc0cb',
+        'brown': '#a52a2a'
+      };
+
+      if (namedColors[color.toLowerCase()]) {
+        return namedColors[color.toLowerCase()];
+      }
+
+      // Handle hex colors
+      if (color.startsWith('#')) {
+        return color;
+      }
+
+      return '#000000';
+    }
+
+    // Function to update JSON preview
+    function updateObjectEditorJsonPreview() {
+      const formData = getObjectEditorFormData();
+      const jsonPreview = document.getElementById('objectEditorJsonPreview');
+      jsonPreview.textContent = JSON.stringify(formData, null, 2);
+    }
+
+    // Function to get form data
+    function getObjectEditorFormData() {
+      return {
+        label: document.getElementById('objectEditorLabel').value,
+        color1: document.getElementById('objectEditorColor1').value,
+        color2: document.getElementById('objectEditorColor2').value,
+        style1: document.getElementById('objectEditorStyle1').value,
+        style2: document.getElementById('objectEditorStyle2').value,
+        match: document.getElementById('objectEditorMatchRegex').value,
+        group: document.getElementById('objectEditorGroupSelect').value,
+        enabled: document.getElementById('objectEditorEnabled').checked
+      };
+    }
+
+    // Function to save object changes
+    function saveObjectChanges() {
+      const formData = getObjectEditorFormData();
+
+      // Validate required fields
+      if (!formData.match.trim()) {
+        alert('Match pattern is required');
+        return;
+      }
+
+      if (!formData.group.trim()) {
+        alert('Group is required');
+        return;
+      }
+
+      // Update the object
+      Object.assign(currentEditingObject, formData);
+
+      if (currentEditingObjectIndex === -1) {
+        // Add new object
+        objectsData.objects.push(currentEditingObject);
+      } else {
+        // Update existing object
+        objectsData.objects[currentEditingObjectIndex] = currentEditingObject;
+      }
+
+      // Refresh UI and apply rules
+      refreshObjectsUI();
+      applyRules();
+      autoSavePatternHierarchy();
+
+      // Close modal
+      closeObjectEditor();
+
+      // Show success message
+      showNotification('Object saved successfully!', 'success');
+    }
+
+    // Function to delete object
+    function deleteObject() {
+      if (currentEditingObjectIndex === -1) {
+        // New object, just close
+        closeObjectEditor();
+        return;
+      }
+
+      if (confirm('Are you sure you want to delete this object?')) {
+        objectsData.objects.splice(currentEditingObjectIndex, 1);
+        refreshObjectsUI();
+        applyRules();
+        autoSavePatternHierarchy();
+        closeObjectEditor();
+        showNotification('Object deleted successfully!', 'success');
+      }
+    }
+
+    // Function to close object editor
+    function closeObjectEditor() {
+      const modal = document.getElementById('objectEditorModal');
+      modal.classList.remove('show');
+      currentEditingObject = null;
+      currentEditingObjectIndex = -1;
+    }
+
+    // Function to show notification
+    function showNotification(message, type = 'info') {
+      const notification = document.createElement('div');
+      notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: ${type === 'success' ? '#28a745' : '#007aff'};
+        color: white;
+        padding: 12px 20px;
+        border-radius: 6px;
+        font-size: 14px;
+        z-index: 10001;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      `;
+      notification.textContent = message;
+      document.body.appendChild(notification);
+
+      setTimeout(() => {
+        if (notification.parentNode) {
+          notification.parentNode.removeChild(notification);
+        }
+      }, 3000);
+    }
+
+    // Function to get group emoji
+    function getGroupEmoji(groupName) {
+      if (listsData && listsData.keyValueLists) {
+        const categoriesList = listsData.keyValueLists.find(list => list.name === 'categories');
+        if (categoriesList && categoriesList.items) {
+          const category = categoriesList.items.find(item => item.key === groupName);
+          return category ? category.value : null;
+        }
+      }
+      return null;
+    }
+
     // Function to show save indicator
     function showSaveIndicator() {
       // Create or update save indicator
@@ -1999,37 +2575,38 @@
         const relationship = item.relationship;
 
         // Parse the syntax to extract delimiters
-        // Example: "⦕fragment⟢very brief supplementary summary⟣⦖ "
-        const startDelimiter = '⦕';
-        const endDelimiter = '⦖';
-
-        // Extract inner delimiters based on relationship
-        let innerStartDelimiter, innerEndDelimiter;
+        // Example: "⟢fragment⦓very brief supplementary summary⦔⟣"
+        // Extract outer delimiters based on relationship
+        let startDelimiter, endDelimiter;
         switch (relationship) {
           case 'supplementary':
-            innerStartDelimiter = '⟢';
-            innerEndDelimiter = '⟣';
+            startDelimiter = '⟢';
+            endDelimiter = '⟣';
             break;
           case 'linear progression':
-            innerStartDelimiter = '⨴';
-            innerEndDelimiter = '⨵';
+            startDelimiter = '⨴';
+            endDelimiter = '⨵';
             break;
           case 'parallel set':
-            innerStartDelimiter = '⨭';
-            innerEndDelimiter = '⨮';
+            startDelimiter = '⨭';
+            endDelimiter = '⨮';
             break;
           case 'mapping':
-            innerStartDelimiter = '⊏';
-            innerEndDelimiter = '⊐';
+            startDelimiter = '⊏';
+            endDelimiter = '⊐';
             break;
           case 'combination':
-            innerStartDelimiter = '⦓';
-            innerEndDelimiter = '⦔';
+            startDelimiter = '⦕';
+            endDelimiter = '⦖';
             break;
           default:
-            innerStartDelimiter = '⟢';
-            innerEndDelimiter = '⟣';
+            startDelimiter = '⟢';
+            endDelimiter = '⟣';
         }
+
+        // Inner delimiters are consistent across all types
+        const innerStartDelimiter = '⦓';
+        const innerEndDelimiter = '⦔';
 
         return {
           relationship,
@@ -2528,6 +3105,12 @@
           // Set the title first so symbol style can access the group name
           if (debugMode) console.log('Setting span.title to:', matched.group || '');
           span.title = matched.group || '';
+
+          // Add click event listener for object editing
+          span.addEventListener('click', function (e) {
+            e.preventDefault();
+            openObjectEditor(token, matched);
+          });
 
           // Track if symbol style has been applied to prevent duplicates
           let symbolApplied = false;
@@ -4230,6 +4813,53 @@
       refreshObjectsUI();
       refreshListsUI();
       updateRawJson();
+
+      // Object Editor Modal Event Listeners
+      document.getElementById('closeObjectEditor').addEventListener('click', closeObjectEditor);
+      document.getElementById('cancelObjectEdit').addEventListener('click', closeObjectEditor);
+      document.getElementById('saveObject').addEventListener('click', (e) => {
+        e.preventDefault();
+        saveObjectChanges();
+      });
+      document.getElementById('deleteObject').addEventListener('click', deleteObject);
+
+      // Object Editor Form Event Listeners for real-time JSON preview
+      const formFields = [
+        'objectEditorLabel',
+        'objectEditorMatchRegex',
+        'objectEditorGroupSelect',
+        'objectEditorColor1',
+        'objectEditorColor2',
+        'objectEditorStyle1',
+        'objectEditorStyle2',
+        'objectEditorEnabled'
+      ];
+
+      formFields.forEach(fieldId => {
+        const field = document.getElementById(fieldId);
+        if (field) {
+          field.addEventListener('input', updateObjectEditorJsonPreview);
+          field.addEventListener('change', updateObjectEditorJsonPreview);
+        }
+      });
+
+      // Color picker event listeners
+      document.getElementById('objectEditorColor1Picker').addEventListener('input', (e) => {
+        document.getElementById('objectEditorColor1').value = e.target.value;
+        updateObjectEditorJsonPreview();
+      });
+
+      document.getElementById('objectEditorColor2Picker').addEventListener('input', (e) => {
+        document.getElementById('objectEditorColor2').value = e.target.value;
+        updateObjectEditorJsonPreview();
+      });
+
+      // Close modal when clicking outside
+      document.getElementById('objectEditorModal').addEventListener('click', (e) => {
+        if (e.target.id === 'objectEditorModal') {
+          closeObjectEditor();
+        }
+      });
 
       // Load pattern hierarchy from bob.json on page load
       loadPatternHierarchy();
