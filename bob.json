@@ -19,21 +19,21 @@
     "rules": [
       {
         "match": "",
-        "color1": "#b1d7e7",
-        "color2": "",
-        "label": "day of the week",
-        "enabled": true,
-        "style1": "symbol",
-        "style2": "background"
-      },
-      {
-        "match": "",
         "color1": "#A9CCE3",
         "color2": "",
         "style1": "background",
         "style2": "background",
         "label": "person",
         "enabled": true
+      },
+      {
+        "match": "",
+        "color1": "#b1d7e7",
+        "color2": "",
+        "label": "day of the week",
+        "enabled": true,
+        "style1": "symbol",
+        "style2": "background"
       },
       {
         "match": "",
@@ -123,15 +123,6 @@
         "style2": "",
         "label": "texture",
         "enabled": false
-      },
-      {
-        "match": "",
-        "color1": "#85C1E9",
-        "color2": "",
-        "style1": "background",
-        "style2": "",
-        "label": "New Group",
-        "enabled": true
       }
     ]
   },
@@ -216,19 +207,7 @@
         ]
       }
     ],
-    "arrays": [
-      {
-        "name": "list",
-        "items": [
-          "colors",
-          "days of the week",
-          "instruments",
-          "months",
-          "people",
-          "sounds"
-        ]
-      }
-    ]
+    "arrays": []
   },
   "objectsData": {
     "objects": [
@@ -1098,7 +1077,7 @@
         "color2": "",
         "style1": "color",
         "style2": "",
-        "match": "\\bada\\b",
+        "match": "\\bada\\S*\\b",
         "group": "person",
         "enabled": true
       },
@@ -1108,7 +1087,7 @@
         "color2": "#FFCC00",
         "style1": "background",
         "style2": "background",
-        "match": "\\bbruno\\b",
+        "match": "\\bbruno\\S*\\b",
         "group": "person",
         "enabled": true
       },
@@ -1118,7 +1097,7 @@
         "color2": "#291139",
         "style1": "background",
         "style2": "background",
-        "match": "\\bgabriel\\b",
+        "match": "\\bgabriel\\S*\\b",
         "group": "person",
         "enabled": true
       },
@@ -1128,7 +1107,7 @@
         "color2": "",
         "style1": "color",
         "style2": "",
-        "match": "\\bkris\\b",
+        "match": "\\bkris\\S*\\b",
         "group": "person",
         "enabled": true
       },

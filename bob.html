@@ -1086,10 +1086,9 @@
         <button class="tab-button active" data-tab="input-preview">Preview</button>
         <button class="tab-button" data-tab="search-dictionary">Patterns</button>
         <button class="tab-button" data-tab="lists-arrays">Lists</button>
-        <button class="tab-button" data-tab="json-view">JSON</button>
       </div>
       <div class="tab-buttons-right">
-        <button class="refresh-btn" id="refreshBtn" title="Refresh from bob.json and switch to JSON tab">🔄</button>
+        <button class="refresh-btn" id="refreshBtn" title="Refresh from bob.json">🔄</button>
         <button class="groups-editor-toggle" id="groupsEditorToggle" title="Toggle Groups Editor">⚙️</button>
       </div>
     </div>
@@ -1158,6 +1157,10 @@
           <button id="debugToggle" class="btn btn-secondary" style="font-size: 12px; padding: 4px 8px;">Debug:
             OFF</button>
         </div>
+      </div>
+      <div style="margin-bottom:1rem;">
+        <button class="btn btn-secondary" id="loadBobJson">Load from Storage</button>
+        <button class="btn btn-secondary" id="saveBobJson">Export to File</button>
       </div>
       <div style="margin-bottom:0.5rem;">
         <label>
@@ -1349,19 +1352,7 @@
         configuration data, mappings, or any structured data.</p>
     </div>
 
-    <!-- Tab 4: bob.json -->
-    <div id="json-view" class="tab-content">
-      <div class="section-header">
-        <h3>bob.json</h3>
-        <p class="small">This shows the current state of your configuration data. The data is automatically saved to
-          localStorage and can be exported to bob.json.</p>
-      </div>
-      <div style="margin-bottom:1rem;">
-        <button class="btn btn-secondary" id="loadBobJson">Load from Storage</button>
-        <button class="btn btn-secondary" id="saveBobJson">Export to File</button>
-      </div>
-      <div class="json-display" id="rawJson"></div>
-    </div>
+
   </div>
 
   <template id="ruleTemplate">
@@ -2053,7 +2044,6 @@
           refreshRuleUI();
           refreshObjectsUI();
           refreshListsUI();
-          updateDebugButtonState();
           applyRules();
 
           console.log('Pattern hierarchy loaded from localStorage');
@@ -2141,7 +2131,6 @@
         refreshObjectsUI();
         refreshListsUI();
         applyRules();
-        updateRawJson();
 
         // Note: Removed auto-switching to JSON tab as requested
 
@@ -3237,7 +3226,6 @@
         // Live change listeners
         row.querySelector('.category').addEventListener('change', () => {
           dictionary.rules[idx].label = row.querySelector('.category').value;
-          updateRawJson();
           autoSavePatternHierarchy();
         });
 
@@ -3254,7 +3242,6 @@
 
         container.appendChild(node);
       });
-      updateRawJson();
       updatePriorityOrderDisplay();
 
       // Also refresh the sidebar if it's open
@@ -3765,13 +3752,11 @@
           // Live change listeners
           row.querySelector('.match').addEventListener('input', () => {
             obj.match = row.querySelector('.match').value;
-            updateRawJson();
             autoSavePatternHierarchy();
           });
 
           row.querySelector('.label').addEventListener('input', () => {
             obj.label = row.querySelector('.label').value;
-            updateRawJson();
             autoSavePatternHierarchy();
           });
 
@@ -3779,19 +3764,18 @@
           color1Btn.addEventListener('click', (e) => {
             e.stopPropagation();
             console.log('Object color1 button clicked for:', obj.label);
-            showObjectColorPanel(objectsData.objects.indexOf(obj), 1);
+            showObjectColorPanel(obj, objectsData.objects.indexOf(obj), 1, color1Btn);
           });
 
           color2Btn.addEventListener('click', (e) => {
             e.stopPropagation();
             console.log('Object color2 button clicked for:', obj.label);
-            showObjectColorPanel(objectsData.objects.indexOf(obj), 2);
+            showObjectColorPanel(obj, objectsData.objects.indexOf(obj), 2, color2Btn);
           });
 
           container.appendChild(node);
         });
       });
-      updateRawJson();
     }
 
     function prettifyJson(json) {
@@ -3814,15 +3798,7 @@
       return formattedLines.join('\n');
     }
 
-    function updateRawJson() {
-      const data = {
-        defaultPattern: defaultPattern,
-        dictionary: dictionary,
-        listsData: listsData
-      };
-      const jsonElement = document.getElementById('rawJson');
-      jsonElement.innerHTML = prettifyJson(data);
-    }
+
 
     let applyRulesTimeout;
     let debugMode = false; // Default to false
@@ -5478,6 +5454,10 @@
       }
 
       const obj = objectsData.objects[objectIndex];
+      if (!obj) {
+        console.error(`Object not found at index ${objectIndex}`);
+        return;
+      }
       const color = colorNum === 1 ? obj.color1 : obj.color2;
       const style = colorNum === 1 ? obj.style1 : obj.style2;
 
@@ -6142,7 +6122,6 @@
       refreshRuleUI();
       refreshObjectsUI();
       refreshListsUI();
-      updateRawJson();
 
       // Object Editor Modal Event Listeners
       document.getElementById('closeObjectEditor').addEventListener('click', closeObjectEditor);
@@ -6235,13 +6214,45 @@
 
       // Sidebar add buttons
       document.getElementById('sidebarAddGroup').addEventListener('click', createNewGroupFromSidebar);
-      document.getElementById('sidebarAddObject').addEventListener('click', createNewObjectFromSidebar);
+
+      // Enhanced sidebar add object button with bulk add option
+      const sidebarAddObjectBtn = document.getElementById('sidebarAddObject');
+      sidebarAddObjectBtn.addEventListener('click', createNewObjectFromSidebar);
+
+      // Add hover functionality for bulk add
+      let sidebarAddTimeout;
+      let sidebarAddExpanded = false;
+
+      sidebarAddObjectBtn.addEventListener('mouseenter', () => {
+        clearTimeout(sidebarAddTimeout);
+        if (!sidebarAddExpanded) {
+          sidebarAddTimeout = setTimeout(() => {
+            showSidebarBulkAddOptions();
+            sidebarAddExpanded = true;
+          }, 200);
+        }
+      });
+
+      sidebarAddObjectBtn.addEventListener('mouseleave', () => {
+        clearTimeout(sidebarAddTimeout);
+        sidebarAddTimeout = setTimeout(() => {
+          hideSidebarBulkAddOptions();
+          sidebarAddExpanded = false;
+        }, 400);
+      });
 
       // Note: Removed auto-close functionality as requested
       // Sidebar stays open until manually closed
 
       // Load pattern hierarchy from bob.json on page load
       loadPatternHierarchy();
+
+      // Initialize debug button state after loading data
+      setTimeout(() => {
+        if (typeof updateDebugButtonState === 'function') {
+          updateDebugButtonState();
+        }
+      }, 100);
     });
 
     // Bulk load objects functions
@@ -6319,6 +6330,201 @@
       document.getElementById('bulkObjectsInput').value = '';
     }
 
+
+
+    // Sidebar bulk add functions
+    function showSidebarBulkAddOptions() {
+      // Remove any existing options
+      const existingOptions = document.getElementById('sidebarBulkAddOptions');
+      if (existingOptions) {
+        existingOptions.remove();
+      }
+
+      const options = document.createElement('div');
+      options.id = 'sidebarBulkAddOptions';
+      options.className = 'sidebar-add-options';
+      options.style.cssText = `
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: white;
+        border: 1px solid #007aff;
+        border-radius: 4px;
+        padding: 0.25rem;
+        z-index: 1000;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      `;
+
+      const singleAddBtn = document.createElement('div');
+      singleAddBtn.className = 'sidebar-option-btn';
+      singleAddBtn.style.cssText = `
+        padding: 0.25rem 0.5rem;
+        cursor: pointer;
+        border-radius: 2px;
+        font-size: 0.75rem;
+      `;
+      singleAddBtn.textContent = 'Add Single Object';
+      singleAddBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        createNewObjectFromSidebar();
+        hideSidebarBulkAddOptions();
+      });
+
+      const bulkAddBtn = document.createElement('div');
+      bulkAddBtn.className = 'sidebar-option-btn';
+      bulkAddBtn.style.cssText = `
+        padding: 0.25rem 0.5rem;
+        cursor: pointer;
+        border-radius: 2px;
+        font-size: 0.75rem;
+      `;
+      bulkAddBtn.textContent = 'Bulk Add Objects';
+      bulkAddBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        showSidebarBulkAddForm();
+        hideSidebarBulkAddOptions();
+      });
+
+      options.appendChild(singleAddBtn);
+      options.appendChild(bulkAddBtn);
+
+      const sidebarAddObjectBtn = document.getElementById('sidebarAddObject');
+      sidebarAddObjectBtn.style.position = 'relative';
+      sidebarAddObjectBtn.appendChild(options);
+    }
+
+    function hideSidebarBulkAddOptions() {
+      const options = document.getElementById('sidebarBulkAddOptions');
+      if (options) {
+        options.remove();
+      }
+    }
+
+    function showSidebarBulkAddForm() {
+      // Remove any existing form
+      const existingForm = document.getElementById('sidebarBulkAddForm');
+      if (existingForm) {
+        existingForm.remove();
+      }
+
+      const form = document.createElement('div');
+      form.id = 'sidebarBulkAddForm';
+      form.style.cssText = `
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 1rem;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        z-index: 1001;
+        min-width: 400px;
+        max-width: 600px;
+      `;
+
+      form.innerHTML = `
+        <h4 style="margin: 0 0 1rem 0;">Bulk Add Objects</h4>
+        <p style="margin-bottom: 1rem; font-size: 0.9rem; color: #666;">
+          Paste CSV data with columns: label,color1,color2,style1,style2,match,group,enabled
+        </p>
+        <textarea id="sidebarBulkObjectsInput" placeholder="Paste CSV data here..."
+          style="width: 100%; height: 200px; margin-bottom: 1rem; font-family: monospace;"></textarea>
+        <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+          <button id="sidebarBulkLoadBtn" style="background: #007aff; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer;">Load Objects</button>
+          <button id="sidebarBulkCancelBtn" style="background: #666; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer;">Cancel</button>
+        </div>
+      `;
+
+      document.body.appendChild(form);
+
+      // Event listeners
+      document.getElementById('sidebarBulkLoadBtn').addEventListener('click', () => {
+        const input = document.getElementById('sidebarBulkObjectsInput').value.trim();
+        if (!input) {
+          alert('Please enter CSV data to load objects.');
+          return;
+        }
+
+        const lines = input.split('\n');
+        let loadedCount = 0;
+        let errorCount = 0;
+        const errors = [];
+
+        // Skip header line if it matches the expected format
+        const startIndex = lines[0].toLowerCase().includes('label,color1,color2,style1,style2,match,group,enabled') ? 1 : 0;
+
+        for (let i = startIndex; i < lines.length; i++) {
+          const line = lines[i].trim();
+          if (!line) continue;
+
+          const parts = line.split(',').map(part => part.trim());
+
+          if (parts.length < 7) {
+            errors.push(`Line ${i + 1}: Insufficient columns (expected 8, got ${parts.length})`);
+            errorCount++;
+            continue;
+          }
+
+          const [label, color1, color2, style1, style2, match, group, enabled] = parts;
+
+          // Validate required fields
+          if (!match || !group) {
+            errors.push(`Line ${i + 1}: Missing required fields (match and group are required)`);
+            errorCount++;
+            continue;
+          }
+
+          // Create new object
+          const newObject = {
+            label: label || '',
+            color1: color1 || '',
+            color2: color2 || '',
+            style1: style1 || 'background',
+            style2: style2 || '',
+            match: match,
+            group: group,
+            enabled: enabled === 'true' || enabled === '1' || enabled === ''
+          };
+
+          objectsData.objects.push(newObject);
+          loadedCount++;
+        }
+
+        // Show results
+        let message = `Loaded ${loadedCount} objects successfully.`;
+        if (errorCount > 0) {
+          message += `\n\n${errorCount} errors:\n${errors.join('\n')}`;
+        }
+
+        if (errorCount > 0) {
+          alert(message);
+        } else {
+          alert(message);
+        }
+
+        // Refresh UI and save
+        refreshObjectsUI();
+        refreshGroupsSidebar();
+        applyRules();
+        autoSavePatternHierarchy();
+
+        // Close form
+        hideSidebarBulkAddForm();
+      });
+
+      document.getElementById('sidebarBulkCancelBtn').addEventListener('click', hideSidebarBulkAddForm);
+    }
+
+    function hideSidebarBulkAddForm() {
+      const form = document.getElementById('sidebarBulkAddForm');
+      if (form) {
+        form.remove();
+      }
+    }
+
     function downloadObjectsTemplate() {
       const template = `label,color1,color2,style1,style2,match,group,enabled
 red,#ff0000,#ffffff,background,color,red,color,true
@@ -6330,10 +6536,12 @@ a,#ff293e,,color,,^a,letter,true
 b,#684ccd,,color,,^b,letter,true`;
 
       const blob = new Blob([template], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
+      a.href = url;
       a.download = 'objects_template.csv';
       a.click();
+      URL.revokeObjectURL(url);
     }
 
     // Priority order management functions
