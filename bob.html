@@ -1419,6 +1419,12 @@
         // If neither localStorage nor file exists, start with empty data
         console.log('No existing data found, starting with empty configuration');
       }
+
+      // Add function to clear localStorage and reload from JSON
+      window.clearAndReload = function () {
+        localStorage.removeItem('bobPatternHierarchy');
+        location.reload();
+      };
     }
 
     // Function to refresh from bob.json and switch to JSON tab
@@ -1962,57 +1968,79 @@
     }
 
     let applyRulesTimeout;
-    let debugMode = false;
+    let debugMode = true;
 
     // Semantic structure parsing functions
     function parseSemanticStructures(text) {
       const structures = [];
 
       // Get semantic structure patterns from the JSON
-      const semanticPatterns = listsData.keyValueLists.find(list => list.name === "semantic structures");
+      if (debugMode) console.log('Searching for semantic structures in:', listsData.keyValueLists);
+      if (debugMode) {
+        listsData.keyValueLists.forEach((list, index) => {
+          console.log(`List ${index}:`, list.name, list);
+        });
+      }
+      const semanticPatterns = listsData.keyValueLists.find(list =>
+        list.name === "semantic structures" ||
+        list.name === "semantic structures " ||
+        list.name === " semantic structures" ||
+        list.name.toLowerCase() === "semantic structures"
+      );
       if (!semanticPatterns) {
         if (debugMode) console.log('No semantic structures found in listsData.keyValueLists:', listsData.keyValueLists);
         return structures;
       }
+      if (debugMode) console.log('Found semantic patterns:', semanticPatterns);
 
-      // Define the semantic structure patterns with their delimiters
-      const patterns = [
-        {
-          relationship: 'supplementary',
-          startDelimiter: '⦕',
-          endDelimiter: '⦖',
-          innerStartDelimiter: '⟢',
-          innerEndDelimiter: '⟣'
-        },
-        {
-          relationship: 'linear progression',
-          startDelimiter: '⦕',
-          endDelimiter: '⦖',
-          innerStartDelimiter: '⨴',
-          innerEndDelimiter: '⨵'
-        },
-        {
-          relationship: 'parallel set',
-          startDelimiter: '⦕',
-          endDelimiter: '⦖',
-          innerStartDelimiter: '⨭',
-          innerEndDelimiter: '⨮'
-        },
-        {
-          relationship: 'mapping',
-          startDelimiter: '⦕',
-          endDelimiter: '⦖',
-          innerStartDelimiter: '⊏',
-          innerEndDelimiter: '⊐'
-        },
-        {
-          relationship: 'combination',
-          startDelimiter: '⦕',
-          endDelimiter: '⦖',
-          innerStartDelimiter: '⦓',
-          innerEndDelimiter: '⦔'
+      // Convert JSON patterns to the format we need
+      const patterns = semanticPatterns.items.map(item => {
+        const syntax = item.syntax;
+        const relationship = item.relationship;
+
+        // Parse the syntax to extract delimiters
+        // Example: "⦕fragment⟢very brief supplementary summary⟣⦖ "
+        const startDelimiter = '⦕';
+        const endDelimiter = '⦖';
+
+        // Extract inner delimiters based on relationship
+        let innerStartDelimiter, innerEndDelimiter;
+        switch (relationship) {
+          case 'supplementary':
+            innerStartDelimiter = '⟢';
+            innerEndDelimiter = '⟣';
+            break;
+          case 'linear progression':
+            innerStartDelimiter = '⨴';
+            innerEndDelimiter = '⨵';
+            break;
+          case 'parallel set':
+            innerStartDelimiter = '⨭';
+            innerEndDelimiter = '⨮';
+            break;
+          case 'mapping':
+            innerStartDelimiter = '⊏';
+            innerEndDelimiter = '⊐';
+            break;
+          case 'combination':
+            innerStartDelimiter = '⦓';
+            innerEndDelimiter = '⦔';
+            break;
+          default:
+            innerStartDelimiter = '⟢';
+            innerEndDelimiter = '⟣';
         }
-      ];
+
+        return {
+          relationship,
+          startDelimiter,
+          endDelimiter,
+          innerStartDelimiter,
+          innerEndDelimiter
+        };
+      });
+
+      if (debugMode) console.log('Converted patterns:', patterns);
 
       for (const pattern of patterns) {
         const { startDelimiter, endDelimiter, innerStartDelimiter, innerEndDelimiter, relationship } = pattern;
@@ -2024,7 +2052,10 @@
         const escapedInnerStartDelimiter = innerStartDelimiter.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
         const escapedInnerEndDelimiter = innerEndDelimiter.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-        const regexPattern = `${escapedStartDelimiter}(.*?)${escapedInnerStartDelimiter}(.*?)${escapedInnerEndDelimiter}.*?${escapedEndDelimiter}`;
+        // Use a pattern that handles optional content between inner and outer delimiters
+        const regexPattern = `${escapedStartDelimiter}(.*?)${escapedInnerStartDelimiter}(.*?)${escapedInnerEndDelimiter}(.*?)${escapedEndDelimiter}`;
+
+        if (debugMode) console.log(`Testing regex pattern for ${relationship}:`, regexPattern);
 
         try {
           const regex = new RegExp(regexPattern, 'g');
@@ -2036,8 +2067,9 @@
             const fullMatch = match[0];
             const fragment = match[1];
             const summary = match[2];
+            const trailingContent = match[3] || ''; // Content between inner end and outer end delimiters
 
-            if (debugMode) console.log(`Found ${relationship} structure:`, { fullMatch, fragment, summary });
+            if (debugMode) console.log(`Found ${relationship} structure:`, { fullMatch, fragment, summary, trailingContent });
 
             structures.push({
               fullMatch,
@@ -2128,6 +2160,8 @@
 
       // Parse semantic structures first
       if (debugMode) console.log('listsData available:', listsData);
+      if (debugMode) console.log('listsData.keyValueLists:', listsData.keyValueLists);
+      if (debugMode) console.log('listsData.keyValueLists.length:', listsData.keyValueLists.length);
       const semanticStructures = parseSemanticStructures(text);
       if (debugMode) console.log('Found semantic structures:', semanticStructures);
 
@@ -2168,9 +2202,19 @@
 
       // Process semantic structures first
       let processedText = text;
-      if (debugMode) console.log('Processing semantic structures:', semanticStructures.length);
+      if (debugMode) {
+        console.log('Processing semantic structures:', semanticStructures.length);
+        console.log('Original text:', text);
+      }
 
-      for (const structure of semanticStructures) {
+      // Sort structures by start index in descending order to avoid index conflicts
+      const sortedStructures = [...semanticStructures].sort((a, b) => b.startIndex - a.startIndex);
+
+      // Build processed text by replacing structures with placeholders
+      let lastIndex = text.length;
+      const replacements = [];
+
+      for (const structure of sortedStructures) {
         const components = parseSemanticStructureComponents(structure);
 
         if (debugMode) console.log('Parsed components:', components);
@@ -2181,18 +2225,31 @@
           color2: '',
           style1: 'semantic',
           style2: '',
-          label: components.label,
+          label: components.label, // Keep label data but don't display by default
           summary: components.summary,
           sourceText: components.sourceText,
           relationship: structure.relationship,
           group: 'semantic-structure',
           isSemantic: true,
+          isPromoted: false, // Only show labels when promoted to JSON Object
           fullMatch: structure.fullMatch
         };
 
-        // Replace the semantic structure in the text with a placeholder
+        // Create placeholder
         const placeholder = `__SEMANTIC_${structure.startIndex}__`;
-        processedText = processedText.replace(structure.fullMatch, placeholder);
+
+        if (debugMode) {
+          console.log('Replacing structure at index', structure.startIndex, ':', structure.fullMatch);
+          console.log('With placeholder:', placeholder);
+        }
+
+        // Store replacement info
+        replacements.push({
+          start: structure.startIndex,
+          end: structure.endIndex,
+          fullMatch: structure.fullMatch,
+          placeholder: placeholder
+        });
 
         if (debugMode) console.log('Created semantic object:', semanticObject);
 
@@ -2201,7 +2258,21 @@
         window.semanticObjects[placeholder] = semanticObject;
       }
 
+      // Apply replacements in reverse order to maintain indices
+      replacements.sort((a, b) => b.start - a.start);
+
+      for (const replacement of replacements) {
+        const before = processedText.substring(0, replacement.start);
+        const after = processedText.substring(replacement.end);
+        processedText = before + replacement.placeholder + after;
+
+        if (debugMode) {
+          console.log('Applied replacement:', replacement.fullMatch, '->', replacement.placeholder);
+        }
+      }
+
       // Now process the modified text
+      if (debugMode) console.log('Processed text after semantic replacement:', processedText);
       const processedWords = processedText.split(/(\s+)/);
 
       processedWords.forEach((token, index) => {
@@ -2217,6 +2288,18 @@
           if (debugMode) console.log('Found semantic placeholder:', token);
           matched = window.semanticObjects[token];
           if (debugMode) console.log('Retrieved semantic object:', matched);
+
+          // If no semantic object found, this might be an orphaned placeholder
+          if (!matched) {
+            if (debugMode) console.warn('Orphaned semantic placeholder found:', token);
+            // Create a fallback span with the placeholder text
+            const fallbackSpan = document.createElement('span');
+            fallbackSpan.textContent = token;
+            fallbackSpan.style.color = 'red';
+            fallbackSpan.style.fontStyle = 'italic';
+            preview.appendChild(fallbackSpan);
+            return;
+          }
         } else {
           if (debugMode && token.trim() !== '') {
             console.log('Processing regular token:', token);
@@ -2336,6 +2419,108 @@
         const span = document.createElement('span');
         span.textContent = token;
         span.className = 'word';
+
+        if (matched && matched.isSemantic) {
+          // For semantic structures, create a container and break down into components
+          const container = document.createElement('span');
+          container.className = 'semantic-container';
+          container.style.display = 'inline';
+          container.style.cursor = 'pointer';
+          container.title = `Semantic structure: ${matched.relationship}`;
+
+          // Add subtle visual indicator
+          container.style.borderBottom = '1px dotted #ccc';
+
+          // Create components
+          const components = [];
+
+          // Add label if it exists and is promoted
+          if (matched.label && matched.isPromoted) {
+            const labelSpan = document.createElement('span');
+            labelSpan.textContent = matched.label + ': ';
+            labelSpan.style.fontWeight = 'bold';
+            components.push(labelSpan);
+          }
+
+          // Process source text word by word to apply object styles
+          const sourceWords = matched.sourceText.split(/(\s+)/);
+          sourceWords.forEach(word => {
+            if (word.trim() === '') {
+              // Add whitespace as text node
+              components.push(document.createTextNode(word));
+              return;
+            }
+
+            const wordSpan = document.createElement('span');
+            wordSpan.textContent = word;
+            wordSpan.className = 'word';
+
+            // Check if this word matches any object rules
+            let wordMatched = null;
+
+            // Check objects for all enabled groups
+            for (const rule of dictionary.rules) {
+              if (rule.enabled === false) continue;
+
+              for (const obj of objectsData.objects) {
+                if (obj.enabled === false) continue;
+                if (obj.group === rule.label) {
+                  try {
+                    const flags = 'i';
+                    let regex = new RegExp(obj.match, flags);
+
+                    if (regex.test(word)) {
+                      wordMatched = {
+                        color1: obj.color1,
+                        color2: obj.color2,
+                        style1: rule.style1,
+                        style2: rule.style2,
+                        label: obj.label || obj.group,
+                        group: obj.group
+                      };
+                      break;
+                    }
+                  } catch (e) {
+                    console.warn('bad object regex', obj.match);
+                  }
+                }
+                if (wordMatched) break;
+              }
+              if (wordMatched) break;
+            }
+
+            // Apply object styles to the word
+            if (wordMatched) {
+              if (wordMatched.color1 && wordMatched.color1.trim() !== '' && wordMatched.style1 && wordMatched.style1.trim() !== '') {
+                applyStyleToElement(wordSpan, wordMatched.color1, wordMatched.style1);
+              }
+              if (wordMatched.color2 && wordMatched.color2.trim() !== '' && wordMatched.style2 && wordMatched.style2.trim() !== '') {
+                if (wordMatched.style2 !== wordMatched.style1) {
+                  applyStyleToElement(wordSpan, wordMatched.color2, wordMatched.style2);
+                }
+              }
+            }
+
+            components.push(wordSpan);
+          });
+
+          // Add summary (italic styling)
+          if (matched.summary) {
+            const summarySpan = document.createElement('span');
+            summarySpan.textContent = ' ' + matched.summary;
+            summarySpan.style.fontStyle = 'italic';
+            summarySpan.style.color = '#666';
+            components.push(summarySpan);
+          }
+
+          // Add all components to container
+          components.forEach(comp => container.appendChild(comp));
+
+          // Replace the original span with the container
+          preview.appendChild(container);
+          return; // Skip the rest of the processing
+        }
+
         if (matched) {
           // Store the matched object on the element for semantic styling
           span.matchedObject = matched;
@@ -2347,30 +2532,24 @@
           // Track if symbol style has been applied to prevent duplicates
           let symbolApplied = false;
 
-          // Apply styles based on the new style system
-          if (matched.style1 === 'semantic') {
-            // Apply semantic styling
-            applyStyleToElement(span, '', 'semantic');
-          } else {
-            // Apply regular styles
-            if (matched.color1 && matched.color1.trim() !== '' && matched.style1 && matched.style1.trim() !== '') {
-              applyStyleToElement(span, matched.color1, matched.style1);
+          // Apply regular object styles first
+          if (matched.color1 && matched.color1.trim() !== '' && matched.style1 && matched.style1.trim() !== '' && matched.style1 !== 'semantic') {
+            applyStyleToElement(span, matched.color1, matched.style1);
+          }
+          if (matched.color2 && matched.color2.trim() !== '' && matched.style2 && matched.style2.trim() !== '') {
+            // For color2, only apply if it's different from color1's style
+            if (matched.style2 !== matched.style1) {
+              applyStyleToElement(span, matched.color2, matched.style2);
             }
-            if (matched.color2 && matched.color2.trim() !== '' && matched.style2 && matched.style2.trim() !== '') {
-              // For color2, only apply if it's different from color1's style
-              if (matched.style2 !== matched.style1) {
-                applyStyleToElement(span, matched.color2, matched.style2);
-              }
-            }
-            // Apply symbol style independently of color - check both style1 and style2
-            if (matched.style1 === 'symbol' && !symbolApplied) {
-              applyStyleToElement(span, '', 'symbol');
-              symbolApplied = true;
-            }
-            if (matched.style2 === 'symbol' && !symbolApplied) {
-              applyStyleToElement(span, '', 'symbol');
-              symbolApplied = true;
-            }
+          }
+          // Apply symbol style independently of color - check both style1 and style2
+          if (matched.style1 === 'symbol' && !symbolApplied) {
+            applyStyleToElement(span, '', 'symbol');
+            symbolApplied = true;
+          }
+          if (matched.style2 === 'symbol' && !symbolApplied) {
+            applyStyleToElement(span, '', 'symbol');
+            symbolApplied = true;
           }
         } else {
           span.style.color = 'inherit';
@@ -3008,57 +3187,27 @@
         return;
       }
 
-      // Create a container for the semantic structure
-      const container = document.createElement('span');
-      container.className = 'semantic-structure';
-      container.style.display = 'inline-block';
-      container.style.margin = '2px 4px';
-      container.style.padding = '4px 8px';
-      container.style.border = '1px solid #ddd';
-      container.style.borderRadius = '4px';
-      container.style.backgroundColor = '#f8f9fa';
+      // Apply semantic styles that can intersect with existing object styles
 
-      // Create the label (bold)
-      if (matched.label) {
-        const labelSpan = document.createElement('span');
-        labelSpan.textContent = matched.label;
-        labelSpan.style.fontWeight = 'bold';
-        labelSpan.style.color = '#333';
-        container.appendChild(labelSpan);
-
-        // Add separator
-        const separator = document.createElement('span');
-        separator.textContent = ': ';
-        separator.style.color = '#666';
-        container.appendChild(separator);
+      // Only show labels if the user has promoted this to a JSON Object
+      if (matched.label && matched.isPromoted) {
+        // Add label styling (bold) - this can intersect with existing styles
+        element.style.fontWeight = 'bold';
       }
 
-      // Create the summary (italic)
+      // Apply summary styling (italic) - this should intersect with other styles
       if (matched.summary) {
-        const summarySpan = document.createElement('span');
-        summarySpan.textContent = matched.summary;
-        summarySpan.style.fontStyle = 'italic';
-        summarySpan.style.color = '#666';
-        container.appendChild(summarySpan);
-
-        // Add separator
-        const separator = document.createElement('span');
-        separator.textContent = ' | ';
-        separator.style.color = '#999';
-        container.appendChild(separator);
+        element.style.fontStyle = 'italic';
       }
 
-      // Create the source text (regular)
-      if (matched.sourceText) {
-        const sourceSpan = document.createElement('span');
-        sourceSpan.textContent = matched.sourceText;
-        sourceSpan.style.color = '#333';
-        container.appendChild(sourceSpan);
+      // Add subtle visual indicator for semantic structures (preserve existing styles)
+      const existingBorder = element.style.borderBottom;
+      if (!existingBorder || existingBorder === '') {
+        element.style.borderBottom = '1px dotted #ccc';
       }
 
-      // Replace the element's content with the semantic structure
-      element.innerHTML = '';
-      element.appendChild(container);
+      element.style.cursor = 'pointer';
+      element.title = `Semantic structure: ${matched.relationship}`;
     }
 
     // Lists and Arrays Management Functions

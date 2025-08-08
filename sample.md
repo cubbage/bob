@@ -1,21 +1,19 @@
-# Free Fish
+Here is some sample text with semantic structures for testing:
 
-by Gabriel Cubbage
+⦕Detective fiction, on the other hand, is Horror's polar opposite. Horror is the most primal form, while Detective is the most intellectual. But Detective and Horror are both fundamentally about the mind.⟢Detective fiction contrasts horror as intellectual vs primal mind genres⟣⦖
 
-Down from the highlands that feed the Das Antas, there unwinds a wild river, home to countless tainhas — shimmering green and gray, ray-finned fish. Most embrace the torrent without care, trusting the currents as they cavort and splash along, leaping to gulp at the air and enjoy the unbroken sunlight. But some few choose to fight the river instead, laboring in the shallows, to slow their downstream rush. Some even leap edgeward from the water’s safety, dashing themselves high against the jagged embankments, threatening to exit the river entirely.
+⦕KEY POINT: Detective fiction highlights the brilliance of the mind while Horror emphasizes its flaws.⟢Detective celebrates mind's power; Horror exposes its flaws⟣⦖
 
-Their frolicking brethren call out from the river’s spine as they pass, "Hey! Get away from the embankments. Don't you know splashing about in the current is best?”
+⦕Novels and Films Dawn of the Dead, Deliverance, Shaun of the Dead, Godzilla, Sisters, The Thing, What Ever Happened to Baby Jane?⨭Widely known horror novels and films from gothic to modern classics⨮⦖
 
-The would-be escapees pause in their leaping to cry back, "Says you! But you fail to understand that we are all undecided."
+⦕This is a mapping example⊏showing how mapping works⊐⦖
 
-"Undecided? But that's no place for you! If you left the river, you’d surely die. And besides, it’s too high. And double besides, it's more fun in here!"
+⦕This is a combination example⦓showing how combination works⦔⦖
 
-"Estás a meter água!” the contrarians jeer. “You only say that because you're fish! And fish love to play in the middle of the river, where the water moves fastest.”
+⦕Linear progression example⨴showing how linear progression works⨵⦖
 
-"But… you're fish, too! Sem noção. Don’t you know that?”
+⦕Apple is red⟢fruit color⟣⦖
 
-“Of course. Naturally, we know we're fish. Everyone’s a fish. But no one here can decide." The dissatisfied tainhas resume their escape attempts even more urgently.
+⦕Blue sky⟢color description⟣⦖
 
-"But why, why, why can’t you decide? If you know the embankment's too high to breach, you know playing in the current is most fun for fish, and you know that you are fish, then why not come be over here with us? There's absolutely nothing for you to decide!"
-
-"EXACTLY!"
+⦕Red car⟢vehicle color⟣⦖

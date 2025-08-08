@@ -11,3 +11,9 @@ Here is some sample text with semantic structures for testing:
 ⦕This is a combination example⦓showing how combination works⦔⦖
 
 ⦕Linear progression example⨴showing how linear progression works⨵⦖
+
+⦕Apple is red⟢fruit color⟣⦖
+
+⦕Blue sky⟢color description⟣⦖
+
+⦕Red car⟢vehicle color⟣⦖
