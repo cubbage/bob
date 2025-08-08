@@ -180,6 +180,31 @@
             "value": "🩶"
           }
         ]
+      },
+      {
+        "name": "semantic structures",
+        "items": [
+          {
+            "relationship": "supplementary",
+            "syntax": "⦕fragment⟢very brief supplementary summary⟣⦖ "
+          },
+          {
+            "relationship": "linear progression",
+            "syntax": "⦕fragment⨴very brief progression summary⨵⦖"
+          },
+          {
+            "relationship": "parallel set",
+            "syntax": "⦕fragment⨭very brief parallel summary⨮⦖"
+          },
+          {
+            "relationship": "mapping",
+            "syntax": "⦕fragment⊏very brief mapping or contrasting summary⊐⦖"
+          },
+          {
+            "relationship": "combination",
+            "syntax": "⦕fragment⦓very brief combination summary⦔⦖"
+          }
+        ]
       }
     ],
     "arrays": [

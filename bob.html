@@ -540,7 +540,8 @@
         <p class="small">💡 <strong>URL Sharing:</strong> Use the "Copy Shareable URL" button to create a link that
           automatically loads your text when opened. You can also manually add parameters like
           <code>?text=your_text_here&export=markdown</code> to the URL. Available export options: markdown, pdf, html,
-          plain. Use <code>?clear=true</code> to clear the textarea.
+          plain. Use <code>?clear=true</code> to clear the textarea. For very long text, use
+          <code>?clipboard=message</code> or <code>?file=message</code> to show instructions.
         </p>
       </div>
       <div class="flex">
@@ -566,6 +567,7 @@
           <div style="margin-bottom:4px;">Quick Export URLs:</div>
           <button class="btn btn-secondary btn-small" id="copyMarkdownUrl">Markdown URL</button>
           <button class="btn btn-secondary btn-small" id="copyPdfUrl">PDF URL</button>
+          <button class="btn btn-secondary btn-small" id="testUrlLength">Test URL Length</button>
         </div>
       </div>
     </div>
@@ -851,6 +853,9 @@
       try {
         const params = new URLSearchParams(window.location.search);
         const incomingText = params.get("text");
+        const textId = params.get("textId");
+        const clipboardHint = params.get("clipboard");
+        const fileHint = params.get("file");
         const autoParse = params.get("parse") === "true";
         const autoExport = params.get("export");
         const clearText = params.get("clear") === "true";
@@ -859,6 +864,30 @@
           // Decode the incoming text
           const decodedText = decodeURIComponent(incomingText);
           console.log("Received text from URL parameter:", decodedText);
+
+          loadTextFromParameter(decodedText);
+        } else if (textId) {
+          // Load text from localStorage using textId
+          const storedText = localStorage.getItem(textId);
+          if (storedText) {
+            console.log("Received text from localStorage ID:", textId);
+            loadTextFromParameter(storedText);
+
+            // Clean up the stored text after loading
+            localStorage.removeItem(textId);
+          } else {
+            console.error("Text not found in localStorage for ID:", textId);
+            alert("Shared text not found or has expired.");
+          }
+        } else if (clipboardHint) {
+          // Show clipboard instruction
+          showClipboardInstruction(clipboardHint);
+        } else if (fileHint) {
+          // Show file upload instruction
+          showFileUploadInstruction(fileHint);
+        }
+
+        function loadTextFromParameter(text) {
 
           // Set the text in the source textarea
           const sourceTextArea = document.getElementById('sourceText');
@@ -904,7 +933,7 @@
             }
 
             // Show a brief notification
-            showURLParameterNotification(decodedText);
+            showURLParameterNotification(text);
           } else {
             console.error('Source textarea not found');
           }
@@ -966,6 +995,37 @@
       }
 
       const encodedText = encodeURIComponent(text);
+      const urlLength = encodedText.length;
+
+      // Check if URL would be too long (conservative limit of 2000 chars)
+      if (urlLength > 2000) {
+        const truncatedText = text.substring(0, Math.floor(text.length * 0.8)) + '...';
+        const truncatedEncoded = encodeURIComponent(truncatedText);
+
+        // Show warning to user with options
+        const choice = confirm(
+          `Warning: Your text is very long (${text.length} characters). ` +
+          `The URL would be ${urlLength} characters long, which may not work in all browsers.\n\n` +
+          `Click OK to create a URL with truncated text (${truncatedText.length} characters).\n` +
+          `Click Cancel to use localStorage sharing instead (works for any length).`
+        );
+
+        if (choice) {
+          // User chose truncated URL
+          const baseURL = window.location.href.split('?')[0];
+          let url = `${baseURL}?text=${truncatedEncoded}`;
+
+          if (exportType && ['markdown', 'pdf', 'html', 'plain'].includes(exportType.toLowerCase())) {
+            url += `&export=${exportType.toLowerCase()}`;
+          }
+
+          return url;
+        } else {
+          // User chose localStorage approach
+          return generateLocalStorageURL(text, exportType);
+        }
+      }
+
       const baseURL = window.location.href.split('?')[0];
       let url = `${baseURL}?text=${encodedText}`;
 
@@ -976,13 +1036,250 @@
       return url;
     }
 
+    function generateLocalStorageURL(text, exportType = null) {
+      // Generate a unique ID for this text
+      const textId = 'shared_text_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+
+      // Store the text in localStorage
+      localStorage.setItem(textId, text);
+
+      // Create URL with the text ID
+      const baseURL = window.location.href.split('?')[0];
+      let url = `${baseURL}?textId=${textId}`;
+
+      if (exportType && ['markdown', 'pdf', 'html', 'plain'].includes(exportType.toLowerCase())) {
+        url += `&export=${exportType.toLowerCase()}`;
+      }
+
+      return url;
+    }
+
+    function showClipboardInstruction(message = "Text is on your clipboard") {
+      // Switch to input-preview tab
+      const inputPreviewTab = document.querySelector('[data-tab="input-preview"]');
+      if (inputPreviewTab) {
+        document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+        inputPreviewTab.classList.add('active');
+        document.getElementById('input-preview').classList.add('active');
+      }
+
+      // Create instruction overlay
+      const overlay = document.createElement('div');
+      overlay.id = 'clipboardInstruction';
+      overlay.style.cssText = `
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: rgba(0, 0, 0, 0.8);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 10000;
+        `;
+
+      const instructionBox = document.createElement('div');
+      instructionBox.style.cssText = `
+          background: white;
+          padding: 2rem;
+          border-radius: 8px;
+          max-width: 500px;
+          text-align: center;
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        `;
+
+      instructionBox.innerHTML = `
+          <h3 style="margin: 0 0 1rem 0; color: #007aff;">📋 Clipboard Instructions</h3>
+          <p style="margin: 0 0 1.5rem 0; font-size: 1.1rem;">${message}</p>
+          <p style="margin: 0 0 1.5rem 0; color: #666;">Please paste the text into the textarea below, then click "Got it!"</p>
+          <button id="dismissClipboardInstruction" style="
+            background: #007aff;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+          ">Got it!</button>
+        `;
+
+      overlay.appendChild(instructionBox);
+      document.body.appendChild(overlay);
+
+      // Focus on textarea
+      const textarea = document.getElementById('sourceText');
+      if (textarea) {
+        textarea.focus();
+      }
+
+      // Dismiss instruction
+      document.getElementById('dismissClipboardInstruction').addEventListener('click', () => {
+        document.body.removeChild(overlay);
+      });
+    }
+
+    function showFileUploadInstruction(message = "Please upload your text file") {
+      // Switch to input-preview tab
+      const inputPreviewTab = document.querySelector('[data-tab="input-preview"]');
+      if (inputPreviewTab) {
+        document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+        inputPreviewTab.classList.add('active');
+        document.getElementById('input-preview').classList.add('active');
+      }
+
+      // Create instruction overlay
+      const overlay = document.createElement('div');
+      overlay.id = 'fileUploadInstruction';
+      overlay.style.cssText = `
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: rgba(0, 0, 0, 0.8);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 10000;
+        `;
+
+      const instructionBox = document.createElement('div');
+      instructionBox.style.cssText = `
+          background: white;
+          padding: 2rem;
+          border-radius: 8px;
+          max-width: 500px;
+          text-align: center;
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        `;
+
+      instructionBox.innerHTML = `
+          <h3 style="margin: 0 0 1rem 0; color: #007aff;">📁 File Upload Instructions</h3>
+          <p style="margin: 0 0 1.5rem 0; font-size: 1.1rem;">${message}</p>
+          <p style="margin: 0 0 1.5rem 0; color: #666;">Please upload your text file below, then click "Got it!"</p>
+          <input type="file" id="fileUploadInput" accept=".txt,.md,.csv" style="
+            margin: 0 0 1rem 0;
+            padding: 0.5rem;
+            border: 2px dashed #007aff;
+            border-radius: 5px;
+            width: 100%;
+          ">
+          <button id="dismissFileInstruction" style="
+            background: #007aff;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+          ">Got it!</button>
+        `;
+
+      overlay.appendChild(instructionBox);
+      document.body.appendChild(overlay);
+
+      // Handle file upload
+      const fileInput = document.getElementById('fileUploadInput');
+      fileInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            const text = e.target.result;
+            document.getElementById('sourceText').value = text;
+            applyRules();
+          };
+          reader.readAsText(file);
+        }
+      });
+
+      // Dismiss instruction
+      document.getElementById('dismissFileInstruction').addEventListener('click', () => {
+        document.body.removeChild(overlay);
+      });
+    }
+
+    // Test function to demonstrate URL length limits
+    function testURLLength() {
+      const testTexts = [
+        "Short text", // ~20 chars encoded
+        "This is a medium length text that should work fine in most browsers", // ~80 chars encoded
+        "A".repeat(500), // ~1500 chars encoded
+        "A".repeat(1000), // ~3000 chars encoded
+        "A".repeat(2000) // ~6000 chars encoded
+      ];
+
+      console.log("URL Length Test Results:");
+      testTexts.forEach((text, index) => {
+        const encoded = encodeURIComponent(text);
+        const url = `bob.html?text=${encoded}`;
+        console.log(`Test ${index + 1}: Original=${text.length} chars, Encoded=${encoded.length} chars, URL=${url.length} chars`);
+
+        if (encoded.length > 2000) {
+          console.log(`  ⚠️  Would trigger warning dialog`);
+        } else if (encoded.length > 1000) {
+          console.log(`  ⚠️  Getting close to limit`);
+        } else {
+          console.log(`  ✅  Safe to use`);
+        }
+      });
+    }
+
+    // Helper functions for external URL building
+    function buildExternalURL(text, exportType = null) {
+      const encodedText = encodeURIComponent(text);
+      const urlLength = encodedText.length;
+
+      // Conservative limit for external URLs
+      if (urlLength > 4000) {
+        throw new Error(`Text too long for external URL: ${text.length} chars (${urlLength} encoded)`);
+      }
+
+      let url = `https://yourdomain.com/bob.html?text=${encodedText}`;
+
+      if (exportType) {
+        url += `&export=${exportType}`;
+      }
+
+      return url;
+    }
+
+    function buildClipboardURL(message = "Text is on your clipboard", exportType = null) {
+      let url = `https://yourdomain.com/bob.html?clipboard=${encodeURIComponent(message)}`;
+
+      if (exportType) {
+        url += `&export=${exportType}`;
+      }
+
+      return url;
+    }
+
+    function buildFileUploadURL(message = "Please upload your text file", exportType = null) {
+      let url = `https://yourdomain.com/bob.html?file=${encodeURIComponent(message)}`;
+
+      if (exportType) {
+        url += `&export=${exportType}`;
+      }
+
+      return url;
+    }
+
     function copyShareableURL() {
       const text = document.getElementById('sourceText').value || '';
-      const shareableURL = generateShareableURL(text);
 
       if (!text || text.trim() === '') {
         alert('Please enter some text first before copying a shareable URL.');
         return;
+      }
+
+      const shareableURL = generateShareableURL(text);
+      if (!shareableURL) {
+        return; // User cancelled or URL generation failed
       }
 
       navigator.clipboard.writeText(shareableURL).then(() => {
@@ -3159,6 +3456,9 @@
           return;
         }
         const shareableURL = generateShareableURL(text, 'markdown');
+        if (!shareableURL) {
+          return; // User cancelled or URL generation failed
+        }
         navigator.clipboard.writeText(shareableURL).then(() => {
           const notification = document.createElement('div');
           notification.style.cssText = `
@@ -3191,6 +3491,9 @@
           return;
         }
         const shareableURL = generateShareableURL(text, 'pdf');
+        if (!shareableURL) {
+          return; // User cancelled or URL generation failed
+        }
         navigator.clipboard.writeText(shareableURL).then(() => {
           const notification = document.createElement('div');
           notification.style.cssText = `
@@ -3215,6 +3518,11 @@
             }
           }, 3000);
         });
+      });
+
+      document.getElementById('testUrlLength').addEventListener('click', () => {
+        testURLLength();
+        alert('Check the browser console (F12) to see URL length test results!');
       });
 
       // bob.json operations

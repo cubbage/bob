@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Marker PDF Parser</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <style>
+    .drop-zone {
+      border: 2px dashed #cbd5e0;
+      transition: all 0.3s ease;
+    }
+
+    .drop-zone.dragover {
+      border-color: #4299e1;
+      background-color: #ebf8ff;
+    }
+
+    .loading {
+      display: none;
+    }
+
+    .loading.show {
+      display: block;
+    }
+
+    .result-area {
+      max-height: 500px;
+      overflow-y: auto;
+    }
+  </style>
+</head>
+
+<body class="bg-gray-50 min-h-screen">
+  <div class="container mx-auto px-4 py-8">
+    <!-- Header -->
+    <div class="text-center mb-8">
+      <h1 class="text-4xl font-bold text-gray-800 mb-2">
+        <i class="fas fa-file-pdf text-blue-600 mr-3"></i>
+        Marker PDF Parser
+      </h1>
+      <p class="text-gray-600 text-lg">
+        Upload and parse PDFs, Word documents, Excel files, and PowerPoint presentations with high accuracy
+      </p>
+    </div>
+
+    <!-- Upload Form -->
+    <div class="max-w-4xl mx-auto">
+      <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+        <h2 class="text-2xl font-semibold text-gray-800 mb-4">
+          <i class="fas fa-upload mr-2"></i>
+          Upload File
+        </h2>
+
+        <form id="uploadForm" class="space-y-6">
+          <!-- File Upload Area -->
+          <div class="drop-zone rounded-lg p-8 text-center cursor-pointer" id="dropZone">
+            <div class="space-y-4">
+              <i class="fas fa-cloud-upload-alt text-4xl text-gray-400"></i>
+              <div>
+                <p class="text-lg font-medium text-gray-700">
+                  Drag and drop your file here
+                </p>
+                <p class="text-gray-500">or click to browse</p>
+              </div>
+              <input type="file" id="fileInput" class="hidden" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt">
+              <button type="button"
+                class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                Choose File
+              </button>
+            </div>
+          </div>
+
+          <!-- File Info -->
+          <div id="fileInfo" class="hidden">
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                  <i class="fas fa-file text-blue-600"></i>
+                  <span id="fileName" class="font-medium text-gray-800"></span>
+                </div>
+                <button type="button" id="removeFile" class="text-red-600 hover:text-red-800">
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Options -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <label class="flex items-center space-x-3 cursor-pointer">
+              <input type="checkbox" id="useLLM" class="form-checkbox h-5 w-5 text-blue-600">
+              <span class="text-gray-700">Use LLM (improves quality)</span>
+            </label>
+            <label class="flex items-center space-x-3 cursor-pointer">
+              <input type="checkbox" id="forceOCR" class="form-checkbox h-5 w-5 text-blue-600">
+              <span class="text-gray-700">Force OCR</span>
+            </label>
+            <label class="flex items-center space-x-3 cursor-pointer">
+              <input type="checkbox" id="debug" class="form-checkbox h-5 w-5 text-blue-600">
+              <span class="text-gray-700">Debug mode</span>
+            </label>
+          </div>
+
+          <!-- Submit Button -->
+          <button type="submit" id="submitBtn"
+            class="w-full bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+            <i class="fas fa-magic mr-2"></i>
+            Parse Document
+          </button>
+        </form>
+
+        <!-- Loading -->
+        <div id="loading" class="loading text-center py-8">
+          <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <p class="mt-2 text-gray-600">Processing your document...</p>
+        </div>
+      </div>
+
+      <!-- Results -->
+      <div id="results" class="hidden">
+        <div class="bg-white rounded-lg shadow-lg p-6">
+          <h3 class="text-2xl font-semibold text-gray-800 mb-4">
+            <i class="fas fa-file-alt mr-2"></i>
+            Parsed Content
+          </h3>
+          <div class="space-y-4">
+            <div class="flex items-center justify-between">
+              <span class="text-sm text-gray-600" id="resultInfo"></span>
+              <button id="copyBtn" class="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700 transition-colors">
+                <i class="fas fa-copy mr-2"></i>
+                Copy
+              </button>
+            </div>
+            <div class="result-area bg-gray-50 border border-gray-200 rounded-lg p-4">
+              <pre id="resultContent" class="whitespace-pre-wrap text-sm text-gray-800"></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Supported Formats -->
+    <div class="max-w-4xl mx-auto mt-8">
+      <div class="bg-white rounded-lg shadow-lg p-6">
+        <h3 class="text-xl font-semibold text-gray-800 mb-4">
+          <i class="fas fa-info-circle mr-2"></i>
+          Supported File Formats
+        </h3>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div class="flex items-center space-x-2">
+            <i class="fas fa-file-pdf text-red-600"></i>
+            <span>PDF</span>
+          </div>
+          <div class="flex items-center space-x-2">
+            <i class="fas fa-file-word text-blue-600"></i>
+            <span>Word (.doc, .docx)</span>
+          </div>
+          <div class="flex items-center space-x-2">
+            <i class="fas fa-file-excel text-green-600"></i>
+            <span>Excel (.xls, .xlsx)</span>
+          </div>
+          <div class="flex items-center space-x-2">
+            <i class="fas fa-file-powerpoint text-orange-600"></i>
+            <span>PowerPoint (.ppt, .pptx)</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/js/upload.js"></script>
+</body>
+
+</html>

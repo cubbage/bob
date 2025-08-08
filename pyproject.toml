@@ -4,4 +4,12 @@ version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
-dependencies = []
+dependencies = [
+    "marker-pdf",
+    "fastapi",
+    "uvicorn[standard]",
+    "python-multipart",
+    "aiofiles",
+    "jinja2",
+    "psutil>=7.0.0",
+]
