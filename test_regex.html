@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Regex Test</title>
+</head>
+
+<body>
+  <h1>Semantic Structure Regex Test</h1>
+  <div id="results"></div>
+
+  <script>
+    const testText = `⦕Detective fiction, on the other hand, is Horror's polar opposite. Horror is the most primal form, while Detective is the most intellectual. But Detective and Horror are both fundamentally about the mind.⟢Detective fiction contrasts horror as intellectual vs primal mind genres⟣⦖`;
+
+    const patterns = [
+      {
+        relationship: 'supplementary',
+        startDelimiter: '⦕',
+        endDelimiter: '⦖',
+        innerStartDelimiter: '⟢',
+        innerEndDelimiter: '⟣'
+      }
+    ];
+
+    const results = document.getElementById('results');
+
+    patterns.forEach(pattern => {
+      const { startDelimiter, endDelimiter, innerStartDelimiter, innerEndDelimiter, relationship } = pattern;
+
+      // Escape special regex characters in delimiters
+      const escapedStartDelimiter = startDelimiter.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const escapedEndDelimiter = endDelimiter.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const escapedInnerStartDelimiter = innerStartDelimiter.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const escapedInnerEndDelimiter = innerEndDelimiter.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+      const regexPattern = `${escapedStartDelimiter}(.*?)${escapedInnerStartDelimiter}(.*?)${escapedInnerEndDelimiter}.*?${escapedEndDelimiter}`;
+
+      console.log(`Testing pattern for ${relationship}:`, regexPattern);
+
+      try {
+        const regex = new RegExp(regexPattern, 'g');
+        const match = regex.exec(testText);
+
+        if (match) {
+          console.log(`Found ${relationship} structure:`, {
+            fullMatch: match[0],
+            fragment: match[1],
+            summary: match[2]
+          });
+
+          results.innerHTML += `<p><strong>${relationship}:</strong> Found match!</p>`;
+          results.innerHTML += `<p><strong>Full match:</strong> ${match[0]}</p>`;
+          results.innerHTML += `<p><strong>Fragment:</strong> ${match[1]}</p>`;
+          results.innerHTML += `<p><strong>Summary:</strong> ${match[2]}</p>`;
+        } else {
+          console.log(`No match found for ${relationship}`);
+          results.innerHTML += `<p><strong>${relationship}:</strong> No match found</p>`;
+        }
+      } catch (e) {
+        console.error(`Invalid regex for ${relationship}:`, e);
+        results.innerHTML += `<p><strong>${relationship}:</strong> Invalid regex - ${e.message}</p>`;
+      }
+    });
+  </script>
+</body>
+
+</html>

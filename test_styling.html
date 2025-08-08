@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Styling Test</title>
+  <style>
+    .semantic-structure {
+      display: inline-block;
+      margin: 2px 4px;
+      padding: 4px 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      background-color: #f8f9fa;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Semantic Styling Test</h1>
+  <div id="results"></div>
+
+  <script>
+    function applySemanticStyling(element, matched) {
+      // Create a container for the semantic structure
+      const container = document.createElement('span');
+      container.className = 'semantic-structure';
+      container.style.display = 'inline-block';
+      container.style.margin = '2px 4px';
+      container.style.padding = '4px 8px';
+      container.style.border = '1px solid #ddd';
+      container.style.borderRadius = '4px';
+      container.style.backgroundColor = '#f8f9fa';
+
+      // Create the label (bold)
+      if (matched.label) {
+        const labelSpan = document.createElement('span');
+        labelSpan.textContent = matched.label;
+        labelSpan.style.fontWeight = 'bold';
+        labelSpan.style.color = '#333';
+        container.appendChild(labelSpan);
+
+        // Add separator
+        const separator = document.createElement('span');
+        separator.textContent = ': ';
+        separator.style.color = '#666';
+        container.appendChild(separator);
+      }
+
+      // Create the summary (italic)
+      if (matched.summary) {
+        const summarySpan = document.createElement('span');
+        summarySpan.textContent = matched.summary;
+        summarySpan.style.fontStyle = 'italic';
+        summarySpan.style.color = '#666';
+        container.appendChild(summarySpan);
+
+        // Add separator
+        const separator = document.createElement('span');
+        separator.textContent = ' | ';
+        separator.style.color = '#999';
+        container.appendChild(separator);
+      }
+
+      // Create the source text (regular)
+      if (matched.sourceText) {
+        const sourceSpan = document.createElement('span');
+        sourceSpan.textContent = matched.sourceText;
+        sourceSpan.style.color = '#333';
+        container.appendChild(sourceSpan);
+      }
+
+      return container;
+    }
+
+    // Test cases
+    const testCases = [
+      {
+        label: 'KEY POINT',
+        summary: 'Detective celebrates mind\'s power; Horror exposes its flaws',
+        sourceText: 'Detective fiction highlights the brilliance of the mind while Horror emphasizes its flaws.',
+        relationship: 'supplementary'
+      },
+      {
+        label: '',
+        summary: 'Detective fiction contrasts horror as intellectual vs primal mind genres',
+        sourceText: 'Detective fiction, on the other hand, is Horror\'s polar opposite. Horror is the most primal form, while Detective is the most intellectual. But Detective and Horror are both fundamentally about the mind.',
+        relationship: 'supplementary'
+      },
+      {
+        label: '',
+        summary: 'Widely known horror novels and films from gothic to modern classics',
+        sourceText: 'Novels and Films Dawn of the Dead, Deliverance, Shaun of the Dead, Godzilla, Sisters, The Thing, What Ever Happened to Baby Jane?',
+        relationship: 'parallel set'
+      }
+    ];
+
+    const results = document.getElementById('results');
+
+    testCases.forEach((testCase, index) => {
+      const container = applySemanticStyling(document.createElement('div'), testCase);
+      results.appendChild(container);
+      results.appendChild(document.createElement('br'));
+      results.appendChild(document.createElement('br'));
+    });
+  </script>
+</body>
+
+</html>

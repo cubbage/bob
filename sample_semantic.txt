@@ -1,0 +1,13 @@
+Here is some sample text with semantic structures for testing:
+
+⦕Detective fiction, on the other hand, is Horror's polar opposite. Horror is the most primal form, while Detective is the most intellectual. But Detective and Horror are both fundamentally about the mind.⟢Detective fiction contrasts horror as intellectual vs primal mind genres⟣⦖
+
+⦕KEY POINT: Detective fiction highlights the brilliance of the mind while Horror emphasizes its flaws.⟢Detective celebrates mind's power; Horror exposes its flaws⟣⦖
+
+⦕Novels and Films Dawn of the Dead, Deliverance, Shaun of the Dead, Godzilla, Sisters, The Thing, What Ever Happened to Baby Jane?⨭Widely known horror novels and films from gothic to modern classics⨮⦖
+
+⦕This is a mapping example⊏showing how mapping works⊐⦖
+
+⦕This is a combination example⦓showing how combination works⦔⦖
+
+⦕Linear progression example⨴showing how linear progression works⨵⦖

@@ -1963,6 +1963,145 @@
 
     let applyRulesTimeout;
     let debugMode = false;
+
+    // Semantic structure parsing functions
+    function parseSemanticStructures(text) {
+      const structures = [];
+
+      // Get semantic structure patterns from the JSON
+      const semanticPatterns = listsData.keyValueLists.find(list => list.name === "semantic structures");
+      if (!semanticPatterns) {
+        if (debugMode) console.log('No semantic structures found in listsData.keyValueLists:', listsData.keyValueLists);
+        return structures;
+      }
+
+      // Define the semantic structure patterns with their delimiters
+      const patterns = [
+        {
+          relationship: 'supplementary',
+          startDelimiter: '⦕',
+          endDelimiter: '⦖',
+          innerStartDelimiter: '⟢',
+          innerEndDelimiter: '⟣'
+        },
+        {
+          relationship: 'linear progression',
+          startDelimiter: '⦕',
+          endDelimiter: '⦖',
+          innerStartDelimiter: '⨴',
+          innerEndDelimiter: '⨵'
+        },
+        {
+          relationship: 'parallel set',
+          startDelimiter: '⦕',
+          endDelimiter: '⦖',
+          innerStartDelimiter: '⨭',
+          innerEndDelimiter: '⨮'
+        },
+        {
+          relationship: 'mapping',
+          startDelimiter: '⦕',
+          endDelimiter: '⦖',
+          innerStartDelimiter: '⊏',
+          innerEndDelimiter: '⊐'
+        },
+        {
+          relationship: 'combination',
+          startDelimiter: '⦕',
+          endDelimiter: '⦖',
+          innerStartDelimiter: '⦓',
+          innerEndDelimiter: '⦔'
+        }
+      ];
+
+      for (const pattern of patterns) {
+        const { startDelimiter, endDelimiter, innerStartDelimiter, innerEndDelimiter, relationship } = pattern;
+
+        // Create regex pattern to match the semantic structure
+        // Escape special regex characters in delimiters
+        const escapedStartDelimiter = startDelimiter.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const escapedEndDelimiter = endDelimiter.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const escapedInnerStartDelimiter = innerStartDelimiter.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const escapedInnerEndDelimiter = innerEndDelimiter.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+        const regexPattern = `${escapedStartDelimiter}(.*?)${escapedInnerStartDelimiter}(.*?)${escapedInnerEndDelimiter}.*?${escapedEndDelimiter}`;
+
+        try {
+          const regex = new RegExp(regexPattern, 'g');
+          let match;
+
+          if (debugMode) console.log(`Testing pattern for ${relationship}:`, regexPattern);
+
+          while ((match = regex.exec(text)) !== null) {
+            const fullMatch = match[0];
+            const fragment = match[1];
+            const summary = match[2];
+
+            if (debugMode) console.log(`Found ${relationship} structure:`, { fullMatch, fragment, summary });
+
+            structures.push({
+              fullMatch,
+              fragment,
+              summary,
+              relationship,
+              startIndex: match.index,
+              endIndex: match.index + fullMatch.length,
+              syntax: `${startDelimiter}fragment${innerStartDelimiter}summary${innerEndDelimiter}${endDelimiter}`
+            });
+          }
+        } catch (e) {
+          console.warn('Invalid semantic structure regex:', regexPattern, e);
+        }
+      }
+
+      return structures;
+    }
+
+    function findSemanticStructureMatch(token, tokenStart, tokenEnd, semanticStructures) {
+      for (const structure of semanticStructures) {
+        // Check if this token is part of the semantic structure
+        if (tokenStart >= structure.startIndex && tokenEnd <= structure.endIndex) {
+          // Parse the structure to extract components
+          const components = parseSemanticStructureComponents(structure);
+
+          return {
+            color1: '',
+            color2: '',
+            style1: 'semantic',
+            style2: '',
+            label: components.label,
+            summary: components.summary,
+            sourceText: components.sourceText,
+            relationship: structure.relationship,
+            group: 'semantic-structure',
+            isSemantic: true
+          };
+        }
+      }
+      return null;
+    }
+
+    function parseSemanticStructureComponents(structure) {
+      const { fullMatch, fragment, summary, relationship } = structure;
+
+      // Extract label if present (before the first colon)
+      let label = '';
+      let sourceText = fragment;
+
+      const colonIndex = fragment.indexOf(':');
+      if (colonIndex !== -1) {
+        label = fragment.substring(0, colonIndex).trim();
+        sourceText = fragment.substring(colonIndex + 1).trim();
+      }
+
+      return {
+        label,
+        summary,
+        sourceText,
+        relationship
+      };
+    }
+
     function applyRules() {
       // Clear any pending timeout to debounce rapid calls
       if (applyRulesTimeout) {
@@ -1986,6 +2125,11 @@
       const defaultEnabled = document.getElementById('defaultPatternEnabled').checked;
       const defaultPattern = buildPatternFromJSON();
       const defaultLabel = defaultPattern.label;
+
+      // Parse semantic structures first
+      if (debugMode) console.log('listsData available:', listsData);
+      const semanticStructures = parseSemanticStructures(text);
+      if (debugMode) console.log('Found semantic structures:', semanticStructures);
 
       // Find all matches for multi-word patterns first
       const multiWordMatches = new Set();
@@ -2022,7 +2166,45 @@
         }
       }
 
-      words.forEach((token, index) => {
+      // Process semantic structures first
+      let processedText = text;
+      if (debugMode) console.log('Processing semantic structures:', semanticStructures.length);
+
+      for (const structure of semanticStructures) {
+        const components = parseSemanticStructureComponents(structure);
+
+        if (debugMode) console.log('Parsed components:', components);
+
+        // Create a semantic object representation
+        const semanticObject = {
+          color1: '',
+          color2: '',
+          style1: 'semantic',
+          style2: '',
+          label: components.label,
+          summary: components.summary,
+          sourceText: components.sourceText,
+          relationship: structure.relationship,
+          group: 'semantic-structure',
+          isSemantic: true,
+          fullMatch: structure.fullMatch
+        };
+
+        // Replace the semantic structure in the text with a placeholder
+        const placeholder = `__SEMANTIC_${structure.startIndex}__`;
+        processedText = processedText.replace(structure.fullMatch, placeholder);
+
+        if (debugMode) console.log('Created semantic object:', semanticObject);
+
+        // Store the semantic object for later use
+        if (!window.semanticObjects) window.semanticObjects = {};
+        window.semanticObjects[placeholder] = semanticObject;
+      }
+
+      // Now process the modified text
+      const processedWords = processedText.split(/(\s+)/);
+
+      processedWords.forEach((token, index) => {
         let cleaned = token;
         if (token.trim() === '') {
           preview.append(document.createTextNode(token));
@@ -2030,114 +2212,124 @@
         }
         let matched = null;
 
-        // Calculate the position of this token in the original text
-        const tokenStart = words.slice(0, index).join('').length;
-        const tokenEnd = tokenStart + token.length;
-        const tokenRange = `${tokenStart}-${tokenEnd}`;
-
-        // Check if this token is part of a multi-word match
-        let isPartOfMultiWordMatch = false;
-        for (const matchRange of multiWordMatches) {
-          const [matchStart, matchEnd] = matchRange.split('-').map(Number);
-          // Check if this token overlaps with the match
-          if (tokenStart < matchEnd && tokenEnd > matchStart) {
-            isPartOfMultiWordMatch = true;
-            break;
+        // Check if this is a semantic placeholder
+        if (token.startsWith('__SEMANTIC_') && token.endsWith('__')) {
+          if (debugMode) console.log('Found semantic placeholder:', token);
+          matched = window.semanticObjects[token];
+          if (debugMode) console.log('Retrieved semantic object:', matched);
+        } else {
+          if (debugMode && token.trim() !== '') {
+            console.log('Processing regular token:', token);
           }
-        }
+          // Calculate the position of this token in the original text
+          const tokenStart = processedWords.slice(0, index).join('').length;
+          const tokenEnd = tokenStart + token.length;
+          const tokenRange = `${tokenStart}-${tokenEnd}`;
 
-        // Check objects for all enabled groups
-        for (const rule of dictionary.rules) {
-          // Skip disabled rules
-          if (rule.enabled === false) {
-            continue;
+          // Check if this token is part of a multi-word match
+          let isPartOfMultiWordMatch = false;
+          for (const matchRange of multiWordMatches) {
+            const [matchStart, matchEnd] = matchRange.split('-').map(Number);
+            // Check if this token overlaps with the match
+            if (tokenStart < matchEnd && tokenEnd > matchStart) {
+              isPartOfMultiWordMatch = true;
+              break;
+            }
           }
 
-          // Check objects for this group
-          for (const obj of objectsData.objects) {
-            // Skip disabled objects
-            if (obj.enabled === false) {
+          // Check objects for all enabled groups
+          for (const rule of dictionary.rules) {
+            // Skip disabled rules
+            if (rule.enabled === false) {
               continue;
             }
 
-            // Check if object belongs to this group
-            if (obj.group === rule.label) {
-              try {
-                const flags = 'i';
-                let regex = new RegExp(obj.match, flags);
-
-                if (obj.match.includes(' ')) {
-                  // For multi-word patterns, check if this token is part of a match
-                  if (isPartOfMultiWordMatch) {
-                    matched = {
-                      color1: obj.color1,
-                      color2: obj.color2,
-                      style1: rule.style1,
-                      style2: rule.style2,
-                      label: obj.label || obj.group,
-                      group: obj.group
-                    };
-                    break;
-                  }
-                } else {
-                  // For single-word patterns, test against the current token
-                  if (regex.test(token)) {
-                    if (debugMode) console.log('Creating matched object for:', obj.label, 'Group:', obj.group);
-                    matched = {
-                      color1: obj.color1,
-                      color2: obj.color2,
-                      style1: rule.style1,
-                      style2: rule.style2,
-                      label: obj.label || obj.group,
-                      group: obj.group
-                    };
-                    if (debugMode) console.log('Created matched object:', matched);
-                    break;
-                  }
-                }
-              } catch (e) {
-                // invalid regex; skip
-                console.warn('bad object regex', obj.match);
+            // Check objects for this group
+            for (const obj of objectsData.objects) {
+              // Skip disabled objects
+              if (obj.enabled === false) {
+                continue;
               }
+
+              // Check if object belongs to this group
+              if (obj.group === rule.label) {
+                try {
+                  const flags = 'i';
+                  let regex = new RegExp(obj.match, flags);
+
+                  if (obj.match.includes(' ')) {
+                    // For multi-word patterns, check if this token is part of a match
+                    if (isPartOfMultiWordMatch) {
+                      matched = {
+                        color1: obj.color1,
+                        color2: obj.color2,
+                        style1: rule.style1,
+                        style2: rule.style2,
+                        label: obj.label || obj.group,
+                        group: obj.group
+                      };
+                      break;
+                    }
+                  } else {
+                    // For single-word patterns, test against the current token
+                    if (regex.test(token)) {
+                      if (debugMode) console.log('Creating matched object for:', obj.label, 'Group:', obj.group);
+                      matched = {
+                        color1: obj.color1,
+                        color2: obj.color2,
+                        style1: rule.style1,
+                        style2: rule.style2,
+                        label: obj.label || obj.group,
+                        group: obj.group
+                      };
+                      if (debugMode) console.log('Created matched object:', matched);
+                      break;
+                    }
+                  }
+                } catch (e) {
+                  // invalid regex; skip
+                  console.warn('bad object regex', obj.match);
+                }
+              }
+              if (matched) break;
             }
             if (matched) break;
           }
-          if (matched) break;
-        }
 
-        // If no match found and default pattern is enabled, try default pattern
-        if (!matched && defaultEnabled && defaultPattern) {
-          try {
-            const flags = 'i';
-            let regex = new RegExp(defaultPattern.pattern, flags);
+          // If no match found and default pattern is enabled, try default pattern
+          if (!matched && defaultEnabled && defaultPattern) {
+            try {
+              const flags = 'i';
+              let regex = new RegExp(defaultPattern.pattern, flags);
 
-            // Check if pattern contains spaces (multi-word pattern)
-            if (defaultPattern.pattern.includes(' ')) {
-              // For multi-word patterns, check if this token is part of a match
-              if (isPartOfMultiWordMatch) {
-                matched = {
-                  color1: defaultPattern.color1,
-                  color2: defaultPattern.color2,
-                  style1: defaultPattern.style1,
-                  style2: defaultPattern.style2,
-                  label: defaultPattern.label
-                };
+              // Check if pattern contains spaces (multi-word pattern)
+              if (defaultPattern.pattern.includes(' ')) {
+                // For multi-word patterns, check if this token is part of a match
+                if (isPartOfMultiWordMatch) {
+                  matched = {
+                    color1: defaultPattern.color1,
+                    color2: defaultPattern.color2,
+                    style1: defaultPattern.style1,
+                    style2: defaultPattern.style2,
+                    label: defaultPattern.label
+                  };
+                }
+              } else {
+                // For single-word patterns, test against the current token
+                if (regex.test(token)) {
+                  matched = {
+                    color1: defaultPattern.color1,
+                    color2: defaultPattern.color2,
+                    style1: defaultPattern.style1,
+                    style2: defaultPattern.style2,
+                    label: defaultPattern.label
+                  };
+                }
               }
-            } else {
-              // For single-word patterns, test against the current token
-              if (regex.test(token)) {
-                matched = {
-                  color1: defaultPattern.color1,
-                  color2: defaultPattern.color2,
-                  style1: defaultPattern.style1,
-                  style2: defaultPattern.style2,
-                  label: defaultPattern.label
-                };
-              }
+            } catch (e) {
+              // invalid regex; skip
+              console.warn('bad default regex', defaultPattern.pattern);
             }
-          } catch (e) {
-            // invalid regex; skip
-            console.warn('bad default regex', defaultPattern.pattern);
           }
         }
 
@@ -2145,6 +2337,9 @@
         span.textContent = token;
         span.className = 'word';
         if (matched) {
+          // Store the matched object on the element for semantic styling
+          span.matchedObject = matched;
+
           // Set the title first so symbol style can access the group name
           if (debugMode) console.log('Setting span.title to:', matched.group || '');
           span.title = matched.group || '';
@@ -2153,23 +2348,29 @@
           let symbolApplied = false;
 
           // Apply styles based on the new style system
-          if (matched.color1 && matched.color1.trim() !== '' && matched.style1 && matched.style1.trim() !== '') {
-            applyStyleToElement(span, matched.color1, matched.style1);
-          }
-          if (matched.color2 && matched.color2.trim() !== '' && matched.style2 && matched.style2.trim() !== '') {
-            // For color2, only apply if it's different from color1's style
-            if (matched.style2 !== matched.style1) {
-              applyStyleToElement(span, matched.color2, matched.style2);
+          if (matched.style1 === 'semantic') {
+            // Apply semantic styling
+            applyStyleToElement(span, '', 'semantic');
+          } else {
+            // Apply regular styles
+            if (matched.color1 && matched.color1.trim() !== '' && matched.style1 && matched.style1.trim() !== '') {
+              applyStyleToElement(span, matched.color1, matched.style1);
             }
-          }
-          // Apply symbol style independently of color - check both style1 and style2
-          if (matched.style1 === 'symbol' && !symbolApplied) {
-            applyStyleToElement(span, '', 'symbol');
-            symbolApplied = true;
-          }
-          if (matched.style2 === 'symbol' && !symbolApplied) {
-            applyStyleToElement(span, '', 'symbol');
-            symbolApplied = true;
+            if (matched.color2 && matched.color2.trim() !== '' && matched.style2 && matched.style2.trim() !== '') {
+              // For color2, only apply if it's different from color1's style
+              if (matched.style2 !== matched.style1) {
+                applyStyleToElement(span, matched.color2, matched.style2);
+              }
+            }
+            // Apply symbol style independently of color - check both style1 and style2
+            if (matched.style1 === 'symbol' && !symbolApplied) {
+              applyStyleToElement(span, '', 'symbol');
+              symbolApplied = true;
+            }
+            if (matched.style2 === 'symbol' && !symbolApplied) {
+              applyStyleToElement(span, '', 'symbol');
+              symbolApplied = true;
+            }
           }
         } else {
           span.style.color = 'inherit';
@@ -2784,6 +2985,10 @@
               }
             }
             break;
+          case 'semantic':
+            // Apply semantic styling based on the element's data
+            applySemanticStyling(element);
+            break;
         }
       } catch (e) {
         // If color is invalid, reset to default
@@ -2792,6 +2997,68 @@
         element.style.border = '';
         element.style.textDecoration = '';
       }
+    }
+
+    function applySemanticStyling(element) {
+      // Get the semantic data from the element's matched object
+      const matched = element.matchedObject;
+      if (debugMode) console.log('Applying semantic styling to element:', element, 'matched:', matched);
+      if (!matched || !matched.isSemantic) {
+        if (debugMode) console.log('Not a semantic object or missing matched object');
+        return;
+      }
+
+      // Create a container for the semantic structure
+      const container = document.createElement('span');
+      container.className = 'semantic-structure';
+      container.style.display = 'inline-block';
+      container.style.margin = '2px 4px';
+      container.style.padding = '4px 8px';
+      container.style.border = '1px solid #ddd';
+      container.style.borderRadius = '4px';
+      container.style.backgroundColor = '#f8f9fa';
+
+      // Create the label (bold)
+      if (matched.label) {
+        const labelSpan = document.createElement('span');
+        labelSpan.textContent = matched.label;
+        labelSpan.style.fontWeight = 'bold';
+        labelSpan.style.color = '#333';
+        container.appendChild(labelSpan);
+
+        // Add separator
+        const separator = document.createElement('span');
+        separator.textContent = ': ';
+        separator.style.color = '#666';
+        container.appendChild(separator);
+      }
+
+      // Create the summary (italic)
+      if (matched.summary) {
+        const summarySpan = document.createElement('span');
+        summarySpan.textContent = matched.summary;
+        summarySpan.style.fontStyle = 'italic';
+        summarySpan.style.color = '#666';
+        container.appendChild(summarySpan);
+
+        // Add separator
+        const separator = document.createElement('span');
+        separator.textContent = ' | ';
+        separator.style.color = '#999';
+        container.appendChild(separator);
+      }
+
+      // Create the source text (regular)
+      if (matched.sourceText) {
+        const sourceSpan = document.createElement('span');
+        sourceSpan.textContent = matched.sourceText;
+        sourceSpan.style.color = '#333';
+        container.appendChild(sourceSpan);
+      }
+
+      // Replace the element's content with the semantic structure
+      element.innerHTML = '';
+      element.appendChild(container);
     }
 
     // Lists and Arrays Management Functions
