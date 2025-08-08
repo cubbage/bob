@@ -28,12 +28,13 @@
       },
       {
         "match": "",
-        "color1": "#b1d7e7",
+        "color1": "",
         "color2": "",
         "label": "day of the week",
         "enabled": true,
-        "style1": "symbol",
-        "style2": "background"
+        "style1": "background",
+        "style2": "symbol",
+        "group": ""
       },
       {
         "match": "",
@@ -1087,7 +1088,7 @@
         "color2": "#FFCC00",
         "style1": "background",
         "style2": "background",
-        "match": "\\bbruno\\S*\\b",
+        "match": "\\bbruno\\b",
         "group": "person",
         "enabled": true
       },

@@ -1084,8 +1084,7 @@
     <div class="tab-buttons">
       <div class="tab-buttons-left">
         <button class="tab-button active" data-tab="input-preview">Preview</button>
-        <button class="tab-button" data-tab="search-dictionary">Patterns</button>
-        <button class="tab-button" data-tab="lists-arrays">Lists</button>
+        <button class="tab-button" data-tab="config">Config</button>
       </div>
       <div class="tab-buttons-right">
         <button class="refresh-btn" id="refreshBtn" title="Refresh from bob.json">🔄</button>
@@ -1149,8 +1148,8 @@
       </div>
     </div>
 
-    <!-- Tab 2: Default Search Pattern + Dictionary / Rules -->
-    <div id="search-dictionary" class="tab-content">
+    <!-- Tab 2: Config (Default Search Pattern + Lists and Arrays) -->
+    <div id="config" class="tab-content">
       <div class="section-header">
         <div style="display: flex; align-items: center; gap: 10px;">
           <h3>Default Search Pattern</h3>
@@ -1272,75 +1271,6 @@
         progressively by adding wrappers to each step.</p>
 
       <div class="section-header">
-        <h3>Groups</h3>
-      </div>
-      <div style="margin-top:0.5rem;">
-        <div id="rulesContainer"></div>
-        <div style="margin-top:0.5rem;">
-          <div class="dropdown-container" style="position: relative; display: inline-block;">
-            <button class="btn" id="addRule">+ Add Group</button>
-            <div id="categoryDropdown" class="dropdown-menu"
-              style="display: none; position: absolute; top: 100%; left: 0; background: white; border: 1px solid #dee2e6; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); z-index: 1000; max-width: 100px;">
-              <!-- Categories will be populated dynamically -->
-            </div>
-          </div>
-        </div>
-        <div class="group-priority-info">
-          <strong>Priority Order:</strong> Groups are applied in the order shown above. Use the ▲▼ buttons to reorder
-          groups and change priority. The first matching group's style will be applied.
-          <div id="currentPriorityOrder" style="margin-top: 0.5rem; font-size: 0.7rem; color: #495057;"></div>
-          <div style="margin-top: 0.5rem;">
-            <button class="btn btn-secondary btn-small" id="showPriorityOrder" style="font-size: 0.75rem;">Show Current
-              Order</button>
-            <button class="btn btn-secondary btn-small" id="resetPriorityOrder" style="font-size: 0.75rem;">Reset to
-              Alphabetical</button>
-          </div>
-        </div>
-      </div>
-      <p class="small">Groups match words using JavaScript regular expressions (case-insensitive by default). First
-        matching group applies.</p>
-
-      <div class="section-header">
-        <h3>Objects</h3>
-      </div>
-
-      <!-- Bulk Load Objects Section -->
-      <div
-        style="margin-bottom: 1rem; padding: 1rem; background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 6px;">
-        <h4 style="margin: 0 0 0.5rem 0; font-size: 1rem;">Bulk Load Objects</h4>
-        <p class="small" style="margin: 0 0 0.5rem 0;">Import multiple objects using CSV format:
-          label,color1,color2,style1,style2,match,group,enabled</p>
-        <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
-          <textarea id="bulkObjectsInput"
-            placeholder="label,color1,color2,style1,style2,match,group,enabled&#10;red,#ff0000,#ffffff,background,color,red,color,true&#10;blue,#0000ff,#ffffff,background,color,blue,color,true"
-            style="width: 100%; height: 100px; font-family: monospace; font-size: 0.875rem;"></textarea>
-        </div>
-        <div style="margin-top: 0.5rem;">
-          <button class="btn btn-success" id="bulkLoadObjects">Load Objects</button>
-          <button class="btn btn-secondary" id="clearBulkObjects">Clear</button>
-          <button class="btn btn-secondary" id="downloadObjectsTemplate">Download Template</button>
-        </div>
-      </div>
-
-      <div style="margin-top:0.5rem;">
-        <div id="objectsContainer"></div>
-        <div style="margin-top:0.5rem;">
-          <div class="dropdown-container" style="position: relative; display: inline-block;">
-            <button class="btn" id="addObject">+ Add Object</button>
-            <div id="objectCategoryDropdown" class="dropdown-menu"
-              style="display: none; position: absolute; top: 100%; left: 0; background: white; border: 1px solid #dee2e6; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); z-index: 1000; max-width: 100px;">
-              <!-- Categories will be populated dynamically -->
-            </div>
-          </div>
-        </div>
-      </div>
-      <p class="small">Objects are specific items within Groups. If a Group has no regex, its Objects are searched when
-        the Group is enabled.</p>
-    </div>
-
-    <!-- Tab 3: Lists and Arrays Manager -->
-    <div id="lists-arrays" class="tab-content">
-      <div class="section-header">
         <h3>Lists and Arrays Manager</h3>
       </div>
       <div style="margin-bottom:0.5rem;">
@@ -1351,8 +1281,6 @@
       <p class="small">Manage lists of key:value pairs and arrays that sync with bob.json. Use these for storing
         configuration data, mappings, or any structured data.</p>
     </div>
-
-
   </div>
 
   <template id="ruleTemplate">
@@ -2044,6 +1972,7 @@
           refreshRuleUI();
           refreshObjectsUI();
           refreshListsUI();
+          refreshGroupsSidebar(); // Add sidebar refresh
           applyRules();
 
           console.log('Pattern hierarchy loaded from localStorage');
@@ -2080,6 +2009,7 @@
         updatePatternUI();
         refreshRuleUI();
         refreshListsUI();
+        refreshGroupsSidebar(); // Add sidebar refresh
         applyRules();
 
         console.log('Pattern hierarchy loaded from bob.json');
@@ -2120,7 +2050,7 @@
           listsData = data.listsData;
         }
 
-        // Load objects data
+        // Load objects data (kept for sidebar functionality)
         if (data.objectsData) {
           objectsData = data.objectsData;
         }
@@ -2130,6 +2060,7 @@
         refreshRuleUI();
         refreshObjectsUI();
         refreshListsUI();
+        refreshGroupsSidebar(); // Add sidebar refresh
         applyRules();
 
         // Note: Removed auto-switching to JSON tab as requested
@@ -2183,7 +2114,7 @@
           defaultPattern: defaultPattern,
           dictionary: dictionary,
           listsData: listsData,
-          objectsData: objectsData,
+          objectsData: objectsData, // Kept for sidebar functionality
           debugMode: debugMode
         };
 
@@ -2719,52 +2650,56 @@
     // Function to get object preview style
     function getObjectPreviewStyle(obj) {
       let style = '';
+      let hasBackground = false;
+      let backgroundColors = [];
 
       // Apply style1 if color1 exists
       if (obj.color1 && obj.style1) {
         if (obj.style1 === 'background') {
-          style += `background-color: ${obj.color1} !important; `;
-          // Add padding and border radius for background styles
-          style += `padding: 2px 4px !important; border-radius: 2px !important; `;
-          // Set text color based on background brightness
-          const brightness = getBrightness(obj.color1);
-          style += `color: ${brightness > 128 ? 'black' : 'white'} !important; `;
+          backgroundColors.push(obj.color1);
+          hasBackground = true;
         } else if (obj.style1 === 'color' || obj.style1 === 'text') {
           style += `color: ${obj.color1} !important; `;
         } else if (obj.style1 === 'border') {
           style += `border: 2px solid ${obj.color1} !important; `;
         } else if (obj.style1 === 'underline') {
           style += `text-decoration: underline !important; text-decoration-color: ${obj.color1} !important; `;
+        } else if (obj.style1 === 'symbol') {
+          // For symbol style, we'll add the symbol as content
+          style += `color: ${obj.color1} !important; `;
         }
       }
 
-      // Apply style2 if color2 exists (will override style1 if they're the same type)
+      // Apply style2 if color2 exists
       if (obj.color2 && obj.style2) {
         if (obj.style2 === 'background') {
-          style += `background-color: ${obj.color2} !important; `;
-          style += `padding: 2px 4px !important; border-radius: 2px !important; `;
-          const brightness = getBrightness(obj.color2);
-          style += `color: ${brightness > 128 ? 'black' : 'white'} !important; `;
+          backgroundColors.push(obj.color2);
+          hasBackground = true;
         } else if (obj.style2 === 'color' || obj.style2 === 'text') {
           style += `color: ${obj.color2} !important; `;
         } else if (obj.style2 === 'border') {
           style += `border: 2px solid ${obj.color2} !important; `;
         } else if (obj.style2 === 'underline') {
           style += `text-decoration: underline !important; text-decoration-color: ${obj.color2} !important; `;
+        } else if (obj.style2 === 'symbol') {
+          style += `color: ${obj.color2} !important; `;
         }
       }
 
-      // Add some default padding and ensure text is readable
-      if (style.includes('background-color')) {
-        style += `padding: 2px 4px; border-radius: 3px; `;
-        // If background is dark, ensure text is light
-        const bgColor = obj.color1 || obj.color2;
-        if (bgColor && !style.includes('color:')) {
-          const brightness = getBrightness(bgColor);
-          if (brightness < 128) {
-            style += `color: white !important; `;
-          }
+      // Handle background colors (single or gradient)
+      if (hasBackground) {
+        if (backgroundColors.length === 1) {
+          style += `background-color: ${backgroundColors[0]} !important; `;
+        } else if (backgroundColors.length === 2) {
+          style += `background: linear-gradient(45deg, ${backgroundColors[0]}, ${backgroundColors[1]}) !important; `;
         }
+
+        // Add padding and border radius for background styles
+        style += `padding: 2px 4px !important; border-radius: 2px !important; `;
+
+        // Set text color based on background brightness
+        const avgBrightness = backgroundColors.reduce((sum, color) => sum + getBrightness(color), 0) / backgroundColors.length;
+        style += `color: ${avgBrightness > 128 ? 'black' : 'white'} !important; `;
       }
 
       return style;
@@ -3057,6 +2992,10 @@
 
     function refreshRuleUI() {
       const container = document.getElementById('rulesContainer');
+      if (!container) {
+        // Container was removed from main UI, but function is still called for sidebar
+        return;
+      }
       container.innerHTML = '';
       dictionary.rules.forEach((r, idx) => {
         const tpl = document.getElementById('ruleTemplate');
@@ -3242,7 +3181,7 @@
 
         container.appendChild(node);
       });
-      updatePriorityOrderDisplay();
+      // Removed updatePriorityOrderDisplay() call - element no longer exists
 
       // Also refresh the sidebar if it's open
       if (document.getElementById('groupsEditorSidebar').classList.contains('show')) {
@@ -3432,7 +3371,15 @@
         `;
         colorBox1.addEventListener('click', (e) => {
           e.stopPropagation();
-          showObjectColorPanel(obj, objIdx, 1, colorBox1);
+          // Find the global index of this object
+          const globalObjIndex = objectsData.objects.findIndex(o =>
+            o.match === obj.match && o.group === obj.group && o.label === obj.label
+          );
+          if (globalObjIndex !== -1) {
+            showObjectColorPanel(globalObjIndex, 1);
+          } else {
+            console.error('Object not found in global array');
+          }
         });
 
         const colorBox2 = document.createElement('div');
@@ -3447,7 +3394,15 @@
         `;
         colorBox2.addEventListener('click', (e) => {
           e.stopPropagation();
-          showObjectColorPanel(obj, objIdx, 2, colorBox2);
+          // Find the global index of this object
+          const globalObjIndex = objectsData.objects.findIndex(o =>
+            o.match === obj.match && o.group === obj.group && o.label === obj.label
+          );
+          if (globalObjIndex !== -1) {
+            showObjectColorPanel(globalObjIndex, 2);
+          } else {
+            console.error('Object not found in global array');
+          }
         });
 
         colorContainer.appendChild(colorBox1);
@@ -3464,7 +3419,7 @@
           border-radius: 2px;
           display: inline-block;
         `;
-        const previewStyle = getObjectPreviewStyle(obj);
+        const previewStyle = getObjectStyleWithGroupStyles(obj);
         objName.style.cssText = baseStyle + previewStyle;
         objName.textContent = obj.label || obj.match || 'Unnamed Object';
         objName.addEventListener('click', (e) => {
@@ -3513,17 +3468,44 @@
         cursor: pointer;
       `;
 
+      // Simplified single-mode add object button
       const addObjectBtn = document.createElement('div');
       addObjectBtn.className = 'sidebar-object-item sidebar-add-object-btn';
       addObjectBtn.style.cssText = `
+        padding: 0.25rem 0.5rem;
         cursor: pointer;
-        color: #007aff;
-        transition: background-color 0.2s ease;
-        position: relative;
+        border-radius: 2px;
+        font-size: 0.75rem;
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        transition: all 0.2s ease;
+        color: #333;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
       `;
       addObjectBtn.innerHTML = '<span style="width: 16px; text-align: center;">+</span><span>Add Object</span>';
 
-      // Expandable options
+      // Direct click to add object to this group
+      addObjectBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        createNewObjectForGroup(rule.label);
+      });
+
+      // Simple hover effect
+      addObjectBtn.addEventListener('mouseenter', () => {
+        addObjectBtn.style.background = '#007aff';
+        addObjectBtn.style.color = 'white';
+      });
+
+      addObjectBtn.addEventListener('mouseleave', () => {
+        addObjectBtn.style.background = '#f8f9fa';
+        addObjectBtn.style.color = '#333';
+      });
+
+      objectsList.appendChild(addObjectBtn);
+
+      // Add object button with expandable options
       const expandedOptions = document.createElement('div');
       expandedOptions.className = 'sidebar-add-options';
       expandedOptions.style.cssText = `
@@ -3650,6 +3632,10 @@
 
     function refreshObjectsUI() {
       const container = document.getElementById('objectsContainer');
+      if (!container) {
+        // Container was removed from main UI, but function is still called for sidebar
+        return;
+      }
       container.innerHTML = '';
 
       // Group objects by their group
@@ -5472,14 +5458,12 @@
         picker.value = color;
       }
 
-      // Position the panel relative to the button
-      const button = document.querySelector(`[data-idx="${objectIndex}"] .color${colorNum}-btn`);
-      if (button) {
-        const rect = button.getBoundingClientRect();
-        panel.style.position = 'absolute';
-        panel.style.top = (rect.bottom + window.scrollY) + 'px';
-        panel.style.left = rect.left + 'px';
-      }
+      // Position the panel in the center of the screen
+      panel.style.position = 'fixed';
+      panel.style.top = '50%';
+      panel.style.left = '50%';
+      panel.style.transform = 'translate(-50%, -50%)';
+      panel.style.zIndex = '10000';
 
       panel.classList.add('show');
       textInput.focus();
@@ -5528,6 +5512,7 @@
           obj.color2 = color;
         }
         refreshObjectsUI();
+        refreshGroupsSidebar(); // Refresh sidebar to show updated colors
         applyRules();
         autoSavePatternHierarchy();
         hideObjectColorPanel(objectIndex, colorNum);
@@ -5576,55 +5561,9 @@
       document.getElementById('sourceText').addEventListener('input', () => {
         applyRules();
       });
-      document.getElementById('addRule').addEventListener('click', () => {
-        showCategoryDropdown();
-      });
+      // Removed addRule and addObject event listeners - sections removed
 
-      document.getElementById('addObject').addEventListener('click', () => {
-        showObjectCategoryDropdown();
-      });
-
-      // Function to show category dropdown
-      function showCategoryDropdown() {
-        const dropdown = document.getElementById('categoryDropdown');
-        const button = document.getElementById('addRule');
-
-        // Clear existing options
-        dropdown.innerHTML = '';
-
-        // Get existing group labels
-        const existingGroups = dictionary.rules.map(rule => rule.label).filter(label => label);
-
-        // Add categories from listsData that are not already used as groups
-        if (listsData && listsData.keyValueLists) {
-          const categoriesList = listsData.keyValueLists.find(list => list.name === 'categories');
-          if (categoriesList && categoriesList.items) {
-            categoriesList.items.forEach(item => {
-              // Only show categories that are not already used as groups
-              if (!existingGroups.includes(item.key)) {
-                const option = document.createElement('div');
-                option.className = 'dropdown-option';
-                option.style.cssText = 'padding: 8px 12px; cursor: pointer; border-bottom: 1px solid #f0f0f0;';
-                option.textContent = `${item.value} ${item.key}`;
-                option.addEventListener('click', () => {
-                  createNewGroup(item.key);
-                  hideCategoryDropdown();
-                });
-                dropdown.appendChild(option);
-              }
-            });
-          }
-        }
-
-        // Show dropdown
-        dropdown.style.display = 'block';
-      }
-
-      // Function to hide category dropdown
-      function hideCategoryDropdown() {
-        const dropdown = document.getElementById('categoryDropdown');
-        dropdown.style.display = 'none';
-      }
+      // Removed category dropdown functions - section removed
 
       // Function to generate random color
       function generateRandomColor() {
@@ -5637,111 +5576,11 @@
         return colors[Math.floor(Math.random() * colors.length)];
       }
 
-      // Function to show object category dropdown
-      function showObjectCategoryDropdown() {
-        const dropdown = document.getElementById('objectCategoryDropdown');
-        const button = document.getElementById('addObject');
+      // Removed object category dropdown functions - section removed
 
-        // Clear existing options
-        dropdown.innerHTML = '';
+      // Removed createNewGroup and createNewObject functions - sections removed
 
-        // Get existing group labels
-        const existingGroups = dictionary.rules.map(rule => rule.label).filter(label => label);
-
-        // Add existing groups to the dropdown
-        existingGroups.forEach(groupName => {
-          // Find the category info for this group
-          let categoryInfo = null;
-          if (listsData && listsData.keyValueLists) {
-            const categoriesList = listsData.keyValueLists.find(list => list.name === 'categories');
-            if (categoriesList && categoriesList.items) {
-              categoryInfo = categoriesList.items.find(item => item.key === groupName);
-            }
-          }
-
-          const option = document.createElement('div');
-          option.className = 'dropdown-option';
-          option.style.cssText = 'padding: 8px 12px; cursor: pointer; border-bottom: 1px solid #f0f0f0;';
-
-          // Use category emoji if available, otherwise just the group name
-          if (categoryInfo) {
-            option.textContent = `${categoryInfo.value} ${groupName}`;
-          } else {
-            option.textContent = groupName;
-          }
-
-          option.addEventListener('click', () => {
-            createNewObject(groupName);
-            hideObjectCategoryDropdown();
-          });
-          dropdown.appendChild(option);
-        });
-
-        // Show dropdown
-        dropdown.style.display = 'block';
-      }
-
-      // Function to hide object category dropdown
-      function hideObjectCategoryDropdown() {
-        const dropdown = document.getElementById('objectCategoryDropdown');
-        dropdown.style.display = 'none';
-      }
-
-      // Function to create new group
-      function createNewGroup(category) {
-        // Get the current default pattern
-        const defaultPatternData = buildPatternFromJSON();
-
-        // Create a new rule based on the default pattern with the selected category
-        const newRule = {
-          match: defaultPatternData.pattern,
-          color1: generateRandomColor(),
-          color2: '',
-          style1: 'background',
-          style2: '',
-          label: category
-        };
-
-        dictionary.rules.push(newRule);
-        refreshRuleUI();
-        autoSavePatternHierarchy();
-      }
-
-      // Function to create new object
-      function createNewObject(category) {
-        // Find the group to inherit styles from
-        const group = dictionary.rules.find(rule => rule.label === category);
-
-        // Create a new object with the selected category, inheriting group styles
-        const newObject = {
-          label: '',
-          color1: group ? group.color1 : generateRandomColor(),
-          color2: group ? group.color2 : '',
-          style1: group ? group.style1 : 'background',
-          style2: group ? group.style2 : '',
-          match: '',
-          group: category
-        };
-
-        objectsData.objects.push(newObject);
-        refreshObjectsUI();
-        autoSavePatternHierarchy();
-      }
-
-      // Hide dropdown when clicking outside
-      document.addEventListener('click', (e) => {
-        const dropdown = document.getElementById('categoryDropdown');
-        const button = document.getElementById('addRule');
-        if (!button.contains(e.target) && !dropdown.contains(e.target)) {
-          hideCategoryDropdown();
-        }
-
-        const objectDropdown = document.getElementById('objectCategoryDropdown');
-        const objectButton = document.getElementById('addObject');
-        if (!objectButton.contains(e.target) && !objectDropdown.contains(e.target)) {
-          hideObjectCategoryDropdown();
-        }
-      });
+      // Removed dropdown click handlers - sections removed
       document.getElementById('downloadMd').addEventListener('click', downloadMarkdown);
       document.getElementById('downloadPdf').addEventListener('click', downloadPDF);
       document.getElementById('copyHtml').addEventListener('click', copyStyledHTML);
@@ -5824,7 +5663,59 @@
       });
 
       // bob.json operations
-      document.getElementById('loadBobJson').addEventListener('click', loadPatternHierarchy);
+      document.getElementById('loadBobJson').addEventListener('click', async () => {
+        try {
+          // Try to use File System Access API for file selection
+          if ('showOpenFilePicker' in window) {
+            try {
+              const [fileHandle] = await window.showOpenFilePicker({
+                types: [{
+                  description: 'JSON files',
+                  accept: { 'application/json': ['.json'] }
+                }]
+              });
+              const file = await fileHandle.getFile();
+              const content = await file.text();
+              const data = JSON.parse(content);
+
+              // Load the data
+              if (data.defaultPattern) {
+                defaultPattern = data.defaultPattern;
+              }
+              if (data.dictionary) {
+                dictionary = data.dictionary;
+              }
+              if (data.listsData) {
+                listsData = data.listsData;
+              }
+              if (data.objectsData) {
+                objectsData = data.objectsData;
+              }
+
+              // Update UI
+              updatePatternUI();
+              refreshRuleUI();
+              refreshObjectsUI();
+              refreshListsUI();
+              refreshGroupsSidebar();
+              applyRules();
+
+              console.log('Loaded from selected file');
+              showNotification('File loaded successfully!', 'success');
+            } catch (e) {
+              console.log('File System Access API failed, falling back to localStorage');
+              loadPatternHierarchy();
+            }
+          } else {
+            // Fallback to localStorage
+            loadPatternHierarchy();
+          }
+        } catch (error) {
+          console.error('Error loading file:', error);
+          alert('Error loading file. Please make sure it\'s a valid JSON file.');
+        }
+      });
+
       document.getElementById('saveBobJson').addEventListener('click', exportPatternHierarchy);
 
       // Default pattern event listeners
@@ -6077,9 +5968,7 @@
       });
 
       // Bulk load objects event listeners
-      document.getElementById('bulkLoadObjects').addEventListener('click', bulkLoadObjects);
-      document.getElementById('clearBulkObjects').addEventListener('click', clearBulkObjects);
-      document.getElementById('downloadObjectsTemplate').addEventListener('click', downloadObjectsTemplate);
+      // Removed bulk load objects event listeners - section removed
 
       // Preview buttons event listeners
       document.getElementById('loadSampleMd').addEventListener('click', loadSampleMd);
@@ -6113,9 +6002,7 @@
       // Refresh button event listener
       document.getElementById('refreshBtn').addEventListener('click', refreshFromBobJson);
 
-      // Priority order management event listeners
-      document.getElementById('showPriorityOrder').addEventListener('click', showPriorityOrder);
-      document.getElementById('resetPriorityOrder').addEventListener('click', resetPriorityOrder);
+      // Removed priority order management event listeners - section removed
 
       // Initialize UI
       updatePatternUI();
@@ -6255,80 +6142,7 @@
       }, 100);
     });
 
-    // Bulk load objects functions
-    function bulkLoadObjects() {
-      const input = document.getElementById('bulkObjectsInput').value.trim();
-      if (!input) {
-        alert('Please enter CSV data to load objects.');
-        return;
-      }
-
-      const lines = input.split('\n');
-      let loadedCount = 0;
-      let errorCount = 0;
-      const errors = [];
-
-      // Skip header line if it matches the expected format
-      const startIndex = lines[0].toLowerCase().includes('label,color1,color2,style1,style2,match,group,enabled') ? 1 : 0;
-
-      for (let i = startIndex; i < lines.length; i++) {
-        const line = lines[i].trim();
-        if (!line) continue;
-
-        const parts = line.split(',').map(part => part.trim());
-
-        if (parts.length < 7) {
-          errors.push(`Line ${i + 1}: Insufficient columns (expected 8, got ${parts.length})`);
-          errorCount++;
-          continue;
-        }
-
-        const [label, color1, color2, style1, style2, match, group, enabled] = parts;
-
-        // Validate required fields
-        if (!match || !group) {
-          errors.push(`Line ${i + 1}: Missing required fields (match and group are required)`);
-          errorCount++;
-          continue;
-        }
-
-        // Create new object
-        const newObject = {
-          label: label || '',
-          color1: color1 || '',
-          color2: color2 || '',
-          style1: style1 || 'background',
-          style2: style2 || '',
-          match: match,
-          group: group,
-          enabled: enabled === 'true' || enabled === '1' || enabled === ''
-        };
-
-        objectsData.objects.push(newObject);
-        loadedCount++;
-      }
-
-      // Show results
-      let message = `Loaded ${loadedCount} objects successfully.`;
-      if (errorCount > 0) {
-        message += `\n\n${errorCount} errors:\n${errors.join('\n')}`;
-      }
-
-      if (errorCount > 0) {
-        alert(message);
-      } else {
-        alert(message);
-      }
-
-      // Refresh UI and save
-      refreshObjectsUI();
-      applyRules();
-      autoSavePatternHierarchy();
-    }
-
-    function clearBulkObjects() {
-      document.getElementById('bulkObjectsInput').value = '';
-    }
+    // Removed bulk load objects functions - section removed
 
 
 
@@ -6363,8 +6177,20 @@
         cursor: pointer;
         border-radius: 2px;
         font-size: 0.75rem;
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        transition: all 0.2s ease;
+        color: #333;
       `;
       singleAddBtn.textContent = 'Add Single Object';
+      singleAddBtn.addEventListener('mouseenter', () => {
+        singleAddBtn.style.background = '#007aff';
+        singleAddBtn.style.color = 'white';
+      });
+      singleAddBtn.addEventListener('mouseleave', () => {
+        singleAddBtn.style.background = '#f8f9fa';
+        singleAddBtn.style.color = '#333';
+      });
       singleAddBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         createNewObjectFromSidebar();
@@ -6378,8 +6204,21 @@
         cursor: pointer;
         border-radius: 2px;
         font-size: 0.75rem;
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        transition: all 0.2s ease;
+        margin-top: 2px;
+        color: #333;
       `;
       bulkAddBtn.textContent = 'Bulk Add Objects';
+      bulkAddBtn.addEventListener('mouseenter', () => {
+        bulkAddBtn.style.background = '#007aff';
+        bulkAddBtn.style.color = 'white';
+      });
+      bulkAddBtn.addEventListener('mouseleave', () => {
+        bulkAddBtn.style.background = '#f8f9fa';
+        bulkAddBtn.style.color = '#333';
+      });
       bulkAddBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         showSidebarBulkAddForm();
@@ -6525,24 +6364,7 @@
       }
     }
 
-    function downloadObjectsTemplate() {
-      const template = `label,color1,color2,style1,style2,match,group,enabled
-red,#ff0000,#ffffff,background,color,red,color,true
-blue,#0000ff,#ffffff,background,color,blue,color,true
-green,#00ff00,#000000,background,color,green,color,true
-monday,#ff8fff,#cfcfcf,background,color,monday,day of the week,true
-tuesday,#4ECDC4,#ffffff,background,color,tuesday,day of the week,true
-a,#ff293e,,color,,^a,letter,true
-b,#684ccd,,color,,^b,letter,true`;
-
-      const blob = new Blob([template], { type: 'text/csv' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'objects_template.csv';
-      a.click();
-      URL.revokeObjectURL(url);
-    }
+    // Removed downloadObjectsTemplate function - section removed
 
     // Priority order management functions
     function showPriorityOrder() {
@@ -6571,13 +6393,17 @@ b,#684ccd,,color,,^b,letter,true`;
 
     function updatePriorityOrderDisplay() {
       const display = document.getElementById('currentPriorityOrder');
-      if (display && dictionary.rules.length > 0) {
+      if (!display) {
+        // Element was removed from main UI, but function is still called for sidebar
+        return;
+      }
+      if (dictionary.rules.length > 0) {
         const orderText = dictionary.rules.map((rule, index) => {
           const emoji = getGroupEmoji(rule.label) || '❓';
           return `${index + 1}. ${emoji} ${rule.label || 'Unnamed Group'}`;
         }).join(' → ');
         display.textContent = `Current order: ${orderText}`;
-      } else if (display) {
+      } else {
         display.textContent = 'No groups defined';
       }
     }
@@ -6736,6 +6562,25 @@ b,#684ccd,,color,,^b,letter,true`;
       // Set the markdown in the textarea
       document.getElementById('sourceText').value = markdown;
       applyRules();
+    }
+
+    // Function to get object style combining object colors with group styles
+    function getObjectStyleWithGroupStyles(obj) {
+      // Find the group for this object
+      const group = dictionary.rules.find(rule => rule.label === obj.group);
+      if (!group) {
+        return getObjectPreviewStyle(obj); // Fallback to object-only style
+      }
+
+      // Create a combined object with group styles
+      const combinedObj = {
+        color1: obj.color1 || group.color1 || '',
+        color2: obj.color2 || group.color2 || '',
+        style1: obj.style1 || group.style1 || '',
+        style2: obj.style2 || group.style2 || ''
+      };
+
+      return getObjectPreviewStyle(combinedObj);
     }
   </script>
 </body>
