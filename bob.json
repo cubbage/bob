@@ -1,7 +1,7 @@
 {
   "defaultPattern": {
     "label": "",
-    "color1": "#757575",
+    "color1": "#b6b4b4",
     "color2": "#ebebeb",
     "structure": {
       "startAnchor": false,
@@ -57,7 +57,7 @@
         "style1": "",
         "style2": "",
         "label": "shape",
-        "enabled": true
+        "enabled": false
       },
       {
         "style1": "color",
@@ -69,25 +69,25 @@
         "style1": "",
         "style2": "",
         "label": "instrument",
-        "enabled": true
+        "enabled": false
       },
       {
         "style1": "",
         "style2": "",
         "label": "colorality",
-        "enabled": true
+        "enabled": false
       },
       {
         "style1": "",
         "style2": "",
         "label": "sound",
-        "enabled": true
+        "enabled": false
       },
       {
         "style1": "",
         "style2": "",
         "label": "texture",
-        "enabled": true
+        "enabled": false
       }
     ]
   },
@@ -870,7 +870,7 @@
         "label": "Ada",
         "color1": "#BD010E",
         "color2": "",
-        "match": "\\bada\\S*\\b",
+        "match": "\\bada\\b",
         "group": "person",
         "enabled": true
       },
@@ -894,9 +894,9 @@
         "label": "Kris Fog",
         "color1": "#5B8D40",
         "color2": "",
-        "match": "\\bkris\\S*\\b",
+        "match": "\\bkris\\b",
         "group": "person",
-        "enabled": true
+        "enabled": false
       },
       {
         "label": "Marta",
@@ -936,7 +936,7 @@
         "color2": "",
         "match": "behavioral science",
         "group": "school subject",
-        "enabled": true
+        "enabled": false
       },
       {
         "label": "Biology",

@@ -3503,7 +3503,6 @@
         const objName = document.createElement('div');
         objName.className = 'sidebar-object-name';
         const baseStyle = `
-          flex: 1;
           font-size: 0.75rem;
           cursor: pointer;
           padding: 2px 4px;
@@ -3546,10 +3545,8 @@
 
         objItem.appendChild(objToggle);
         objItem.appendChild(colorContainer);
-        objItem.appendChild(objName);
-        objItem.appendChild(regexSpan);
 
-        // Add symbol display if group has symbol style enabled
+        // Add symbol display if group has symbol style enabled (right before the object name)
         const groupRule = dictionary.rules.find(r => r.label === rule.label);
         if (groupRule && (groupRule.style1 === 'symbol' || groupRule.style2 === 'symbol')) {
           // Use the same symbol logic as the WhatBoard
@@ -3560,13 +3557,16 @@
             symbolSpan.style.cssText = `
               font-size: 0.7rem;
               color: #007aff;
-              margin-left: 4px;
+              margin-right: 2px;
               font-weight: bold;
             `;
             symbolSpan.textContent = emoji;
             objItem.appendChild(symbolSpan);
           }
         }
+
+        objItem.appendChild(objName);
+        objItem.appendChild(regexSpan);
 
         objectsList.appendChild(objItem);
       });
@@ -4430,6 +4430,20 @@
           };
           const previewStyle = getObjectPreviewStyle(combinedObj);
           span.style.cssText += previewStyle;
+
+          // Apply symbol content modification if needed
+          if (matched.style1 === 'symbol') {
+            const emoji = getGroupEmoji(matched.group);
+            if (emoji && !span.textContent.startsWith(emoji + ' ')) {
+              span.textContent = emoji + ' ' + span.textContent;
+            }
+          }
+          if (matched.style2 === 'symbol') {
+            const emoji = getGroupEmoji(matched.group);
+            if (emoji && !span.textContent.startsWith(emoji + ' ')) {
+              span.textContent = emoji + ' ' + span.textContent;
+            }
+          }
         } else {
           span.style.color = 'inherit';
         }
