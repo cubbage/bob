@@ -17,14 +17,26 @@
     .tab-container {
       margin-top: 0;
       padding: 1rem;
+      padding-top: 0;
     }
 
     .tab-buttons {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 300px;
+      z-index: 1000;
       display: flex;
       justify-content: space-between;
       align-items: center;
       border-bottom: 2px solid #e0e0e0;
-      margin-bottom: 1rem;
+      background: white;
+      padding: 1rem;
+      padding-bottom: 0.5rem;
+    }
+
+    .main-content-with-sidebar.sidebar-closed .tab-buttons {
+      right: 0;
     }
 
     .tab-buttons-left {
@@ -63,6 +75,7 @@
     .tab-content {
       display: none;
       padding: 1rem 0;
+      margin-top: 4rem;
     }
 
     .tab-content.active {
@@ -104,17 +117,46 @@
       color: #333;
     }
 
+    .refresh-btn,
+    .config-btn,
     .groups-editor-toggle {
-      background: #28a745;
-      color: white;
-      border: none;
-      border-radius: 50%;
-      width: 40px;
-      height: 40px;
+      background: #f8f9fa;
+      color: #666;
+      border: 1px solid #dee2e6;
+      border-radius: 6px;
+      width: 36px;
+      height: 36px;
       cursor: pointer;
-      font-size: 16px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
       transition: all 0.2s ease;
+    }
+
+    .refresh-btn:hover,
+    .config-btn:hover,
+    .groups-editor-toggle:hover {
+      background: #007aff;
+      color: white;
+      border-color: #007aff;
+    }
+
+    .refresh-btn svg,
+    .config-btn svg,
+    .groups-editor-toggle svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .groups-editor-toggle {
+      background: #f8f9fa;
+      color: #666;
+      border: 1px solid #dee2e6;
+      border-radius: 6px;
+      width: 36px;
+      height: 36px;
+      cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -330,7 +372,7 @@
       padding: 0.25rem 0.5rem;
       border: 1px solid #dee2e6;
       background: #f8f9fa;
-      color: #666;
+      color: #333;
       cursor: pointer;
       font-size: 0.75rem;
       border-radius: 3px;
@@ -1083,12 +1125,39 @@
   <div class="tab-container main-content-with-sidebar" id="mainContent">
     <div class="tab-buttons">
       <div class="tab-buttons-left">
-        <button class="tab-button active" data-tab="input-preview">Preview</button>
-        <button class="tab-button" data-tab="config">Config</button>
+        <button class="tab-button active" data-tab="input-preview">WhatBoard</button>
       </div>
       <div class="tab-buttons-right">
-        <button class="refresh-btn" id="refreshBtn" title="Refresh from bob.json">🔄</button>
-        <button class="groups-editor-toggle" id="groupsEditorToggle" title="Toggle Groups Editor">⚙️</button>
+        <button class="refresh-btn" id="refreshBtn" title="Refresh from bob.json">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+            <path d="M3 3v5h5" />
+          </svg>
+        </button>
+        <button class="config-btn" id="configBtn" title="Configuration">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path
+              d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+            <circle cx="12" cy="12" r="4" />
+          </svg>
+        </button>
+        <button class="groups-editor-toggle" id="groupsEditorToggle" title="Toggle Groups Editor">
+          <svg class="sidebar-open-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect width="18" height="18" x="3" y="3" rx="2" />
+            <path d="M15 3v18" />
+            <path d="m10 15-3-3 3-3" />
+          </svg>
+          <svg class="sidebar-close-icon" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="16"
+            height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+            stroke-linejoin="round">
+            <rect width="18" height="18" x="3" y="3" rx="2" />
+            <path d="M15 3v18" />
+            <path d="m8 9 3 3-3 3" />
+          </svg>
+        </button>
       </div>
     </div>
 
@@ -1096,19 +1165,16 @@
     <div id="input-preview" class="tab-content active">
       <div class="section-header">
         <div style="display: flex; justify-content: space-between; align-items: center; gap: 0.5rem;">
-          <h3>Input Text</h3>
           <div style="display: flex; gap: 0.5rem; align-items: center;">
             <button class="btn btn-secondary" id="loadSampleMd">Load Sample.md</button>
             <button class="btn btn-secondary" id="convertBob">Convert Bob</button>
             <button class="btn btn-secondary" id="clearBtn">Clear</button>
+            <button class="btn btn-secondary" id="saveBobJson">Export to File</button>
           </div>
         </div>
       </div>
-      <textarea id="sourceText" placeholder="Paste OCR text here..."></textarea>
+      <textarea id="sourceText" placeholder="Input text."></textarea>
 
-      <div class="section-header">
-        <h3>Preview</h3>
-      </div>
       <div class="preview" id="preview"></div>
 
       <div class="section-header">
@@ -1151,15 +1217,14 @@
     <!-- Tab 2: Config (Default Search Pattern + Lists and Arrays) -->
     <div id="config" class="tab-content">
       <div class="section-header">
-        <div style="display: flex; align-items: center; gap: 10px;">
+        <div style="display: flex; align-items: center; justify-content: space-between;">
           <h3>Default Search Pattern</h3>
-          <button id="debugToggle" class="btn btn-secondary" style="font-size: 12px; padding: 4px 8px;">Debug:
-            OFF</button>
+          <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <button class="btn btn-secondary" id="loadBobJson">+ custom json</button>
+            <button id="debugToggle" class="btn btn-secondary" style="font-size: 12px; padding: 4px 8px;">Debug:
+              OFF</button>
+          </div>
         </div>
-      </div>
-      <div style="margin-bottom:1rem;">
-        <button class="btn btn-secondary" id="loadBobJson">Load from Storage</button>
-        <button class="btn btn-secondary" id="saveBobJson">Export to File</button>
       </div>
       <div style="margin-bottom:0.5rem;">
         <label>
@@ -1182,8 +1247,7 @@
           <div id="defaultColor1Panel" class="inline-form">
             <div class="inline-form-row">
               <label for="defaultColor1Text">Color 1:</label>
-              <input id="defaultColor1Text" type="text" placeholder="color (e.g. #ff0000)" value="magenta"
-                style="flex: 1;" />
+              <input id="defaultColor1Text" type="text" placeholder="color (e.g. #ff0000)" value="" style="flex: 1;" />
             </div>
             <div class="inline-form-row">
               <label for="defaultColor1Picker">Picker:</label>
@@ -1310,7 +1374,7 @@
         title="Toggle object on/off">✓</button>
       <input aria-label="label" placeholder="label (optional)" class="label" style="width: 120px;" />
       <button class="color1-btn btn btn-secondary color-btn" style="width: 80px; text-align: left; position: relative;">
-        <span class="color1-display">magenta</span>
+        <span class="color1-display"></span>
       </button>
       <button class="color2-btn btn btn-secondary color-btn" style="width: 80px; text-align: left; position: relative;">
         <span class="color2-display">-</span>
@@ -1369,7 +1433,16 @@
           </div>
         </div>
 
+
+
         <div class="form-group">
+          <label>
+            <input type="checkbox" id="objectEditorEnabled" checked>
+            Enabled
+          </label>
+        </div>
+
+        <div class="form-group" id="style1Group" style="display: none;">
           <label for="objectEditorStyle1">Style 1</label>
           <select id="objectEditorStyle1">
             <option value="">None</option>
@@ -1381,7 +1454,7 @@
           </select>
         </div>
 
-        <div class="form-group">
+        <div class="form-group" id="style2Group" style="display: none;">
           <label for="objectEditorStyle2">Style 2</label>
           <select id="objectEditorStyle2">
             <option value="">None</option>
@@ -1391,13 +1464,6 @@
             <option value="border">Border</option>
             <option value="symbol">Symbol</option>
           </select>
-        </div>
-
-        <div class="form-group">
-          <label>
-            <input type="checkbox" id="objectEditorEnabled" checked>
-            Enabled
-          </label>
         </div>
 
         <div class="json-preview">
@@ -1416,8 +1482,7 @@
   </div>
 
   <!-- jsPDF from CDN -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"
-    integrity="sha512-your-integrity-placeholder" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="https://unpkg.com/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 
   <script>
     // Tab functionality
@@ -1913,9 +1978,9 @@
     // Default pattern JSON structure
     let defaultPattern = {
       label: "Default",
-      color1: "magenta",
+      color1: "",
       color2: "",
-      style1: "background",
+      style1: "",
       style2: "",
       structure: {
         startAnchor: false,
@@ -2236,12 +2301,7 @@
       const color2Group = document.getElementById('objectEditorColor2').parentElement.parentElement;
       color2Group.style.display = 'block';
 
-      // Hide style fields for objects (objects shouldn't have style configuration)
-      const style1Group = document.getElementById('objectEditorStyle1').parentElement;
-      style1Group.style.display = 'none';
 
-      const style2Group = document.getElementById('objectEditorStyle2').parentElement;
-      style2Group.style.display = 'none';
 
       // Show the modal
       const modal = document.getElementById('objectEditorModal');
@@ -2281,8 +2341,6 @@
       document.getElementById('objectEditorMatchRegex').value = objectMatch;
       document.getElementById('objectEditorColor1').value = currentEditingObject.color1 || '';
       document.getElementById('objectEditorColor2').value = currentEditingObject.color2 || '';
-      document.getElementById('objectEditorStyle1').value = currentEditingObject.style1 || '';
-      document.getElementById('objectEditorStyle2').value = currentEditingObject.style2 || '';
       document.getElementById('objectEditorEnabled').checked = currentEditingObject.enabled !== false;
 
       // Populate group dropdown
@@ -2303,6 +2361,13 @@
         color2Picker.value = normalizedColor2;
         updateColorPickerBackground('objectEditorColor2Picker', normalizedColor2);
       }
+
+      // Hide style fields for objects (objects inherit styles from groups)
+      const style1Group = document.getElementById('style1Group');
+      style1Group.style.display = 'none';
+
+      const style2Group = document.getElementById('style2Group');
+      style2Group.style.display = 'none';
     }
 
     // Function to populate group dropdown
@@ -2374,16 +2439,23 @@
 
     // Function to get form data
     function getObjectEditorFormData() {
-      return {
-        label: document.getElementById('objectEditorLabel').value,
-        color1: document.getElementById('objectEditorColor1').value,
-        color2: document.getElementById('objectEditorColor2').value,
-        style1: document.getElementById('objectEditorStyle1').value,
-        style2: document.getElementById('objectEditorStyle2').value,
-        match: document.getElementById('objectEditorMatchRegex').value,
-        group: document.getElementById('objectEditorGroupSelect').value,
-        enabled: document.getElementById('objectEditorEnabled').checked
-      };
+      if (currentEditingType === 'group') {
+        return {
+          label: document.getElementById('objectEditorLabel').value,
+          style1: document.getElementById('objectEditorStyle1').value,
+          style2: document.getElementById('objectEditorStyle2').value,
+          enabled: document.getElementById('objectEditorEnabled').checked
+        };
+      } else {
+        return {
+          label: document.getElementById('objectEditorLabel').value,
+          color1: document.getElementById('objectEditorColor1').value,
+          color2: document.getElementById('objectEditorColor2').value,
+          match: document.getElementById('objectEditorMatchRegex').value,
+          group: document.getElementById('objectEditorGroupSelect').value,
+          enabled: document.getElementById('objectEditorEnabled').checked
+        };
+      }
     }
 
     // Function to save object changes
@@ -2518,10 +2590,9 @@
     // Function to create new group from sidebar
     function createNewGroupFromSidebar() {
       const newRule = {
-        match: '',
         color1: generateRandomColor(),
         color2: '',
-        style1: 'background',
+        style1: '',
         style2: '',
         label: 'New Group',
         enabled: true
@@ -2569,21 +2640,22 @@
       const groupSelectGroup = document.getElementById('objectEditorGroupSelect').parentElement;
       groupSelectGroup.style.display = 'none';
 
+      // Hide color fields for groups (groups don't have colors, only styles)
       const color1Group = document.getElementById('objectEditorColor1').parentElement.parentElement;
       color1Group.style.display = 'none';
 
       const color2Group = document.getElementById('objectEditorColor2').parentElement.parentElement;
       color2Group.style.display = 'none';
 
-      // Show style fields for groups (groups do have default styles)
-      const style1Group = document.getElementById('objectEditorStyle1').parentElement;
+      // Show style fields for groups (groups have default styles)
+      const style1Group = document.getElementById('style1Group');
       style1Group.style.display = 'block';
 
-      const style2Group = document.getElementById('objectEditorStyle2').parentElement;
+      const style2Group = document.getElementById('style2Group');
       style2Group.style.display = 'block';
 
-      // Set style values
-      document.getElementById('objectEditorStyle1').value = rule.style1 || 'background';
+      // Set style values (groups have styles, objects don't)
+      document.getElementById('objectEditorStyle1').value = rule.style1 || '';
       document.getElementById('objectEditorStyle2').value = rule.style2 || '';
       document.getElementById('objectEditorEnabled').checked = rule.enabled !== false;
 
@@ -2593,12 +2665,12 @@
     // Function to create new object for specific group
     function createNewObjectForGroup(groupName) {
       const newObject = {
-        label: 'New Object',
+        label: 'Object',
         color1: '',
         color2: '',
-        style1: 'background',
+        style1: '',
         style2: '',
-        match: 'new object',
+        match: 'object',
         group: groupName,
         enabled: true
       };
@@ -2622,7 +2694,7 @@
         label: 'New Object',
         color1: '',
         color2: '',
-        style1: 'background',
+        style1: '',
         style2: '',
         match: '',
         group: availableGroups[0], // Default to first group
@@ -2837,6 +2909,11 @@
       `;
 
       function saveRegex() {
+        // Prevent double execution
+        if (!input || !input.parentNode || input.dataset.removing) {
+          return;
+        }
+
         const newRegex = input.value.trim();
         if (newRegex !== currentRegex) {
           obj.match = newRegex;
@@ -2846,11 +2923,20 @@
           showNotification('Regex updated!', 'success');
         }
         regexSpan.style.display = 'inline';
+
+        // Mark as removing to prevent double execution
+        input.dataset.removing = 'true';
         input.remove();
       }
 
       function cancelEdit() {
+        // Prevent double execution
+        if (!input || !input.parentNode || input.dataset.removing) {
+          return;
+        }
+
         regexSpan.style.display = 'inline';
+        input.dataset.removing = 'true';
         input.remove();
       }
 
@@ -2859,8 +2945,7 @@
       input.focus();
       input.select();
 
-      input.addEventListener('blur', saveRegex);
-      input.addEventListener('keydown', (e) => {
+      const handleKeydown = (e) => {
         if (e.key === 'Enter') {
           e.preventDefault();
           saveRegex();
@@ -2868,7 +2953,10 @@
           e.preventDefault();
           cancelEdit();
         }
-      });
+      };
+
+      input.addEventListener('blur', saveRegex);
+      input.addEventListener('keydown', handleKeydown);
     }
 
     // Function to show bulk add form
@@ -2929,7 +3017,7 @@
               label: trimmedLine,
               color1: '',
               color2: '',
-              style1: 'background',
+              style1: '',
               style2: '',
               match: trimmedLine.toLowerCase(),
               group: groupName,
@@ -3188,6 +3276,9 @@
         refreshGroupsSidebar();
       }
     }
+
+    // Global variable to track expanded object lists
+    let expandedObjectLists = new Set();
 
     // Function to refresh groups in sidebar
     function refreshGroupsSidebar() {
@@ -3457,6 +3548,26 @@
         objItem.appendChild(colorContainer);
         objItem.appendChild(objName);
         objItem.appendChild(regexSpan);
+
+        // Add symbol display if group has symbol style enabled
+        const groupRule = dictionary.rules.find(r => r.label === rule.label);
+        if (groupRule && (groupRule.style1 === 'symbol' || groupRule.style2 === 'symbol')) {
+          // Use the same symbol logic as the WhatBoard
+          const emoji = getGroupEmoji(rule.label);
+          if (emoji) {
+            const symbolSpan = document.createElement('span');
+            symbolSpan.className = 'sidebar-object-symbol';
+            symbolSpan.style.cssText = `
+              font-size: 0.7rem;
+              color: #007aff;
+              margin-left: 4px;
+              font-weight: bold;
+            `;
+            symbolSpan.textContent = emoji;
+            objItem.appendChild(symbolSpan);
+          }
+        }
+
         objectsList.appendChild(objItem);
       });
 
@@ -3505,68 +3616,7 @@
 
       objectsList.appendChild(addObjectBtn);
 
-      // Add object button with expandable options
-      const expandedOptions = document.createElement('div');
-      expandedOptions.className = 'sidebar-add-options';
-      expandedOptions.style.cssText = `
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        background: white;
-        border: 1px solid #007aff;
-        border-radius: 4px;
-        padding: 0.25rem;
-        display: none;
-        z-index: 1000;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-      `;
 
-      const normalAddBtn = document.createElement('div');
-      normalAddBtn.className = 'sidebar-option-btn';
-      normalAddBtn.style.cssText = `
-        padding: 0.25rem 0.5rem;
-        cursor: pointer;
-        border-radius: 2px;
-        font-size: 0.75rem;
-        margin-bottom: 0.25rem;
-        background: #f8f9fa;
-        border: 1px solid #dee2e6;
-      `;
-      normalAddBtn.innerHTML = '+ Add Single Object';
-      normalAddBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        createNewObjectForGroup(rule.label);
-        hideExpandedOptions();
-      });
-
-      const bulkAddBtn = document.createElement('div');
-      bulkAddBtn.className = 'sidebar-option-btn';
-      bulkAddBtn.style.cssText = `
-        padding: 0.25rem 0.5rem;
-        cursor: pointer;
-        border-radius: 2px;
-        font-size: 0.75rem;
-        background: #f8f9fa;
-        border: 1px solid #dee2e6;
-      `;
-      bulkAddBtn.innerHTML = '+ Bulk Add Objects';
-      bulkAddBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        showBulkAddForm(rule.label, addObjectContainer);
-        hideExpandedOptions();
-      });
-
-      expandedOptions.appendChild(normalAddBtn);
-      expandedOptions.appendChild(bulkAddBtn);
-
-      function showExpandedOptions() {
-        expandedOptions.style.display = 'block';
-      }
-
-      function hideExpandedOptions() {
-        expandedOptions.style.display = 'none';
-      }
 
       // Default click for normal add
       addObjectBtn.addEventListener('click', (e) => {
@@ -3574,54 +3624,31 @@
         createNewObjectForGroup(rule.label);
       });
 
-      // Timeout variables for hover management
-      let showTimeout;
-      let hideTimeout;
-      let isExpanded = false;
 
-      // Show expanded options on hover
-      addObjectContainer.addEventListener('mouseenter', () => {
-        clearTimeout(hideTimeout);
-        if (!isExpanded) {
-          showTimeout = setTimeout(() => {
-            showExpandedOptions();
-            isExpanded = true;
-          }, 150);
-        }
-      });
-
-      addObjectContainer.addEventListener('mouseleave', () => {
-        clearTimeout(showTimeout);
-        hideTimeout = setTimeout(() => {
-          hideExpandedOptions();
-          isExpanded = false;
-        }, 400);
-      });
-
-      // Keep options visible when hovering over them
-      expandedOptions.addEventListener('mouseenter', () => {
-        clearTimeout(hideTimeout);
-        clearTimeout(showTimeout);
-      });
-
-      expandedOptions.addEventListener('mouseleave', () => {
-        hideTimeout = setTimeout(() => {
-          hideExpandedOptions();
-          isExpanded = false;
-        }, 400);
-      });
 
       addObjectContainer.appendChild(addObjectBtn);
-      addObjectContainer.appendChild(expandedOptions);
 
       objectsList.appendChild(addObjectContainer);
 
       // Toggle functionality
-      let isObjectsExpanded = false;
+      const groupKey = rule.label;
+      let isObjectsExpanded = expandedObjectLists.has(groupKey);
+
+      // Set initial state
+      objectsList.classList.toggle('expanded', isObjectsExpanded);
+      objectsToggle.querySelector('.toggle-icon').textContent = isObjectsExpanded ? '▼' : '▶';
+
       objectsToggle.addEventListener('click', () => {
         isObjectsExpanded = !isObjectsExpanded;
         objectsList.classList.toggle('expanded', isObjectsExpanded);
         objectsToggle.querySelector('.toggle-icon').textContent = isObjectsExpanded ? '▼' : '▶';
+
+        // Track expanded state
+        if (isObjectsExpanded) {
+          expandedObjectLists.add(groupKey);
+        } else {
+          expandedObjectLists.delete(groupKey);
+        }
       });
 
       objectsSection.appendChild(objectsToggle);
@@ -3990,7 +4017,7 @@
 
       // Check dictionary rules for multi-word patterns
       for (const rule of dictionary.rules) {
-        if (rule.match.includes(' ')) {
+        if (rule.match && rule.match.includes(' ')) {
           try {
             const flags = 'gi';
             let regex = new RegExp(rule.match, flags);
@@ -4322,14 +4349,15 @@
                 openObjectEditor(word, wordMatched);
               });
 
-              if (wordMatched.color1 && wordMatched.color1.trim() !== '' && wordMatched.style1 && wordMatched.style1.trim() !== '') {
-                applyStyleToElement(wordSpan, wordMatched.color1, wordMatched.style1);
-              }
-              if (wordMatched.color2 && wordMatched.color2.trim() !== '' && wordMatched.style2 && wordMatched.style2.trim() !== '') {
-                if (wordMatched.style2 !== wordMatched.style1) {
-                  applyStyleToElement(wordSpan, wordMatched.color2, wordMatched.style2);
-                }
-              }
+              // Apply styles using the same logic as the sidebar
+              const combinedObj = {
+                color1: wordMatched.color1 || '',
+                color2: wordMatched.color2 || '',
+                style1: wordMatched.style1 || '',
+                style2: wordMatched.style2 || ''
+              };
+              const previewStyle = getObjectPreviewStyle(combinedObj);
+              wordSpan.style.cssText += previewStyle;
             } else {
               // Even if no object matches, make the word clickable for creating new objects
               wordSpan.addEventListener('click', function (e) {
@@ -4393,28 +4421,15 @@
             openObjectEditor(token, matched);
           });
 
-          // Track if symbol style has been applied to prevent duplicates
-          let symbolApplied = false;
-
-          // Apply regular object styles first
-          if (matched.color1 && matched.color1.trim() !== '' && matched.style1 && matched.style1.trim() !== '' && matched.style1 !== 'semantic') {
-            applyStyleToElement(span, matched.color1, matched.style1);
-          }
-          if (matched.color2 && matched.color2.trim() !== '' && matched.style2 && matched.style2.trim() !== '') {
-            // For color2, only apply if it's different from color1's style
-            if (matched.style2 !== matched.style1) {
-              applyStyleToElement(span, matched.color2, matched.style2);
-            }
-          }
-          // Apply symbol style independently of color - check both style1 and style2
-          if (matched.style1 === 'symbol' && !symbolApplied) {
-            applyStyleToElement(span, '', 'symbol');
-            symbolApplied = true;
-          }
-          if (matched.style2 === 'symbol' && !symbolApplied) {
-            applyStyleToElement(span, '', 'symbol');
-            symbolApplied = true;
-          }
+          // Apply styles using the same logic as the sidebar
+          const combinedObj = {
+            color1: matched.color1 || '',
+            color2: matched.color2 || '',
+            style1: matched.style1 || '',
+            style2: matched.style2 || ''
+          };
+          const previewStyle = getObjectPreviewStyle(combinedObj);
+          span.style.cssText += previewStyle;
         } else {
           span.style.color = 'inherit';
         }
@@ -4756,7 +4771,7 @@
 
       // Check dictionary rules for multi-word patterns
       for (const rule of dictionary.rules) {
-        if (rule.match.includes(' ')) {
+        if (rule.match && rule.match.includes(' ')) {
           try {
             const flags = 'gi';
             let regex = new RegExp(rule.match, flags);
@@ -4791,7 +4806,7 @@
 
       // Extract matched phrases from dictionary rules
       for (const rule of dictionary.rules) {
-        if (rule.match.includes(' ')) {
+        if (rule.match && rule.match.includes(' ')) {
           try {
             const flags = 'gi';
             let regex = new RegExp(rule.match, flags);
@@ -4859,7 +4874,7 @@
             let regex = new RegExp(rule.match, flags);
 
             // Only check single-word patterns here
-            if (!rule.match.includes(' ')) {
+            if (rule.match && !rule.match.includes(' ')) {
               const match = token.match(regex);
               if (match) {
                 matches.push(match[0]);
@@ -6002,6 +6017,15 @@
       // Refresh button event listener
       document.getElementById('refreshBtn').addEventListener('click', refreshFromBobJson);
 
+      // Config button event listener
+      document.getElementById('configBtn').addEventListener('click', () => {
+        // Switch to config tab
+        document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+        document.getElementById('config').classList.add('active');
+      });
+
       // Removed priority order management event listeners - section removed
 
       // Initialize UI
@@ -6087,12 +6111,19 @@
 
       function toggleSidebar() {
         const isOpen = sidebar.classList.contains('show');
+        const openIcon = sidebarToggle.querySelector('.sidebar-open-icon');
+        const closeIcon = sidebarToggle.querySelector('.sidebar-close-icon');
+
         if (isOpen) {
           sidebar.classList.remove('show');
           mainContent.classList.add('sidebar-closed');
+          openIcon.style.display = 'block';
+          closeIcon.style.display = 'none';
         } else {
           sidebar.classList.add('show');
           mainContent.classList.remove('sidebar-closed');
+          openIcon.style.display = 'none';
+          closeIcon.style.display = 'block';
           refreshGroupsSidebar();
         }
       }
@@ -6321,7 +6352,7 @@
             label: label || '',
             color1: color1 || '',
             color2: color2 || '',
-            style1: style1 || 'background',
+            style1: style1 || '',
             style2: style2 || '',
             match: match,
             group: group,
@@ -6574,10 +6605,10 @@
 
       // Create a combined object with group styles
       const combinedObj = {
-        color1: obj.color1 || group.color1 || '',
-        color2: obj.color2 || group.color2 || '',
-        style1: obj.style1 || group.style1 || '',
-        style2: obj.style2 || group.style2 || ''
+        color1: obj.color1 || '',
+        color2: obj.color2 || '',
+        style1: group.style1 || '',
+        style2: group.style2 || ''
       };
 
       return getObjectPreviewStyle(combinedObj);
