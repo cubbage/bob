@@ -254,11 +254,27 @@
     }
 
     .group-rule-compact .rule-details {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
+      display: flex;
       gap: 0.5rem;
       font-size: 0.8rem;
       color: #666;
+      min-width: 0;
+    }
+
+    .group-rule-compact .rule-details div {
+      white-space: nowrap;
+      cursor: pointer;
+      padding: 2px 4px;
+      border-radius: 3px;
+      transition: all 0.2s ease;
+      border: 1px solid transparent;
+      flex-shrink: 0;
+    }
+
+    .group-rule-compact .rule-details div:hover {
+      background-color: #e9ecef;
+      border-color: #007aff;
+      color: #007aff;
     }
 
     .group-rule-compact .color-preview {
@@ -332,7 +348,8 @@
       display: flex;
       align-items: center;
       gap: 0.25rem;
-      flex-wrap: wrap;
+      flex-wrap: nowrap;
+      overflow: hidden;
     }
 
     .sidebar-object-item:last-child {
@@ -2601,54 +2618,11 @@
       return null;
     }
 
-    // Function to get active style display
-    function getActiveStyleDisplay(rule) {
-      const style1 = rule.style1 || '';
-      const style2 = rule.style2 || '';
-
-      let display = '';
-
-      if (style1) {
-        display += getStyleDisplay(style1);
-      } else {
-        display += '<a href="#" onclick="addStyleToGroup(\'' + (rule.label || '') + '\'); return false;">add style</a>';
-      }
-
-      display += ' | ';
-
-      if (style2) {
-        display += getStyleDisplay(style2);
-      } else {
-        display += '<a href="#" onclick="addStyleToGroup(\'' + (rule.label || '') + '\'); return false;">add style</a>';
-      }
-
-      return display;
-    }
-
-    // Function to add style to group
-    function addStyleToGroup(groupLabel) {
-      const ruleIndex = dictionary.rules.findIndex(rule => rule.label === groupLabel);
-      if (ruleIndex !== -1) {
-        openGroupEditor(dictionary.rules[ruleIndex], ruleIndex);
-      }
-    }
-
-    // Function to get style display with appropriate formatting
-    function getStyleDisplay(style) {
-      switch (style) {
-        case 'background':
-          return '📅';
-        case 'color':
-          return '**bold**';
-        case 'underline':
-          return '_italic_';
-        case 'border':
-          return '📦';
-        case 'symbol':
-          return '🔖';
-        default:
-          return style;
-      }
+    // Function to get simple style display
+    function getSimpleStyleDisplay(rule) {
+      const style1 = rule.style1 || 'none';
+      const style2 = rule.style2 || 'none';
+      return `${style1} | ${style2}`;
     }
 
     // Function to create new group from sidebar
@@ -2957,7 +2931,7 @@
     }
 
     // Function to edit object regex inline
-    function editObjectRegexInline(obj, regexSpan) {
+    function editObjectRegexInline(obj, regexContainer, regexIcon, regexLabel) {
       const currentRegex = obj.match || '';
       const input = document.createElement('input');
       input.type = 'text';
@@ -2969,8 +2943,26 @@
         border: 1px solid #007aff;
         border-radius: 2px;
         padding: 1px 3px;
-        width: 80px;
+        width: 100%;
+        flex: 1;
       `;
+
+      // Find the parent object item to hide other elements
+      const objItem = regexContainer.closest('.sidebar-object-item');
+      const elementsToHide = [];
+
+      if (objItem) {
+        // Hide all children except the regex container
+        Array.from(objItem.children).forEach(child => {
+          if (child !== regexContainer) {
+            elementsToHide.push({
+              element: child,
+              originalDisplay: child.style.display || 'block'
+            });
+            child.style.display = 'none';
+          }
+        });
+      }
 
       function saveRegex() {
         // Prevent double execution
@@ -2981,12 +2973,20 @@
         const newRegex = input.value.trim();
         if (newRegex !== currentRegex) {
           obj.match = newRegex;
-          regexSpan.textContent = `/${newRegex || 'none'}/`;
+          regexLabel.textContent = newRegex || 'none';
           applyRules();
           autoSavePatternHierarchy();
           showNotification('Regex updated!', 'success');
         }
-        regexSpan.style.display = 'inline';
+
+        // Restore all hidden elements
+        elementsToHide.forEach(({ element, originalDisplay }) => {
+          element.style.display = originalDisplay;
+        });
+
+        // Show icon and label again
+        regexIcon.style.display = 'block';
+        regexLabel.style.display = 'inline';
 
         // Mark as removing to prevent double execution
         input.dataset.removing = 'true';
@@ -2999,13 +2999,23 @@
           return;
         }
 
-        regexSpan.style.display = 'inline';
+        // Restore all hidden elements
+        elementsToHide.forEach(({ element, originalDisplay }) => {
+          element.style.display = originalDisplay;
+        });
+
+        // Show icon and label again
+        regexIcon.style.display = 'block';
+        regexLabel.style.display = 'inline';
         input.dataset.removing = 'true';
         input.remove();
       }
 
-      regexSpan.style.display = 'none';
-      regexSpan.parentNode.insertBefore(input, regexSpan.nextSibling);
+      // Hide icon and label to make room for input
+      regexIcon.style.display = 'none';
+      regexLabel.style.display = 'none';
+
+      regexContainer.appendChild(input);
       input.focus();
       input.select();
 
@@ -3454,7 +3464,7 @@
       ruleDetails.title = 'Click to edit group';
 
       const styleInfo = document.createElement('div');
-      styleInfo.innerHTML = getActiveStyleDisplay(rule);
+      styleInfo.innerHTML = getSimpleStyleDisplay(rule);
 
       // Make entire details section clickable
       ruleDetails.addEventListener('click', () => {
@@ -3595,20 +3605,44 @@
         });
 
         // Regex match (inline editable)
-        const regexSpan = document.createElement('span');
-        regexSpan.className = 'sidebar-object-regex';
-        regexSpan.style.cssText = `
+        const regexContainer = document.createElement('div');
+        regexContainer.className = 'sidebar-object-regex-container';
+        regexContainer.style.cssText = `
+          display: flex;
+          align-items: center;
+          margin-left: 4px;
+        `;
+
+        const regexIcon = document.createElement('div');
+        regexIcon.className = 'sidebar-object-regex-icon';
+        regexIcon.style.cssText = `
+          width: 16px;
+          height: 16px;
+          cursor: pointer;
+          opacity: 0.7;
+          transition: opacity 0.2s ease;
+        `;
+        regexIcon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3v10"/><path d="m12.67 5.5 8.66 5"/><path d="m12.67 10.5 8.66-5"/><path d="M9 17a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2v-2z"/></svg>`;
+        regexIcon.title = 'Click to edit regex';
+
+        const regexLabel = document.createElement('span');
+        regexLabel.className = 'sidebar-object-regex-label';
+        regexLabel.style.cssText = `
           font-size: 0.7rem;
           color: #666;
           font-style: italic;
-          cursor: pointer;
-          margin-left: 4px;
+          margin-left: 2px;
+          white-space: nowrap;
         `;
-        regexSpan.textContent = `/${obj.match || 'none'}/`;
-        regexSpan.title = 'Click to edit regex';
-        regexSpan.addEventListener('click', (e) => {
+        regexLabel.textContent = obj.match || 'none';
+
+        regexContainer.appendChild(regexIcon);
+        regexContainer.appendChild(regexLabel);
+
+        // Click handler for the entire regex container
+        regexContainer.addEventListener('click', (e) => {
           e.stopPropagation();
-          editObjectRegexInline(obj, regexSpan);
+          editObjectRegexInline(obj, regexContainer, regexIcon, regexLabel);
         });
 
         objItem.appendChild(objToggle);
@@ -3634,7 +3668,7 @@
         }
 
         objItem.appendChild(objName);
-        objItem.appendChild(regexSpan);
+        objItem.appendChild(regexContainer);
 
         objectsList.appendChild(objItem);
       });

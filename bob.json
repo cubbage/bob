@@ -891,7 +891,7 @@
         "enabled": true
       },
       {
-        "label": "Kris Fog",
+        "label": "Fog",
         "color1": "#5B8D40",
         "color2": "",
         "match": "\\bkris\\b",
@@ -1128,6 +1128,26 @@
         "color2": "",
         "match": "sandpaper",
         "group": "texture",
+        "enabled": true
+      },
+      {
+        "label": "Object",
+        "color1": "",
+        "color2": "",
+        "style1": "",
+        "style2": "",
+        "match": "object",
+        "group": "person",
+        "enabled": true
+      },
+      {
+        "label": "Object",
+        "color1": "",
+        "color2": "",
+        "style1": "",
+        "style2": "",
+        "match": "object",
+        "group": "person",
         "enabled": true
       }
     ]
