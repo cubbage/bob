@@ -385,6 +385,20 @@
       color: white;
     }
 
+    /* Dim inactive groups and their objects */
+    .group-rule-compact.inactive {
+      opacity: 0.5;
+      filter: grayscale(50%);
+    }
+
+    .group-rule-compact.inactive .sidebar-objects-section {
+      opacity: 0.7;
+    }
+
+    .group-rule-compact.inactive .sidebar-object-item {
+      opacity: 0.6;
+    }
+
     /* Adjust main content when sidebar is open */
     .main-content-with-sidebar {
       margin-right: 300px;
@@ -1135,6 +1149,7 @@
             <path d="M3 3v5h5" />
           </svg>
         </button>
+        <button class="btn btn-secondary" id="saveBobJson" title="Save my Bob!">Save my Bob!</button>
         <button class="config-btn" id="configBtn" title="Configuration">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1169,7 +1184,6 @@
             <button class="btn btn-secondary" id="loadSampleMd">Load Sample.md</button>
             <button class="btn btn-secondary" id="convertBob">Convert Bob</button>
             <button class="btn btn-secondary" id="clearBtn">Clear</button>
-            <button class="btn btn-secondary" id="saveBobJson">Export to File</button>
           </div>
         </div>
       </div>
@@ -2587,6 +2601,56 @@
       return null;
     }
 
+    // Function to get active style display
+    function getActiveStyleDisplay(rule) {
+      const style1 = rule.style1 || '';
+      const style2 = rule.style2 || '';
+
+      let display = '';
+
+      if (style1) {
+        display += getStyleDisplay(style1);
+      } else {
+        display += '<a href="#" onclick="addStyleToGroup(\'' + (rule.label || '') + '\'); return false;">add style</a>';
+      }
+
+      display += ' | ';
+
+      if (style2) {
+        display += getStyleDisplay(style2);
+      } else {
+        display += '<a href="#" onclick="addStyleToGroup(\'' + (rule.label || '') + '\'); return false;">add style</a>';
+      }
+
+      return display;
+    }
+
+    // Function to add style to group
+    function addStyleToGroup(groupLabel) {
+      const ruleIndex = dictionary.rules.findIndex(rule => rule.label === groupLabel);
+      if (ruleIndex !== -1) {
+        openGroupEditor(dictionary.rules[ruleIndex], ruleIndex);
+      }
+    }
+
+    // Function to get style display with appropriate formatting
+    function getStyleDisplay(style) {
+      switch (style) {
+        case 'background':
+          return '📅';
+        case 'color':
+          return '**bold**';
+        case 'underline':
+          return '_italic_';
+        case 'border':
+          return '📦';
+        case 'symbol':
+          return '🔖';
+        default:
+          return style;
+      }
+    }
+
     // Function to create new group from sidebar
     function createNewGroupFromSidebar() {
       const newRule = {
@@ -3296,6 +3360,9 @@
     function createCompactGroupRule(rule, idx) {
       const ruleElement = document.createElement('div');
       ruleElement.className = 'group-rule-compact';
+      if (rule.enabled === false) {
+        ruleElement.classList.add('inactive');
+      }
       ruleElement.dataset.idx = idx;
 
       // Move buttons
@@ -3353,6 +3420,7 @@
         rule.enabled = !(rule.enabled !== false);
         toggleBtn.textContent = rule.enabled ? '✓' : '✗';
         toggleBtn.classList.toggle('active', rule.enabled);
+        ruleElement.classList.toggle('inactive', !rule.enabled);
         applyRules();
         autoSavePatternHierarchy();
       });
@@ -3386,7 +3454,7 @@
       ruleDetails.title = 'Click to edit group';
 
       const styleInfo = document.createElement('div');
-      styleInfo.innerHTML = `Style1: ${rule.style1 || 'none'} | Style2: ${rule.style2 || 'none'}`;
+      styleInfo.innerHTML = getActiveStyleDisplay(rule);
 
       // Make entire details section clickable
       ruleDetails.addEventListener('click', () => {
