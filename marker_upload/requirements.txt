@@ -1,0 +1,7 @@
+marker-pdf
+fastapi
+uvicorn[standard]
+python-multipart
+aiofiles
+jinja2
+python-multipart
